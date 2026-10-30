@@ -703,202 +703,311 @@ html[dir=ltr] .sw.on .tg::after{transform:translateX(22px)}
 }
 
 /*═══════════════════════════════════════════════════════════════
-  طبقة التصميم «الشفق» — إعادة تصميم كاملة فوق نظام الألوان القائم.
-  كل الألوان مشتقّة من متغيّرات الثيم (--br / --br2 / --gl …)، فتتبع
-  الثيمات الخمسة والوضع الليلي تلقائياً. الحركة كلها transform و
-  opacity فقط — لا تمويه متحرّك يثقل الجهاز — وتُطفأ لمن يطلب ذلك.
+  طبقة التصميم «نبض» — واجهة زجاجية حيّة وواضحة.
+  · قائمة جانبية داكنة بلون الثيم نفسه، فتنفصل عن المحتوى بوضوح.
+  · أسطح بيضاء زجاجية نظيفة بحواف صافية — بلا نقاط ولا ضباب.
+  · أزرار مشبعة متوهّجة، وتموّج عند اللمس، ودخول متدرّج للعناصر.
+  كل الألوان من متغيّرات الثيم، فتتبع الثيمات الخمسة والوضع الليلي.
+  الحركة transform وopacity فقط، وتُطفأ لمن يطلب تقليلها.
 ═══════════════════════════════════════════════════════════════*/
 :root{
   --r:20px;
-  --ring:conic-gradient(from var(--ang,0deg), var(--br2), var(--blob2), var(--br), var(--blob1), var(--br2));
-  --hair:linear-gradient(135deg, color-mix(in srgb,var(--br2) 70%,transparent),
-          transparent 38%, transparent 62%, color-mix(in srgb,var(--blob2) 70%,transparent));
-  --sheen:linear-gradient(105deg, transparent 30%, rgba(255,255,255,.38) 48%, transparent 66%);
+  --bg:#EEF3F5;
+  --glass:rgba(255,255,255,.80); --glass2:rgba(255,255,255,.58); --glassS:rgba(255,255,255,.94);
+  --stroke:rgba(255,255,255,.95); --edge:rgba(12,45,55,.09);
+  --side-a:#063A38; --side-b:#0A5752;
+  --side-a:color-mix(in srgb, var(--br) 32%, #02181A);
+  --side-b:color-mix(in srgb, var(--br) 70%, #03211F);
+  --sh:0 1px 2px rgba(10,40,50,.05), 0 10px 28px -16px rgba(10,40,50,.28);
+  --shL:0 2px 6px rgba(10,40,50,.07), 0 28px 60px -28px rgba(10,40,50,.45);
+  --cglow:0 18px 40px -26px var(--gl2);
 }
 html[data-theme=dark]{
-  --sheen:linear-gradient(105deg, transparent 30%, rgba(255,255,255,.16) 48%, transparent 66%);
+  --bg:#060D11;
+  --glass:rgba(20,32,38,.78); --glass2:rgba(20,32,38,.52); --glassS:rgba(26,40,47,.94);
+  --stroke:rgba(255,255,255,.08); --edge:rgba(255,255,255,.07);
+  --side-a:color-mix(in srgb, var(--br) 16%, #030A0D);
+  --side-b:color-mix(in srgb, var(--br) 34%, #04100F);
+  --sh:0 1px 1px rgba(0,0,0,.4), 0 12px 30px -18px rgba(0,0,0,.9);
+  --shL:0 26px 60px -30px rgba(0,0,0,.95);
 }
 @property --ang{ syntax:'<angle>'; initial-value:0deg; inherits:false; }
+@keyframes spin{ to{ --ang:360deg } }
+@keyframes rise{ from{ opacity:0; transform:translateY(14px) scale(.985) } to{ opacity:1; transform:none } }
+@keyframes ripple{ to{ transform:scale(2.6); opacity:0 } }
+@keyframes floaty{ 0%,100%{ transform:translate3d(0,0,0) } 50%{ transform:translate3d(0,-14px,0) } }
+@keyframes drift{ 0%{ transform:translate3d(0,0,0) scale(1) } 100%{ transform:translate3d(-4%,3%,0) scale(1.08) } }
 
-/* ── الخلفية: شفق حيّ + شبكة نقاط خافتة ── */
+/* ── الخلفية: ضوءان ملوّنان واضحان على أساس نظيف ── */
+body{ background:var(--bg) }
 body::before{
-  inset:-30%;
+  inset:-20%; opacity:1;
   background:
-    radial-gradient(34% 30% at 18% 14%, var(--blob1), transparent 64%),
-    radial-gradient(38% 34% at 84% 18%, var(--blob2), transparent 66%),
-    radial-gradient(36% 32% at 52% 92%, var(--blob3), transparent 64%),
-    radial-gradient(26% 24% at 70% 58%, color-mix(in srgb,var(--br2) 55%,transparent), transparent 70%);
-  opacity:.62;
-  animation:aurora 34s ease-in-out infinite alternate;
-  will-change:transform;
+    radial-gradient(30% 34% at 92% 8%,  color-mix(in srgb,var(--br2) 34%,transparent), transparent 70%),
+    radial-gradient(34% 36% at 8% 96%,  color-mix(in srgb,var(--blob2) 60%,transparent), transparent 70%),
+    radial-gradient(26% 28% at 55% 45%, color-mix(in srgb,var(--blob1) 26%,transparent), transparent 72%);
+  animation:drift 26s ease-in-out infinite alternate;
 }
-html[data-theme=dark] body::before{opacity:.55}
-body::after{
-  content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
-  background-image:radial-gradient(color-mix(in srgb,var(--ink) 9%,transparent) 1px, transparent 1.4px);
-  background-size:22px 22px;
-  -webkit-mask:radial-gradient(120% 90% at 50% 0%, #000 30%, transparent 80%);
-          mask:radial-gradient(120% 90% at 50% 0%, #000 30%, transparent 80%);
-}
-@keyframes aurora{
-  0%  {transform:translate3d(0,0,0) rotate(0deg) scale(1)}
-  50% {transform:translate3d(3%,-2%,0) rotate(6deg) scale(1.06)}
-  100%{transform:translate3d(-3%,2%,0) rotate(-5deg) scale(1.02)}
-}
+html[data-theme=dark] body::before{ opacity:.9 }
 
-/* ── الأسطح: حافة متدرّجة مضيئة + لمعة علوية ── */
-.card,.it,details.acc,.rolebtn,.shhead{position:relative;isolation:isolate}
-.card::before,.it::before,details.acc::before,.shhead::before{
-  content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
-  background:var(--hair);z-index:1;
-  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite:xor; mask-composite:exclude;
-  opacity:.75;transition:opacity .25s;
-}
+/* ── الأسطح ── */
 .card{
-  background:linear-gradient(180deg, color-mix(in srgb,var(--glassS) 70%,transparent), var(--glass));
-  box-shadow:var(--sh), inset 0 1px 0 rgba(255,255,255,.35);
+  background:var(--glass);
+  border:1px solid var(--stroke);
+  box-shadow:var(--sh), inset 0 1px 0 rgba(255,255,255,.7);
 }
-html[data-theme=dark] .card{box-shadow:var(--sh), inset 0 1px 0 rgba(255,255,255,.06)}
-.card.flat::before{opacity:.35}
-.it{transition:transform .18s cubic-bezier(.2,.9,.3,1),box-shadow .2s,border-color .2s}
-.it:hover{transform:translateY(-2px);
-  box-shadow:var(--shL), 0 0 0 1px color-mix(in srgb,var(--br) 35%,transparent),
-             0 10px 30px -14px var(--gl2)}
-.it:hover::before{opacity:1}
-details.acc[open]{box-shadow:var(--shL), 0 0 26px -16px var(--gl2)}
+html[data-theme=dark] .card{ box-shadow:var(--sh), inset 0 1px 0 rgba(255,255,255,.05) }
+.card.flat{ background:var(--glass2); box-shadow:none }
+.it{
+  background:var(--glass); border:1px solid var(--stroke);
+  transition:transform .2s cubic-bezier(.2,.9,.3,1), box-shadow .2s, border-color .2s, background .2s;
+}
+.it:hover{ transform:translateY(-2px); border-color:color-mix(in srgb,var(--br) 45%,transparent);
+  box-shadow:var(--shL), var(--cglow) }
+details.acc{ background:var(--glass); border:1px solid var(--stroke) }
+details.acc[open]{ box-shadow:var(--shL), var(--cglow) }
 details.acc>summary .accic{
-  background:linear-gradient(140deg, var(--br2), var(--br));color:var(--on-br);
-  box-shadow:0 6px 16px -8px var(--br), inset 0 1px 0 rgba(255,255,255,.35)}
+  background:linear-gradient(140deg,var(--br2),var(--br)); color:var(--on-br);
+  box-shadow:0 8px 18px -8px var(--br) }
+.shhead{ background:var(--glassS); border:1px solid var(--stroke); box-shadow:var(--shL) }
 
-/* ── العناوين: نصّ متدرّج — فقط حيث يدعمه المتصفح، وإلا بقي النص كما هو ── */
-@supports ((-webkit-background-clip:text) or (background-clip:text)) and (color:color-mix(in srgb, red 50%, blue)){
-  .h1,.h2{
-    background:linear-gradient(120deg, var(--ink) 20%, color-mix(in srgb,var(--br) 80%,var(--ink)) 70%, var(--br2));
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-  }
-}
-.lbl{color:color-mix(in srgb,var(--br) 55%,var(--ink3))}
+/* دخول العناصر بتدرّج خفيف — يُحسّ التطبيق حيّاً دون أن يبطئ */
+#view > *, #view .col > .it, .sh > *{ animation:rise .42s cubic-bezier(.2,.9,.3,1) both }
+#view > *:nth-child(2), .sh > *:nth-child(2){ animation-delay:.04s }
+#view > *:nth-child(3), .sh > *:nth-child(3){ animation-delay:.08s }
+#view > *:nth-child(4), .sh > *:nth-child(4){ animation-delay:.12s }
+#view > *:nth-child(n+5), .sh > *:nth-child(n+5){ animation-delay:.16s }
+#view .col > .it:nth-child(n+2){ animation-delay:.05s }
+#view .col > .it:nth-child(n+4){ animation-delay:.1s }
 
-/* ── الأزرار: لمعة تمرّ عند المرور ── */
-.btn{position:relative;overflow:hidden;isolation:isolate}
-.btn:not(.gh):not(.sf)::after{
-  content:'';position:absolute;inset:0;background:var(--sheen);z-index:-1;
-  transform:translateX(-120%);transition:transform .7s cubic-bezier(.2,.8,.2,1)}
-html[dir=rtl] .btn:not(.gh):not(.sf)::after{transform:translateX(120%)}
-.btn:not(.gh):not(.sf):hover::after{transform:translateX(0)}
+/* ── الأزرار: ألوان مشبعة واضحة + توهج + لمعة + تموّج ── */
+.btn{ position:relative; overflow:hidden; isolation:isolate; letter-spacing:.01em;
+  transition:transform .14s, box-shadow .2s, filter .2s }
 .btn:not(.gh):not(.sf):not(.dg):not(.ok):not(.wn){
-  background:linear-gradient(135deg, var(--br2), var(--br) 60%, color-mix(in srgb,var(--br) 80%,#000));
+  background:linear-gradient(135deg, var(--br2) 0%, var(--br) 70%);
+  color:var(--on-br);
+  box-shadow:0 10px 22px -12px var(--br), 0 0 0 1px color-mix(in srgb,var(--br) 40%,transparent) inset,
+             0 0 22px -10px var(--gl2);
 }
-.btn:disabled::after{display:none}
+.btn:not(.gh):not(.sf):hover{ transform:translateY(-1px); filter:saturate(1.15) brightness(1.05);
+  box-shadow:0 14px 28px -12px var(--br), 0 0 30px -8px var(--gl2) }
+.btn::after{ content:''; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background:linear-gradient(105deg, transparent 35%, rgba(255,255,255,.45) 50%, transparent 65%);
+  transform:translateX(-130%); transition:transform .75s cubic-bezier(.2,.8,.2,1) }
+html[dir=rtl] .btn::after{ transform:translateX(130%) }
+.btn:not(.gh):not(.sf):hover::after{ transform:translateX(0) }
+.btn.gh{ background:var(--glassS); color:var(--ink); border:1px solid color-mix(in srgb,var(--br) 22%,var(--edge));
+  box-shadow:0 2px 6px -3px rgba(0,0,0,.12) }
+.btn.gh:hover{ border-color:var(--br); color:var(--br); background:color-mix(in srgb,var(--br) 7%,var(--glassS));
+  box-shadow:0 0 0 3px var(--brL) }
+.btn.sf{ background:color-mix(in srgb,var(--br) 14%,var(--glassS)); color:var(--br);
+  border:1px solid color-mix(in srgb,var(--br) 30%,transparent) }
+.btn.sf:hover{ background:color-mix(in srgb,var(--br) 22%,var(--glassS)) }
+.btn.ok{ background:linear-gradient(135deg,#34C27F,#13804F); box-shadow:0 10px 22px -12px #13804F, 0 0 20px -10px #34C27F }
+.btn.dg{ background:linear-gradient(135deg,#F07466,#C0392B); box-shadow:0 10px 22px -12px #C0392B }
+.btn.wn{ background:linear-gradient(135deg,#F2B544,#C27C06) }
+.btn:disabled{ filter:grayscale(.4); transform:none }
+.navb{ overflow:hidden }
+.rpl{ position:absolute; border-radius:50%; pointer-events:none; z-index:0;
+  background:currentColor; opacity:.22; transform:scale(0); animation:ripple .6s ease-out forwards }
+.ib{ background:var(--glassS); border:1px solid color-mix(in srgb,var(--br) 18%,var(--edge)) }
+.ib:hover{ box-shadow:0 0 0 3px var(--brL), 0 0 18px -6px var(--gl2) }
 
-/* ── القائمة الجانبية ── */
+/* ── القائمة الجانبية: لوح داكن بلون الثيم ── */
 .side{
-  background:linear-gradient(185deg, color-mix(in srgb,var(--glassS) 85%,transparent), var(--glass) 40%, var(--glass2));
-  box-shadow:inset -1px 0 0 var(--stroke);
+  background:
+    radial-gradient(120% 50% at 100% 0%, color-mix(in srgb,var(--br2) 30%,transparent), transparent 60%),
+    linear-gradient(180deg, var(--side-b), var(--side-a));
+  border-inline-end:none;
+  box-shadow:-10px 0 40px -20px rgba(0,0,0,.5);
+  -webkit-backdrop-filter:none; backdrop-filter:none;
+  color:#EAF7F5;
 }
-.side::after{
-  content:'';position:absolute;inset-block:0;inset-inline-end:-1px;width:2px;pointer-events:none;
-  background:linear-gradient(180deg, transparent, var(--gl2), transparent);opacity:.7}
-.side .brand{padding:6px 6px 18px;margin-bottom:6px;border-bottom:1px solid var(--edge)}
-.side .brand .mk{
-  width:46px;height:46px;border-radius:15px;position:relative;
-  background:linear-gradient(140deg, var(--br2), var(--br));
-  box-shadow:0 10px 26px -12px var(--br), 0 0 0 1px rgba(255,255,255,.25) inset}
-.side .brand .mk::after{
-  content:'';position:absolute;inset:-3px;border-radius:18px;z-index:-1;
-  background:var(--ring);filter:blur(7px);opacity:.55;animation:spin 9s linear infinite}
-.side .brand .mk.img{background:#fff}
-.side .brand .mk img{width:100%;height:100%;object-fit:contain;border-radius:15px;padding:4px}
-@keyframes spin{to{--ang:360deg}}
-.navb{border:1px solid transparent}
-.navb svg{padding:5px;width:30px;height:30px;border-radius:10px;
-  background:var(--glass2);transition:background .2s,color .2s,box-shadow .2s}
-.navb:hover svg{background:var(--brL);color:var(--br)}
-.navb.on{
-  background:linear-gradient(90deg, var(--brL), transparent 85%);
-  border-color:color-mix(in srgb,var(--br) 22%,transparent);color:var(--ink)}
-html[dir=rtl] .navb.on{background:linear-gradient(270deg, var(--brL), transparent 85%)}
-.navb.on svg{background:linear-gradient(140deg,var(--br2),var(--br));color:var(--on-br);
-  box-shadow:0 6px 16px -6px var(--gl2)}
-.navb.on::before{width:4px;box-shadow:0 0 12px var(--gl2)}
+.side::before{ content:''; position:absolute; inset:0; pointer-events:none; opacity:.5;
+  background:radial-gradient(60% 30% at 0% 100%, color-mix(in srgb,var(--br2) 26%,transparent), transparent 70%) }
+.side > *{ position:relative }
+.side .brand{ border-bottom:1px solid rgba(255,255,255,.12); padding:6px 6px 18px; margin-bottom:8px }
+.side #hd-name{ color:#fff; font-size:20px }
+.side #hd-role{ color:rgba(255,255,255,.62); letter-spacing:.04em }
+.side .brand .mk{ width:48px; height:48px; border-radius:16px; position:relative;
+  background:linear-gradient(140deg,var(--br2),var(--br)); box-shadow:0 10px 24px -10px var(--br2) }
+.side .brand .mk::after{ content:''; position:absolute; inset:-3px; border-radius:19px; z-index:-1;
+  background:conic-gradient(from var(--ang), var(--br2), transparent 40%, var(--br2) 60%, transparent);
+  animation:spin 6s linear infinite; filter:blur(4px); opacity:.85 }
+.side .brand .mk.img{ background:#fff }
+.side .brand .mk img{ width:100%; height:100%; object-fit:contain; border-radius:16px; padding:4px }
+.navb{ color:rgba(255,255,255,.78); border:1px solid transparent; padding:9px 11px }
+.navb svg{ width:32px; height:32px; padding:6px; border-radius:11px; background:rgba(255,255,255,.08);
+  transition:background .2s, box-shadow .2s, transform .2s }
+.navb:hover{ background:rgba(255,255,255,.08); color:#fff }
+.navb:hover svg{ transform:scale(1.06) }
+.navb.on{ color:#fff; background:linear-gradient(270deg, rgba(255,255,255,.16), rgba(255,255,255,.05));
+  border-color:rgba(255,255,255,.18); box-shadow:0 10px 26px -14px rgba(0,0,0,.6) }
+html[dir=ltr] .navb.on{ background:linear-gradient(90deg, rgba(255,255,255,.16), rgba(255,255,255,.05)) }
+.navb.on svg{ background:linear-gradient(140deg,var(--br2),var(--br)); color:#fff;
+  box-shadow:0 0 0 1px rgba(255,255,255,.25), 0 0 20px -2px var(--br2) }
+.navb.on::before{ background:var(--br2); width:4px; box-shadow:0 0 14px var(--br2) }
+.navb .cnt{ box-shadow:0 0 12px -2px var(--bd) }
+.side .foot{ border-top:1px solid rgba(255,255,255,.12) }
+.side .foot .ib{ background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.14); color:#fff }
+.side .foot .ib:hover{ background:rgba(255,255,255,.16) }
 
 /* ── الشريط العلوي ── */
-.topbar{
-  background:linear-gradient(180deg, color-mix(in srgb,var(--glassS) 90%,transparent), var(--glass));
-  border-bottom:none}
-.topbar::after{
-  content:'';position:absolute;inset-inline:0;bottom:0;height:1px;pointer-events:none;
-  background:linear-gradient(90deg, transparent, var(--gl2), transparent)}
-#pagetitle{font-family:'Zain',sans-serif;font-size:21px;font-weight:800;letter-spacing:-.01em}
+.topbar{ background:color-mix(in srgb,var(--glassS) 85%,transparent); border-bottom:1px solid var(--edge);
+  box-shadow:0 8px 24px -20px rgba(0,0,0,.4) }
+#pagetitle{ font-family:'Zain',sans-serif; font-size:23px; font-weight:900; letter-spacing:-.01em }
+#pagetitle::before{ content:''; display:inline-block; width:8px; height:8px; border-radius:99px;
+  margin-inline-end:10px; vertical-align:middle; background:var(--br2); box-shadow:0 0 12px var(--br2) }
 
 /* ── الإدخال ── */
-input,select,textarea{background:color-mix(in srgb,var(--glassS) 92%,transparent)}
-input:hover,select:hover,textarea:hover{border-color:color-mix(in srgb,var(--br) 35%,var(--edge))}
+input,select,textarea{ background:var(--glassS); border-color:color-mix(in srgb,var(--br) 14%,var(--edge)) }
+input:hover,select:hover,textarea:hover{ border-color:color-mix(in srgb,var(--br) 40%,var(--edge)) }
 
-/* ── الشارات والأفاتار ── */
-.av{background:linear-gradient(140deg, var(--brL), color-mix(in srgb,var(--br2) 22%,transparent));
-  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--br) 18%,transparent)}
-.pill.b{background:linear-gradient(120deg,var(--brL),color-mix(in srgb,var(--br2) 18%,transparent))}
+/* ── الشارات ── */
+.av{ background:linear-gradient(140deg, color-mix(in srgb,var(--br2) 26%,transparent), var(--brL));
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--br) 20%,transparent) }
+.pill.b{ background:color-mix(in srgb,var(--br) 14%,transparent) }
+.track{ background:color-mix(in srgb,var(--ink) 7%,transparent) }
+.track>i{ box-shadow:0 0 12px -2px var(--gl2) }
+.lbl{ color:color-mix(in srgb,var(--br) 60%,var(--ink3)) }
 
-/* ── بطاقات الأرقام (الحسابات والإحصائيات) ── */
-.g3>.card.ctr,.g2>.card.ctr{overflow:hidden}
-.g3>.card.ctr::after,.g2>.card.ctr::after{
-  content:'';position:absolute;width:120px;height:120px;border-radius:99px;
-  inset-inline-end:-50px;top:-60px;pointer-events:none;
-  background:radial-gradient(circle, var(--gl2), transparent 70%);opacity:.45}
-.track>i{box-shadow:0 0 12px -2px var(--gl2)}
+/* ── بطاقات الأرقام ── */
+.g3>.card.ctr,.g2>.card.ctr{ overflow:hidden; position:relative }
+.g3>.card.ctr::after,.g2>.card.ctr::after{ content:''; position:absolute; width:110px; height:110px;
+  border-radius:99px; inset-inline-end:-46px; top:-54px; pointer-events:none;
+  background:radial-gradient(circle, var(--gl2), transparent 70%); opacity:.4 }
 
 /* ── شاشة الدخول ── */
-#login{position:relative}
-.lghero{text-align:center;margin-bottom:6px}
-.lgring{width:118px;height:118px;margin:0 auto 18px;border-radius:34px;position:relative;
-  display:grid;place-items:center}
-.lgring::before{content:'';position:absolute;inset:-4px;border-radius:38px;
-  background:var(--ring);animation:spin 7s linear infinite;
-  box-shadow:0 0 40px -6px var(--gl2)}
-.lgring::after{content:'';position:absolute;inset:0;border-radius:34px;background:var(--bg)}
-.lgring .applogo{position:relative;z-index:1;width:104px;height:104px;margin:0;border-radius:30px;
-  box-shadow:0 18px 40px -18px var(--br)}
-.applogo.custom{background:#fff;object-fit:contain;padding:8px}
-.lgname{font-size:34px}
-.lgsub{font-family:'Zain',sans-serif;font-weight:700;font-size:17px;color:var(--br);margin-top:-2px}
-#lg-cloud{box-shadow:var(--shL), 0 0 60px -30px var(--gl2)}
-
-/* ── صفحات الملء الكامل ── */
-.shhead{box-shadow:var(--shL)}
-.shb::after{
-  content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
-  background-image:radial-gradient(color-mix(in srgb,var(--ink) 8%,transparent) 1px, transparent 1.4px);
-  background-size:22px 22px;
-  -webkit-mask:radial-gradient(120% 90% at 50% 0%, #000 30%, transparent 80%);
-          mask:radial-gradient(120% 90% at 50% 0%, #000 30%, transparent 80%)}
+#login{ position:relative }
+.lghero{ text-align:center; margin-bottom:8px }
+.lgring{ width:118px; height:118px; margin:0 auto 18px; border-radius:34px; position:relative;
+  display:grid; place-items:center; animation:floaty 6s ease-in-out infinite }
+.lgring::before{ content:''; position:absolute; inset:-4px; border-radius:38px;
+  background:conic-gradient(from var(--ang), var(--br2), var(--blob2), var(--br), var(--br2));
+  animation:spin 6s linear infinite; box-shadow:0 0 50px -8px var(--gl2) }
+.lgring::after{ content:''; position:absolute; inset:0; border-radius:34px; background:var(--bg) }
+.lgring .applogo{ position:relative; z-index:1; width:104px; height:104px; margin:0; border-radius:30px;
+  box-shadow:0 18px 40px -18px var(--br) }
+.applogo.custom{ background:#fff; object-fit:contain; padding:8px }
+.lgname{ font-size:36px; font-weight:900 }
+.lgsub{ font-family:'Zain',sans-serif; font-weight:700; font-size:17px; color:var(--br); margin-top:-2px }
+#lg-cloud{ box-shadow:var(--shL), 0 0 70px -30px var(--gl2) }
 
 /* ── شريط التمرير ── */
-*{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--br) 40%,transparent) transparent}
-::-webkit-scrollbar{width:9px;height:9px}
-::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--br) 35%,transparent);border-radius:99px;
-  border:2px solid transparent;background-clip:padding-box}
+*{ scrollbar-width:thin; scrollbar-color:color-mix(in srgb,var(--br) 40%,transparent) transparent }
+::-webkit-scrollbar{ width:9px; height:9px }
+::-webkit-scrollbar-thumb{ background:color-mix(in srgb,var(--br) 35%,transparent); border-radius:99px;
+  border:2px solid transparent; background-clip:padding-box }
 
-/* ── عناصر جديدة: الشعار، اختيار الطبيب، باركود العيادة، الطاقم ── */
-.logoprev{width:58px;height:58px;border-radius:16px;flex-shrink:0;display:grid;place-items:center;
-  font-size:26px;background:#fff;border:1px solid var(--edge);overflow:hidden;
-  box-shadow:0 8px 20px -12px var(--br)}
-.logoprev.lg{width:76px;height:76px;border-radius:20px}
-.logoprev img{width:100%;height:100%;object-fit:contain;padding:5px}
-.pickov{position:fixed;inset:0;z-index:120;display:grid;place-items:center;padding:18px;
-  background:rgba(3,16,19,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
-  animation:fade .18s}
-.pickbox{width:100%;max-width:420px;max-height:86vh;overflow:auto;padding:18px;border-radius:22px;
-  background:var(--glassS);border:1px solid var(--stroke);box-shadow:var(--shL), 0 0 50px -20px var(--gl2);
-  animation:up .25s cubic-bezier(.2,.9,.3,1)}
-.clcode{background:#fff;border-radius:16px;padding:16px;border:1px solid var(--edge);
-  box-shadow:0 14px 34px -20px var(--br)}
-.clcode-nm{color:#000;text-align:center;font-family:'Zain',sans-serif;font-weight:800;font-size:19px;
-  margin-bottom:9px}
-.clcode-num{color:#000;text-align:center;font-family:'IBM Plex Mono',monospace;font-weight:700;
-  font-size:21px;letter-spacing:.28em;margin-top:6px}
-.stgrp{padding:14px;border-radius:16px;background:var(--glass2);border:1px solid var(--edge)}
+/* ── عناصر مساعدة ── */
+.logoprev{ width:58px; height:58px; border-radius:16px; flex-shrink:0; display:grid; place-items:center;
+  font-size:26px; background:#fff; border:1px solid var(--edge); overflow:hidden; box-shadow:0 8px 20px -12px var(--br) }
+.logoprev.lg{ width:76px; height:76px; border-radius:20px }
+.logoprev img{ width:100%; height:100%; object-fit:contain; padding:5px }
+.pickov{ position:fixed; inset:0; z-index:120; display:grid; place-items:center; padding:18px;
+  background:rgba(3,16,19,.55); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); animation:fade .18s }
+.pickbox{ width:100%; max-width:420px; max-height:86vh; overflow:auto; padding:18px; border-radius:22px;
+  background:var(--glassS); border:1px solid var(--stroke); box-shadow:var(--shL), 0 0 50px -20px var(--gl2);
+  animation:rise .25s cubic-bezier(.2,.9,.3,1) }
+.clcode{ background:#fff; border-radius:18px; padding:18px; border:1px solid var(--edge);
+  box-shadow:0 16px 36px -22px var(--br) }
+.clcode-qr{ width:min(220px,70%); margin:0 auto }
+.clcode-nm{ color:#000; text-align:center; font-family:'Zain',sans-serif; font-weight:800; font-size:20px; margin-bottom:8px }
+.clcode-num{ color:#000; text-align:center; font-family:'IBM Plex Mono',monospace; font-weight:700;
+  font-size:20px; letter-spacing:.24em; margin-top:8px }
+.stgrp{ padding:14px; border-radius:16px; background:var(--glass2); border:1px solid var(--edge) }
+
+/* ═══════ ملف المراجع ═══════ */
+.pf-hero{ position:relative; overflow:hidden; border-radius:22px; padding:18px; color:#fff;
+  background:
+    radial-gradient(80% 120% at 100% 0%, color-mix(in srgb,var(--br2) 55%,transparent), transparent 60%),
+    linear-gradient(135deg, var(--side-b), var(--side-a));
+  box-shadow:0 22px 46px -26px var(--br) }
+.pf-hero::after{ content:''; position:absolute; width:220px; height:220px; border-radius:99px;
+  inset-inline-start:-80px; bottom:-120px; background:radial-gradient(circle, color-mix(in srgb,var(--br2) 40%,transparent), transparent 70%) }
+.pf-hero > *{ position:relative; z-index:1 }
+.pf-av{ width:58px; height:58px; border-radius:18px; display:grid; place-items:center; flex-shrink:0;
+  font-family:'Zain',sans-serif; font-weight:900; font-size:26px; color:#fff;
+  background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.25) }
+.pf-name{ font-family:'Zain',sans-serif; font-weight:900; font-size:25px; line-height:1.15 }
+.pf-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:7px }
+.pf-chip{ display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:99px; font-size:12px;
+  font-weight:700; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.18); color:#fff; text-decoration:none }
+.pf-x{ width:38px; height:38px; border-radius:12px; display:grid; place-items:center; color:#fff;
+  background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2); flex-shrink:0 }
+.pf-money{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:16px }
+.pf-m{ padding:10px 12px; border-radius:15px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.16) }
+.pf-m .k{ font-size:11.5px; font-weight:700; opacity:.75 }
+.pf-m .v{ font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:19px; margin-top:2px }
+.pf-m.due .v{ color:#FFB4A8 } .pf-m.ok .v{ color:#9BF0C3 }
+.pf-bar{ height:6px; border-radius:99px; background:rgba(255,255,255,.14); margin-top:12px; overflow:hidden }
+.pf-bar i{ display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,#9BF0C3,#fff) }
+.pf-alerts{ display:flex; flex-wrap:wrap; gap:6px; margin-top:12px }
+.pf-al{ display:inline-flex; align-items:center; gap:5px; padding:5px 11px; border-radius:99px; font-size:12px; font-weight:800 }
+.pf-al.r{ background:#FFE1DC; color:#A3261A } .pf-al.w{ background:#FFF0CC; color:#7A5100 }
+.pf-acts{ display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin-top:12px }
+.pf-act{ display:flex; flex-direction:column; align-items:center; gap:6px; padding:14px 8px; border-radius:18px;
+  font-weight:800; font-size:13.5px; text-align:center; position:relative; overflow:hidden;
+  background:var(--glassS); border:1px solid var(--stroke); box-shadow:var(--sh); transition:transform .18s, box-shadow .2s }
+.pf-act .i{ width:42px; height:42px; border-radius:14px; display:grid; place-items:center; font-size:19px;
+  color:#fff; background:linear-gradient(140deg,var(--br2),var(--br)); box-shadow:0 10px 20px -10px var(--br) }
+.pf-act.pay .i{ background:linear-gradient(140deg,#34C27F,#13804F); box-shadow:0 10px 20px -10px #13804F }
+.pf-act.ap .i{ background:linear-gradient(140deg,#8B7CFF,#5B45E0); box-shadow:0 10px 20px -10px #5B45E0 }
+.pf-act:hover{ transform:translateY(-3px); box-shadow:var(--shL), var(--cglow) }
+.pf-act.live{ border-color:var(--br); box-shadow:0 0 0 3px var(--brL), var(--cglow) }
+.pf-act .s{ font-size:11px; font-weight:600; color:var(--ink3) }
+.pf-tabs{ display:flex; gap:4px; padding:4px; margin-top:16px; border-radius:15px; background:var(--glass2); border:1px solid var(--edge) }
+.pf-tabs button{ flex:1; padding:10px; border-radius:12px; font-weight:800; color:var(--ink2); transition:all .2s }
+.pf-tabs button.on{ background:var(--glassS); color:var(--br); box-shadow:var(--sh) }
+.pf-tabs .n{ font-family:'IBM Plex Mono',monospace; font-size:11px; padding:1px 7px; border-radius:99px;
+  background:var(--brL); color:var(--br); margin-inline-start:4px }
+.pf-more{ position:relative }
+.pf-menu{ position:fixed; z-index:200; min-width:220px; padding:6px; border-radius:16px;
+  background:var(--glassS); border:1px solid var(--stroke); box-shadow:var(--shL); animation:rise .18s }
+.pf-menu button{ display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; border-radius:11px;
+  font-weight:700; color:var(--ink); text-align:start }
+.pf-menu button:hover{ background:var(--brL); color:var(--br) }
+.pf-menu button.dg{ color:var(--bd) } .pf-menu button.dg:hover{ background:var(--bdL) }
+.pf-menu hr{ border:none; border-top:1px solid var(--edge); margin:4px 0 }
+
+/* بطاقة زيارة */
+.vc{ display:flex; gap:12px; padding:14px; border-radius:18px; background:var(--glass); border:1px solid var(--stroke);
+  box-shadow:var(--sh); margin-top:10px; transition:box-shadow .2s, border-color .2s }
+.vc:hover{ border-color:color-mix(in srgb,var(--br) 35%,transparent); box-shadow:var(--shL), var(--cglow) }
+.vc.open{ border-color:color-mix(in srgb,var(--br) 50%,transparent); box-shadow:0 0 0 3px var(--brL), var(--sh) }
+.vc-date{ width:58px; flex-shrink:0; text-align:center; padding:8px 4px; border-radius:15px; height:fit-content;
+  background:linear-gradient(160deg, color-mix(in srgb,var(--br2) 20%,transparent), var(--brL)); color:var(--br) }
+.vc-date .d{ font-family:'Zain',sans-serif; font-weight:900; font-size:26px; line-height:1 }
+.vc-date .m{ font-size:11px; font-weight:800; margin-top:3px }
+.vc-date .y{ font-size:10px; opacity:.7; font-family:'IBM Plex Mono',monospace }
+.vc-row{ display:flex; align-items:center; gap:9px; padding:7px 0; border-bottom:1px dashed var(--edge) }
+.vc-row:last-child{ border-bottom:none }
+.tbadge{ min-width:40px; height:30px; padding:0 8px; border-radius:10px; display:grid; place-items:center;
+  font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:13px; color:#fff; flex-shrink:0 }
+.vc-sum{ display:flex; flex-wrap:wrap; gap:6px; margin-top:9px }
+.mchip{ display:inline-flex; gap:5px; align-items:center; padding:4px 10px; border-radius:99px; font-size:12px; font-weight:800;
+  background:var(--glass2); border:1px solid var(--edge) }
+.mchip b{ font-family:'IBM Plex Mono',monospace }
+.mchip.g{ background:var(--okL); color:var(--ok); border-color:transparent }
+.mchip.r{ background:var(--bdL); color:var(--bd); border-color:transparent }
+.vc-rx{ margin-top:9px; padding:9px 11px; border-radius:12px; font-size:12.5px; font-weight:600;
+  background:color-mix(in srgb,var(--blob2) 18%,transparent); border:1px solid var(--edge); direction:ltr; text-align:left }
+.vc-note{ margin-top:8px; font-size:12.5px; color:var(--ink2); font-weight:600 }
+
+/* بطاقة سنّ */
+.tc{ padding:14px; border-radius:18px; background:var(--glass); border:1px solid var(--stroke); box-shadow:var(--sh);
+  margin-top:10px; cursor:pointer; transition:transform .18s, box-shadow .2s }
+.tc:hover{ transform:translateY(-2px); box-shadow:var(--shL), var(--cglow) }
+.tc-big{ width:52px; height:52px; border-radius:16px; display:grid; place-items:center; flex-shrink:0; color:#fff;
+  font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:16px }
+.steps{ display:flex; gap:5px; margin-top:10px }
+.steps i{ flex:1; height:8px; border-radius:99px; background:color-mix(in srgb,var(--ink) 9%,transparent) }
+.steps i.on{ background:var(--c, var(--br)); box-shadow:0 0 10px -2px var(--c, var(--br)) }
+.ses{ display:flex; align-items:center; gap:8px; padding:7px 0; font-size:13px; border-bottom:1px dashed var(--edge) }
+.ses:last-child{ border-bottom:none }
+.ses .n{ width:26px; height:26px; border-radius:9px; display:grid; place-items:center; font-weight:800; font-size:12px;
+  background:var(--brL); color:var(--br); flex-shrink:0 }
+@media (max-width:560px){ .pf-money{ gap:6px } .pf-m .v{ font-size:16px } .pf-name{ font-size:21px } }
 </style>
 </head>
 <body>
@@ -2560,6 +2669,204 @@ const C39 = {
     return c.toDataURL('image/png');
   },
 };
+/*═══════════════ رمز QR ═══════════════
+  مُرمِّز QR قياسي (ISO/IEC 18004) بلا مكتبة خارجية — سياسة الأمن
+  في البرنامج تمنع تحميل أي سكربت من خارجه. وضع البايت، مستوى
+  تصحيح M (يتحمّل تلف ~15٪ من الملصق)، الإصدارات ١–١٠، واختيار
+  القناع الأقل عقوبة كما ينصّ المعيار.
+═════════════════════════════════════*/
+const QR = (() => {
+  const ECC = [-1,10,16,26,18,24,16,18,22,22,26];   /* M: بايتات التصحيح لكل كتلة */
+  const BLK = [-1, 1, 1, 1, 2, 2, 4, 4, 4, 5, 5];   /* M: عدد الكتل */
+
+  const raw = v => { let r = (16*v + 128)*v + 64;
+    if (v >= 2){ const n = Math.floor(v/7) + 2; r -= (25*n - 10)*n - 55; if (v >= 7) r -= 36; }
+    return r; };
+  const dataCw = v => Math.floor(raw(v)/8) - ECC[v]*BLK[v];
+  const bit = (x, i) => ((x >>> i) & 1) !== 0;
+
+  const mul = (x, y) => { let z = 0;
+    for (let i = 7; i >= 0; i--){ z = (z << 1) ^ ((z >>> 7) * 0x11D); z ^= ((y >>> i) & 1) * x; }
+    return z; };
+  const divisor = d => { const r = new Array(d).fill(0); r[d-1] = 1; let root = 1;
+    for (let i = 0; i < d; i++){
+      for (let j = 0; j < r.length; j++){ r[j] = mul(r[j], root); if (j + 1 < r.length) r[j] ^= r[j+1]; }
+      root = mul(root, 2);
+    }
+    return r; };
+  const remainder = (data, div) => { const r = div.map(() => 0);
+    for (const b of data){ const f = b ^ r.shift(); r.push(0); div.forEach((c, i) => r[i] ^= mul(c, f)); }
+    return r; };
+
+  function encode(text){
+    const bytes = [...new TextEncoder().encode(String(text))];
+    let ver = 1;
+    for (; ver <= 10; ver++){
+      const cc = ver < 10 ? 8 : 16;
+      if (4 + cc + bytes.length*8 <= dataCw(ver)*8) break;
+    }
+    if (ver > 10) throw new Error('qr_too_long');
+    const cc = ver < 10 ? 8 : 16;
+
+    /* البتات: الوضع، الطول، البيانات، ثم الإنهاء والحشو */
+    const bb = [];
+    const put = (v, n) => { for (let i = n - 1; i >= 0; i--) bb.push((v >>> i) & 1); };
+    put(4, 4); put(bytes.length, cc); bytes.forEach(b => put(b, 8));
+    const cap = dataCw(ver) * 8;
+    put(0, Math.min(4, cap - bb.length));
+    put(0, (8 - bb.length % 8) % 8);
+    for (let p = 0xEC; bb.length < cap; p ^= 0xEC ^ 0x11) put(p, 8);
+    const data = [];
+    for (let i = 0; i < bb.length; i += 8){ let v = 0; for (let j = 0; j < 8; j++) v = (v << 1) | bb[i+j]; data.push(v); }
+
+    /* التصحيح والتشبيك بين الكتل */
+    const nb = BLK[ver], be = ECC[ver], rawCw = Math.floor(raw(ver)/8);
+    const nShort = nb - rawCw % nb, shortLen = Math.floor(rawCw / nb), div = divisor(be);
+    const blocks = []; let k = 0;
+    for (let i = 0; i < nb; i++){
+      const d = data.slice(k, k + shortLen - be + (i < nShort ? 0 : 1)); k += d.length;
+      const e = remainder(d, div);
+      if (i < nShort) d.push(0);
+      blocks.push(d.concat(e));
+    }
+    const cw = [];
+    for (let i = 0; i < blocks[0].length; i++)
+      for (let j = 0; j < blocks.length; j++)
+        if (i !== shortLen - be || j >= nShort) cw.push(blocks[j][i]);
+
+    /* المصفوفة */
+    const n = ver*4 + 17;
+    const M = Array.from({length:n}, () => new Array(n).fill(false));
+    const F = Array.from({length:n}, () => new Array(n).fill(false));
+    const setF = (x, y, d) => { M[y][x] = d; F[y][x] = true; };
+
+    for (let i = 0; i < n; i++){ setF(6, i, i % 2 === 0); setF(i, 6, i % 2 === 0); }
+    const finder = (x, y) => {
+      for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++){
+        const d = Math.max(Math.abs(dx), Math.abs(dy)), xx = x + dx, yy = y + dy;
+        if (xx >= 0 && xx < n && yy >= 0 && yy < n) setF(xx, yy, d !== 2 && d !== 4);
+      }
+    };
+    finder(3, 3); finder(n - 4, 3); finder(3, n - 4);
+
+    if (ver > 1){
+      const na = Math.floor(ver/7) + 2;
+      const step = Math.ceil((ver*4 + 4) / (na*2 - 2)) * 2;
+      const pos = [6];
+      for (let p = n - 7; pos.length < na; p -= step) pos.splice(1, 0, p);
+      for (let i = 0; i < na; i++) for (let j = 0; j < na; j++){
+        if ((i === 0 && j === 0) || (i === 0 && j === na - 1) || (i === na - 1 && j === 0)) continue;
+        for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++)
+          setF(pos[i] + dx, pos[j] + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+      }
+    }
+
+    const format = mask => {
+      const d = (0 << 3) | mask;              /* M = 00 */
+      let r = d; for (let i = 0; i < 10; i++) r = (r << 1) ^ ((r >>> 9) * 0x537);
+      const b = ((d << 10) | r) ^ 0x5412;
+      for (let i = 0; i <= 5; i++) setF(8, i, bit(b, i));
+      setF(8, 7, bit(b, 6)); setF(8, 8, bit(b, 7)); setF(7, 8, bit(b, 8));
+      for (let i = 9; i < 15; i++) setF(14 - i, 8, bit(b, i));
+      for (let i = 0; i < 8; i++) setF(n - 1 - i, 8, bit(b, i));
+      for (let i = 8; i < 15; i++) setF(8, n - 15 + i, bit(b, i));
+      setF(8, n - 8, true);
+    };
+    format(0);
+    if (ver >= 7){
+      let r = ver; for (let i = 0; i < 12; i++) r = (r << 1) ^ ((r >>> 11) * 0x1F25);
+      const b = (ver << 12) | r;
+      for (let i = 0; i < 18; i++){
+        const v = bit(b, i), a = n - 11 + i % 3, c = Math.floor(i / 3);
+        setF(a, c, v); setF(c, a, v);
+      }
+    }
+
+    let i = 0;
+    for (let right = n - 1; right >= 1; right -= 2){
+      if (right === 6) right = 5;
+      for (let v = 0; v < n; v++) for (let j = 0; j < 2; j++){
+        const x = right - j, up = ((right + 1) & 2) === 0, y = up ? n - 1 - v : v;
+        if (!F[y][x] && i < cw.length*8){ M[y][x] = bit(cw[i >>> 3], 7 - (i & 7)); i++; }
+      }
+    }
+
+    const MASKS = [
+      (x,y) => (x+y)%2===0, (x,y) => y%2===0, (x,y) => x%3===0, (x,y) => (x+y)%3===0,
+      (x,y) => (Math.floor(x/3)+Math.floor(y/2))%2===0, (x,y) => x*y%2 + x*y%3 === 0,
+      (x,y) => (x*y%2 + x*y%3)%2===0, (x,y) => ((x+y)%2 + x*y%3)%2===0 ];
+    const apply = m => { for (let y = 0; y < n; y++) for (let x = 0; x < n; x++)
+      if (!F[y][x] && MASKS[m](x, y)) M[y][x] = !M[y][x]; };
+
+    const penalty = () => {
+      let p = 0, dark = 0;
+      const line = get => {
+        let run = 1;
+        for (let a = 1; a < n; a++){
+          if (get(a) === get(a-1)){ run++; if (run === 5) p += 3; else if (run > 5) p++; }
+          else run = 1;
+        }
+        for (let a = 0; a + 10 < n; a++){
+          const s = []; for (let t = 0; t < 11; t++) s.push(get(a+t) ? 1 : 0);
+          const q = s.join('');
+          if (q === '10111010000' || q === '00001011101') p += 40;
+        }
+      };
+      for (let y = 0; y < n; y++) line(x => M[y][x]);
+      for (let x = 0; x < n; x++) line(y => M[y][x]);
+      for (let y = 0; y < n - 1; y++) for (let x = 0; x < n - 1; x++){
+        const c = M[y][x];
+        if (c === M[y][x+1] && c === M[y+1][x] && c === M[y+1][x+1]) p += 3;
+      }
+      for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (M[y][x]) dark++;
+      const tot = n*n;
+      p += (Math.ceil(Math.abs(dark*20 - tot*10) / tot) - 1) * 10;
+      return p;
+    };
+
+    let best = 0, low = Infinity;
+    for (let m = 0; m < 8; m++){
+      apply(m); format(m);
+      const s = penalty();
+      if (s < low){ low = s; best = m; }
+      apply(m);
+    }
+    apply(best); format(best);
+    return M;
+  }
+
+  /* SVG مربّع بهامش هادئ ٤ وحدات — شرط القراءة الموثوقة */
+  function svg(text, px){
+    const M = encode(text), n = M.length, q = 4, s = n + q*2;
+    let d = '';
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++)
+      if (M[y][x]) d += `M${x+q} ${y+q}h1v1h-1z`;
+    return `<svg viewBox="0 0 ${s} ${s}" shape-rendering="crispEdges"
+      style="width:${px ? px + 'px' : '100%'};height:auto;aspect-ratio:1;display:block;background:#fff">
+      <rect width="${s}" height="${s}" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
+  }
+
+  /* صورة PNG للتنزيل والطباعة */
+  function png(text, title, sub){
+    const M = encode(text), n = M.length, q = 4, sc = 14;
+    const side = (n + q*2) * sc, head = title ? 70 : 0, foot = 64 + (sub ? 34 : 0);
+    const c = document.createElement('canvas');
+    c.width = side; c.height = side + head + foot;
+    const g = c.getContext('2d');
+    g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+    g.fillStyle = '#000'; g.textAlign = 'center';
+    if (title){ g.font = 'bold 38px Zain, system-ui, sans-serif'; g.fillText(String(title), side/2, 50, side - 40); }
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++)
+      if (M[y][x]) g.fillRect((x+q)*sc, head + (y+q)*sc, sc, sc);
+    g.font = 'bold 40px monospace';
+    g.fillText(String(text), side/2, head + side + 44);
+    if (sub){ g.font = '600 24px Zain, system-ui, sans-serif'; g.fillText(String(sub), side/2, head + side + 84, side - 40); }
+    return c.toDataURL('image/png');
+  }
+
+  return { encode, svg, png };
+})();
+
 /*═══════════════ الدخول ═══════════════*/
 const ROLES = [
   {r:'doctor',    ic:'🦷', col:'br'},
@@ -5174,188 +5481,212 @@ const Sec = {
   },
 
   /*──── ملف المراجع — تخطيط مضغوط بلا فراغات ────*/
+  /*════════ ملف المراجع ════════
+    صفحة واحدة تجيب عن أسئلة العمل اليومية بلا بحث:
+    · من هذا المراجع، وهل عنده ما يجب الحذر منه؟
+    · كم عليه، وكم دفع، وكم بقي؟
+    · ماذا جرى في كل زيارة — بالتاريخ — وأين وصل علاج كل سن؟
+    ثلاثة أزرار للعمل الحاضر، وما سواها في قائمة «المزيد». */
+  fView:'date',
+
   async file(pid){
     const sh = UI.sheet(UI.spin());
     const p = await DB.get('patients', pid); if (!p) return;
     S.patient = p;
 
-    const L  = await Ops.ledger(pid);
-    const files = await Ops.toothFiles(pid);
-    /* مواعيد مضت ولم يحضر فيها — تُعرض في ملفه لا في قائمة المواعيد */
-    const missed = (await DB.by('appts','pid',pid))
-      .filter(a => a.st === 'missed')
-      .sort((a,b) => String(b.day).localeCompare(String(a.day)));
-    const vs = (await DB.by('visits','pid',pid)).sort((a,b)=>(b.at||0)-(a.at||0));
-    const needAppt  = vs.filter(v => v.needAppt);
-    const nextAppts = await Appt.forPatient(pid);
+    const [visits, works, pays, rxs, teethRecs, files, next] = await Promise.all([
+      DB.by('visits','pid',pid), DB.by('works','pid',pid), DB.by('payments','pid',pid),
+      DB.by('rx','pid',pid), DB.by('tooth','pid',pid), Ops.toothFiles(pid), Appt.forPatient(pid),
+    ]);
+    visits.sort((x,y) => (y.at||0) - (x.at||0));
+    const missed = (await DB.by('appts','pid',pid)).filter(a => a.st === 'missed')
+      .sort((x,y) => String(y.day).localeCompare(String(x.day)));
+
+    const total = works.reduce((t,w) => t + Number(w.price||0), 0);
+    const paid  = pays.reduce((t,x) => t + Number(x.amt||0), 0);
+    const due   = total - paid;
+    const pct   = total ? Math.min(100, Math.round(paid/total*100)) : (paid ? 100 : 0);
+    const open  = visits.find(v => v.st === 'open');
     const alerts = MH.alerts(p.mh);
 
-    /* الجلسات */
-    const visitRows = [];
-    for (const v of vs){
-      const tt = await Ops.visitTotals(v.id);
-      const teeth = [...new Set(tt.works.map(w=>Number(w.fdi)).filter(Boolean))];
-      visitRows.push(`
-        <div class="it" onclick="Nav.session('${v.id}')">
-          <div class="av ${v.st==='open'?'':'g'}">${v.no}</div>
-          <div class="gr">
-            <div class="row" style="gap:6px">
-              <span class="mono" style="font-weight:700">${fmtD(v.date)}</span>
-              ${v.st==='open'?`<span class="pill b">${T('openSession')}</span>`:''}
-              ${v.needAppt?`<span class="pill w">${T('needAppt')}</span>`:''}
-            </div>
-            <div class="row wrapv" style="gap:4px;margin-top:4px">
-              ${teeth.map(f=>`<span class="pill n mono" style="font-size:10.5px;padding:2px 7px">
-                ${Chart.lbl(f)}</span>`).join('') || `<span class="tiny">—</span>`}
-            </div>
-          </div>
-          <div style="text-align:end">
-            <div class="mono" style="font-weight:700;color:var(--ok)">${N(tt.paid)}</div>
-            <div class="tiny">${tt.works.length} ${T('workCount')}</div>
-          </div>
-        </div>`);
-    }
+    /* عدد جلسات الخطة لكل سن وسلسلة — ليُكتب «جلسة ٢ من ٣» */
+    const planned = {};
+    for (const t of teethRecs) for (const [c, pl] of Object.entries(t.plans || {}))
+      planned[t.fdi + '-' + c] = (pl && pl.sessions) || 0;
+    const sesLbl = w => {
+      const ns = (w.sessionNos || []).map(Number).sort((x,y) => x-y);
+      if (!ns.length) return '';
+      const of = planned[Number(w.fdi) + '-' + (w.course||1)];
+      return (ns.length > 1 ? `${T('mergedS')} ${ns.join('+')}` : `${T('sessionN')} ${ns[0]}`) + (of ? ` ${T('ofN')} ${of}` : '');
+    };
 
-    sh.innerHTML = `
-      <div class="shhead">
-        <div class="av">${esc(nm(p).charAt(0))}</div>
+    const dt = d => { const x = new Date((d||'') + 'T00:00:00');
+      return isNaN(x) ? { d:'—', m:'', y:'' } : { d:x.getDate(),
+        m:x.toLocaleDateString(isAr()?'ar-IQ':'en-GB', { month:'short' }), y:x.getFullYear() }; };
+
+    /*──── الزيارات حسب التاريخ ────*/
+    const byDate = visits.map(v => {
+      const vw = works.filter(w => w.vid === v.id).sort((x,y) => (x.at||0) - (y.at||0));
+      const vp = pays.filter(x => x.vid === v.id).reduce((t,x) => t + Number(x.amt||0), 0);
+      const vt = vw.reduce((t,w) => t + Number(w.price||0), 0);
+      const vr = rxs.filter(r => r.vid === v.id);
+      const D = dt(v.date);
+      return `<div class="vc ${v.st==='open'?'open':''}" onclick="Nav.session('${v.id}')" style="cursor:pointer">
+        <div class="vc-date"><div class="d">${D.d}</div><div class="m">${esc(D.m)}</div><div class="y">${D.y}</div></div>
         <div class="gr">
-          <div class="h2">${esc(nm(p))}</div>
-          <div class="mono tiny">${p.age||'—'} ${T('yrs')} ·
-            ${p.gender==='female'?T('female'):T('male')} ·
-            ${T('file')} ${esc(p.mrn||'')} · ${esc(p.phone||'')}</div>
+          <div class="row" style="gap:7px;flex-wrap:wrap">
+            <div class="h3">${T('visit')} ${v.no||''}</div>
+            ${v.st==='open' ? `<span class="pill b"><span class="dotlive"></span> ${T('openSession')}</span>`
+                            : `<span class="pill g">✓ ${T('done')}</span>`}
+            ${v.needAppt ? `<span class="pill w">${T('needAppt')}</span>` : ''}
+          </div>
+          ${vw.length ? `<div class="mt">${vw.map(w => `
+            <div class="vc-row">
+              <span class="tbadge" style="background:${P(w.proc).col}">${w.fdi ? Chart.lbl(w.fdi) : '—'}</span>
+              <div class="gr"><div style="font-weight:700" class="ell">${esc(pName(w.proc))}</div>
+                ${sesLbl(w) ? `<div class="tiny">${esc(sesLbl(w))}</div>` : ''}</div>
+              <span class="mono" style="font-weight:800">${N(w.price)}</span>
+            </div>`).join('')}</div>`
+            : `<div class="tiny mt">${T('noToothWork')}</div>`}
+          ${vr.length ? `<div class="vc-rx">℞ ${vr.flatMap(r => r.items || []).map(i => esc(i.drug)).join(' · ')}</div>` : ''}
+          ${v.done ? `<div class="vc-note ell">✎ ${esc(v.done)}</div>` : ''}
+          <div class="vc-sum">
+            <span class="mchip">${T('total')} <b>${N(vt)}</b></span>
+            <span class="mchip g">${T('paid')} <b>${N(vp)}</b></span>
+            ${vt - vp > 0 ? `<span class="mchip r">${T('due')} <b>${N(vt - vp)}</b></span>` : ''}
+          </div>
         </div>
-        <button class="ib" onclick="Nav.back()">✕</button>
-      </div>
+      </div>`;
+    }).join('');
 
-      <div class="card">
-        <div class="g3">
-          <div class="ctr"><div class="tiny">${T('grandTotal')}</div>
-            <div class="mono h2" style="color:var(--ok)">${N(L.allPaid)}</div></div>
-          <div class="ctr"><div class="tiny">${T('visitsCount')}</div>
-            <div class="mono h2">${L.visitCount}</div></div>
-          <div class="ctr"><div class="tiny">${T('teethTreated')}</div>
-            <div class="mono h2">${L.toothCount}</div></div>
+    /*──── العلاج حسب السن ────*/
+    const byTooth = files.map(f => {
+      const col = f.plan ? P(f.plan.proc).col : (f.works[0] ? P(f.works[0].proc).col : 'var(--br)');
+      const procName = f.plan ? pName(f.plan.proc) : (f.works[0] ? pName(f.works[0].proc) : '—');
+      const total_ = f.planned || 0, done_ = f.doneNums.length;
+      const left = Math.max(0, total_ - done_);
+      const dueT = f.total - f.paid;
+      const st = f.complete
+        ? `<span class="pill g">✓ ${T('completed')}</span>`
+        : `<span class="pill w">${T('inProgress')}${left ? ` · ${T('remaining')} ${left}` : ''}</span>`;
+      return `<div class="tc" onclick="Doc.openToothFile('${pid}',${f.fdi},${f.course})">
+        <div class="row">
+          <div class="tc-big" style="background:${col};box-shadow:0 10px 20px -10px ${col}">${Chart.lbl(f.fdi)}</div>
+          <div class="gr">
+            <div class="row" style="gap:6px;flex-wrap:wrap"><div class="h3">${esc(procName)}</div>${st}</div>
+            <div class="tiny">${T('tooth')} ${Chart.lbl(f.fdi)} · FDI ${f.fdi}${total_ ? ` · ${done_} ${T('ofN')} ${total_} ${T('toothVisits')}` : ''}</div>
+          </div>
         </div>
-      </div>
-
-      ${alerts.length?`<div class="card">
-        <div class="lbl">${T('alerts')}</div>
-        <div class="col mt">${alerts.map(x=>`
-          <div class="al ${x.risk===2?'r':'w'}"><span>${x.risk===2?'⚠':'!'}</span>
-          <span>${esc(x.txt)}${x.d?` — <b>${esc(x.d)}</b>`:''}</span></div>`).join('')}</div>
-      </div>`:''}
-
-      ${needAppt.length?`<div class="al w mt">
-        <span>!</span><span>${T('needAppt')} — ${T('bySec')}</span></div>`:''}
-
-      <div class="card">
-        <div class="lbl">${T('sessionActions')}</div>
-        <div class="g2 mt">
-          <button class="btn" onclick="Sec.start('${pid}')">＋ ${T('newVisit')}</button>
-          <button class="btn sf" onclick="Sec.pay('${pid}')">₪ ${T('pay')}</button>
-          <button class="btn gh" onclick="Sec.apptNew('${pid}')">📅 ${T('newAppt')}</button>
-          <button class="btn gh" onclick="Sec.newPt(S.patient)">✎ ${T('editPt')}</button>
-          <button class="btn gh" onclick="Sec.showMH('${pid}')">♡ ${T('healthInfo')}</button>
-          <button class="btn gh" onclick="Money.ptVisits('${pid}')">₪ ${T('perTooth')}</button>
+        ${total_ ? `<div class="steps" style="--c:${col}">${Array.from({length:total_}, (_,i) =>
+            `<i class="${f.complete || f.doneNums.includes(i+1) ? 'on' : ''}"></i>`).join('')}</div>` : ''}
+        ${f.works.length ? `<div class="mt">${f.works.slice().sort((x,y) => (x.at||0)-(y.at||0)).map(w => `
+          <div class="ses"><span class="n">${(w.sessionNos||[]).join('+') || '•'}</span>
+            <span class="gr mono">${fmtD(w.at)}</span>
+            <span class="mono" style="font-weight:800">${N(w.price)}</span></div>`).join('')}</div>` : ''}
+        <div class="vc-sum">
+          <span class="mchip">${T('total')} <b>${N(f.total)}</b></span>
+          <span class="mchip g">${T('paid')} <b>${N(f.paid)}</b></span>
+          ${dueT > 0 ? `<span class="mchip r">${T('due')} <b>${N(dueT)}</b></span>` : ''}
         </div>
-        ${Perm.chart()?`<button class="btn w gh mt" onclick="Doc.open('${pid}')">
-          🦷 ${T('toothChart')}</button>`:''}
-      </div>
+      </div>`;
+    }).join('');
 
-      ${nextAppts.length?`<div class="card">
-        <div class="lbl">${T('nextVisits')}</div>
-        <div class="col mt">${nextAppts.map(a=>{
-          const dn = new Date(a.day+'T00:00:00')
-            .toLocaleDateString(isAr()?'ar-IQ':'en-GB',{weekday:'long'});
-          return `<div class="it" style="cursor:default;border-color:var(--br)">
-            <div class="av">📅</div>
-            <div class="gr"><div class="h3">${esc(dn)}</div>
-              <div class="mono tiny">${fmtD(a.day)} — ${esc(a.time||'')}</div></div>
-            <button class="btn xs gh" onclick="Appt.cancel('${a.id}')">✕</button>
-          </div>`;}).join('')}</div>
-      </div>`:''}
-
-      <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <div class="lbl">${T('teethFiles')}</div><span class="pill n">${files.length}</span>
-        </div>
-        <div class="col mt">${files.length ? files.map(f=>{
-          const total = f.plan?.sessions || 0;
-          const done  = f.doneNums.length;
-          /* المختوم مكتمل مهما كان عدد جلساته المنفّذة */
-          const full  = f.complete;
-          const early = f.sealed && total && done < total;
-          /* غير المكتمل يومض: جلساته لم تكتمل حسب الخطة */
-          return `
-          <div class="it ${full?'':'live'}"
-               onclick="Doc.openToothFile('${pid}',${f.fdi},${f.course})">
-            <div class="av mono ${full?'g':'w'}" style="${f.plan?`background:${P(f.plan.proc).col}22;
-              color:${P(f.plan.proc).col}`:''}">${Chart.lbl(f.fdi)}</div>
-            <div class="gr">
-              <div class="row" style="gap:6px">
-                <span class="h3">${T('tooth')} ${Chart.lbl(f.fdi)}</span>
-                <span class="pill ${full?'g':'w'}">
-                  ${full?`✓ ${T('completed')}`:T('inProgress')}</span>
-              </div>
-              <div class="tiny ell">${f.plan?esc(pName(f.plan.proc)):'—'}
-                ${total?` · ${done}/${total} ${T('toothVisits')}`:''}</div>
-              ${early?`<div class="tiny" style="color:var(--wr)">${T('sealedEarly')}</div>`:''}
-              ${total?`<div class="track" style="height:6px;margin-top:5px">
-                <i style="width:${full?100:Math.min(100,Math.round(done/total*100))}%;
-                  background:${full?'var(--ok)':P(f.plan.proc).col}"></i>
-              </div>`:''}
+    const nx = next[0];
+    sh.innerHTML = `
+      <div class="pf-hero">
+        <div class="row" style="align-items:flex-start">
+          <div class="pf-av">${esc(nm(p).charAt(0))}</div>
+          <div class="gr">
+            <div class="pf-name">${esc(nm(p))}</div>
+            <div class="pf-chips">
+              <span class="pf-chip">${p.age||'—'} ${T('yrs')}</span>
+              <span class="pf-chip">${p.gender==='female'?T('female'):T('male')}</span>
+              ${p.phone ? `<a class="pf-chip mono" href="tel:${esc(String(p.phone).replace(/[^\d+]/g,''))}">📞 ${esc(p.phone)}</a>` : ''}
+              <span class="pf-chip mono">${T('file')} ${esc(p.mrn||'')}</span>
+              ${p.bc ? `<span class="pf-chip mono">▮▮ ${esc(p.bc)}</span>` : ''}
             </div>
-            <div style="text-align:end">
-              <div class="mono" style="font-weight:700;color:var(--ok)">${N(f.paid)}</div>
-              <div class="tiny">${f.last?fmtD(f.last):''}</div>
-            </div>
-          </div>`;}).join('') : `<div class="emp">${T('noLedger')}</div>`}</div>
+          </div>
+          <div class="pf-more">
+            <button class="pf-x" onclick="Sec.pfMenu(event)" title="${T('ptOptions')}">⋯</button>
+          </div>
+          <button class="pf-x" onclick="Nav.back()">✕</button>
+        </div>
+
+        <div class="pf-money">
+          <div class="pf-m"><div class="k">${T('grandTotal')}</div><div class="v">${N(total)}</div></div>
+          <div class="pf-m ok"><div class="k">${T('paid')}</div><div class="v">${N(paid)}</div></div>
+          <div class="pf-m ${due>0?'due':'ok'}"><div class="k">${T('due')}</div><div class="v">${N(Math.max(0,due))}</div></div>
+        </div>
+        <div class="pf-bar"><i style="width:${pct}%"></i></div>
+
+        ${alerts.length ? `<div class="pf-alerts">${alerts.map(x => `<span class="pf-al ${x.risk===2?'r':'w'}"
+          >${x.risk===2?'⚠':'!'} ${esc(x.txt.split('—')[0].trim())}${x.d?` · ${esc(x.d)}`:''}</span>`).join('')}</div>` : ''}
       </div>
 
-      <details class="acc">
-        <summary><span class="accic">📅</span>
-          <span class="gr">${T('allVisits')}</span>
-          <span class="pill n">${vs.length}</span>
-          <span class="ar">${isAr()?'‹':'›'}</span></summary>
-        <div class="bd"><div class="col">
-          ${visitRows.join('') || `<div class="emp">${T('noVisits')}</div>`}</div></div>
-      </details>
+      <div class="pf-acts">
+        ${open
+          ? `<button class="pf-act live" onclick="Nav.session('${open.id}')"><span class="i">▶</span>
+               ${T('currentSession')}<span class="s">${fmtD(open.date)}</span></button>`
+          : `<button class="pf-act" onclick="Sec.start('${pid}')"><span class="i">＋</span>
+               ${T('newVisit')}<span class="s">${T('visitsCount')}: ${visits.length}</span></button>`}
+        <button class="pf-act pay" onclick="Sec.pay('${pid}'${open?`,'${open.id}'`:''})"><span class="i">₪</span>
+          ${T('pay')}<span class="s">${due>0 ? `${T('due')} ${N(due)}` : '✓'}</span></button>
+        <button class="pf-act ap" onclick="Sec.apptNew('${pid}')"><span class="i">📅</span>
+          ${T('newAppt')}<span class="s">${nx ? `${fmtD(nx.day)} ${esc(nx.time||'')}` : T('noNext')}</span></button>
+      </div>
+
+      ${visits.some(v => v.needAppt) ? `<div class="al w mt"><span>!</span><span>${T('needAppt')} — ${T('bySec')}</span></div>` : ''}
+
+      <div class="pf-tabs">
+        <button id="pft-date" class="${this.fView==='date'?'on':''}" onclick="Sec.pfTab('date')">
+          📅 ${T('allVisits')}<span class="n">${visits.length}</span></button>
+        <button id="pft-tooth" class="${this.fView==='tooth'?'on':''}" onclick="Sec.pfTab('tooth')">
+          🦷 ${T('teethFiles')}<span class="n">${files.length}</span></button>
+      </div>
+      <div id="pf-date" class="${this.fView==='date'?'':'hide'}">${byDate || `<div class="emp mt">${T('noVisits')}</div>`}</div>
+      <div id="pf-tooth" class="${this.fView==='tooth'?'':'hide'}">${byTooth || `<div class="emp mt">${T('noLedger')}</div>`}</div>
 
       ${missed.length ? `<details class="acc mt2">
-        <summary>
-          <span class="accic">⚠</span>
-          <span class="gr">${T('missedTitle')}</span>
-          <span class="pill w">${missed.length}</span>
-          <span class="ar">${isAr()?'‹':'›'}</span>
-        </summary>
-        <div class="bd">
-          <div class="tiny" style="color:var(--ink3)">${T('missedHint')}</div>
-          <div class="col mt">${missed.map(a=>`
-            <div class="it" style="cursor:default">
-              <div class="av w">⚠</div>
-              <div class="gr">
-                <div class="h3 mono">${fmtD(a.day)} — ${esc(a.time||'')}</div>
-                <div class="tiny">${esc(a.note||T('missedOne'))}</div>
-              </div>
-            </div>`).join('')}</div>
-        </div>
+        <summary><span class="accic">⚠</span><span class="gr">${T('missedTitle')}</span>
+          <span class="pill w">${missed.length}</span><span class="ar">${isAr()?'‹':'›'}</span></summary>
+        <div class="bd"><div class="col">${missed.map(a => `<div class="it" style="cursor:default">
+          <div class="av w">⚠</div><div class="gr"><div class="h3 mono">${fmtD(a.day)} — ${esc(a.time||'')}</div>
+          <div class="tiny">${esc(a.note||T('missedOne'))}</div></div></div>`).join('')}</div></div>
       </details>` : ''}
+      <div style="height:20px"></div>`;
+  },
 
-      <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <div>
-            <div class="lbl">${T('ptCode')}</div>
-            <div class="mono h2" style="letter-spacing:.1em">${esc(p.bc||'—')}</div>
-          </div>
-          ${p.bc?`<button class="btn gh sm" onclick="Sec.ptCode('${pid}')">
-            ▮▮ ${T('showCode')}</button>`:''}
-        </div>
-      </div>
+  pfTab(v){
+    this.fView = v;
+    $('#pf-date')?.classList.toggle('hide', v !== 'date');
+    $('#pf-tooth')?.classList.toggle('hide', v !== 'tooth');
+    $('#pft-date')?.classList.toggle('on', v === 'date');
+    $('#pft-tooth')?.classList.toggle('on', v === 'tooth');
+  },
 
-      ${S.role==='doctor'?`<button class="btn w dg mt2"
-        onclick="Del.patient('${pid}')">${T('delPt')}</button>`:''}
-      <button class="btn w gh mt2" onclick="Nav.back()">${T('close')}</button>`;
+  /* القائمة الثانوية — كل ما لا يُحتاج في كل زيارة */
+  pfMenu(e){
+    e.stopPropagation();
+    const btn = e.currentTarget, old = document.querySelector('.pf-menu');
+    if (old){ old.remove(); if (old._btn === btn) return; }
+    const pid = S.patient?.id; if (!pid) return;
+    const m = el(`<div class="pf-menu">
+      <button onclick="Sec.newPt(S.patient)">✎ ${T('editPt')}</button>
+      <button onclick="Sec.showMH('${pid}')">♡ ${T('healthInfo')}</button>
+      ${Perm.chart() ? `<button onclick="Doc.open('${pid}')">🦷 ${T('toothChart')}</button>` : ''}
+      <button onclick="Money.ptVisits('${pid}')">₪ ${T('perTooth')}</button>
+      ${S.patient.bc ? `<button onclick="Sec.ptCode('${pid}')">▮▮ ${T('ptCode')}</button>` : ''}
+      ${S.role==='doctor' ? `<hr><button class="dg" onclick="Del.patient('${pid}')">🗑 ${T('delPt')}</button>` : ''}
+    </div>`);
+    m._btn = btn;
+    const r = btn.getBoundingClientRect();
+    m.style.top = (r.bottom + 6) + 'px';
+    m.style.left = Math.min(innerWidth - 236, Math.max(8, r.left)) + 'px';
+    document.body.appendChild(m);
+    m.addEventListener('click', () => m.remove());
+    setTimeout(() => document.addEventListener('click', function off(ev){
+      if (!m.contains(ev.target)){ m.remove(); document.removeEventListener('click', off); }
+    }), 0);
   },
 
   async showMH(pid){
@@ -9513,18 +9844,17 @@ const Cfg = {
     const own = S.role === 'owner', doc = S.role === 'doctor', mg = Perm.manage() && Sync.on();
     $('#view').innerHTML =
         (own ? `<div class="al i" style="margin-bottom:6px"><span>★</span><span>${T('ownerData')}</span></div>` : '')
-      + (doc && Sync.on() ? this.acc('pf','🪪', T('secProfile'), this.profileBox(), true) : '')
+      + (doc && Sync.on() ? this.acc('pf','🪪', T('secProfile'), this.profileBox()) : '')
       + (doc && Sync.on() ? this.acc('tm','🤝', T('secTeam'), this.teamBox()) : '')
-      + (mg ? this.acc('br','✨', T('secBrand'), this.brandBox(), own) : '')
-      + (mg ? this.acc('st','👥', T('secStaff'), this.staffBox(), own) : '')
+      + (mg ? this.acc('br','✨', T('secBrand'), this.brandBox()) : '')
+      + (mg ? this.acc('st','👥', T('secStaff'), this.staffBox()) : '')
       + (S.role !== 'pharmacy' && (Cloud.me?.code || Brand.get().code)
           ? this.acc('cc','▮▮', T('secCode'), this.codeBox()) : '')
       + this.acc('g','🏥', T('secGeneral'), general)
       + (own ? '' : this.acc('p','🖨', T('secPrint'),   print))
-      + this.acc('l','🎨', T('secLook'),    look)
+      + this.acc('l','🎨', T('secLook'),    skin + '<div class="sep"></div>' + look)
       + (Sync.on() ? this.acc('sy','🔄', T('syncSection'), sync) : '')
       + this.acc('cl','☁', T('cloudSection'), cloud)
-      + this.acc('sk','🎨', T('secSkin'), skin)
       + ((doc || own) ? this.acc('s','🛡', T('secSafety'), safety) : '')
       + (S.role==='doctor' ? this.acc('r','🔐', T('secPerm'), perm) : '')
       + (S.role==='doctor' ? this.acc('t','🦷', T('toothStatuses'), statuses) : '')
@@ -9614,7 +9944,7 @@ const Cfg = {
       <div class="tiny">${T('codeHint')}</div>
       <div class="clcode mt">
         <div class="clcode-nm">${esc(nmx)}</div>
-        ${C39.svg(code, 78)}
+        <div class="clcode-qr">${QR.svg(code)}</div>
         <div class="clcode-num">${esc(code)}</div>
       </div>
       <div class="row mt" style="gap:8px">
@@ -9630,7 +9960,7 @@ const Cfg = {
     Print.win(`<div style="text-align:center;padding-top:18mm">
         ${b.logo?`<img src="${b.logo}" style="max-width:38mm;max-height:38mm;object-fit:contain">`:''}
         <div style="font-size:26px;font-weight:800;margin:10px 0 16px">${esc(nmx)}</div>
-        <div style="padding:0 6mm">${C39.svg(code, 120)}</div>
+        <div style="width:78mm;margin:0 auto">${QR.svg(code)}</div>
         <div style="font-family:monospace;font-size:24px;font-weight:800;letter-spacing:.28em;margin-top:8px">${esc(code)}</div>
         <div style="font-size:14px;margin-top:18px;color:#333">${esc(T('codeHint'))}</div>
       </div>`, code, 'a5');
@@ -9640,7 +9970,7 @@ const Cfg = {
     const code = Cloud.me?.code || Brand.get().code; if (!code) return;
     try {
       const a = document.createElement('a');
-      a.href = C39.png(code, Brand.get().name || S.clinicName || '');
+      a.href = QR.png(code, Brand.get().name || S.clinicName || '', T('codeHint'));
       a.download = `clinic-${code}.png`;
       a.click();
     } catch(_){ toast(T('regFailed'), 'e'); }
@@ -10923,6 +11253,18 @@ window.addEventListener('unhandledrejection', e =>
   Sync.init();
 
   /* الشعار نفسه يظهر عند فتح البرنامج وعلى أيقونة التثبيت */
+  /* تموّج عند اللمس — إحساس بأن الزر استجاب */
+  document.addEventListener('pointerdown', e => {
+    const b = e.target.closest && e.target.closest('.btn,.navb,.pf-act');
+    if (!b || b.disabled || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const r = b.getBoundingClientRect(), d = Math.max(r.width, r.height);
+    const s = document.createElement('span');
+    s.className = 'rpl';
+    s.style.cssText = `width:${d}px;height:${d}px;left:${e.clientX - r.left - d/2}px;top:${e.clientY - r.top - d/2}px`;
+    b.appendChild(s);
+    setTimeout(() => s.remove(), 650);
+  }, { passive:true });
+
   /* هوية العيادة المحفوظة على هذا الجهاز تظهر من أول لحظة */
   Brand.apply();
   Install.init();
