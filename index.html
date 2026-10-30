@@ -701,16 +701,215 @@ html[dir=ltr] .sw.on .tg::after{transform:translateX(22px)}
   .noprint,.side,.topbar,#toast{display:none!important}
   @page{size:A5;margin:9mm}
 }
+
+/*═══════════════════════════════════════════════════════════════
+  طبقة التصميم «الشفق» — إعادة تصميم كاملة فوق نظام الألوان القائم.
+  كل الألوان مشتقّة من متغيّرات الثيم (--br / --br2 / --gl …)، فتتبع
+  الثيمات الخمسة والوضع الليلي تلقائياً. الحركة كلها transform و
+  opacity فقط — لا تمويه متحرّك يثقل الجهاز — وتُطفأ لمن يطلب ذلك.
+═══════════════════════════════════════════════════════════════*/
+:root{
+  --r:20px;
+  --ring:conic-gradient(from var(--ang,0deg), var(--br2), var(--blob2), var(--br), var(--blob1), var(--br2));
+  --hair:linear-gradient(135deg, color-mix(in srgb,var(--br2) 70%,transparent),
+          transparent 38%, transparent 62%, color-mix(in srgb,var(--blob2) 70%,transparent));
+  --sheen:linear-gradient(105deg, transparent 30%, rgba(255,255,255,.38) 48%, transparent 66%);
+}
+html[data-theme=dark]{
+  --sheen:linear-gradient(105deg, transparent 30%, rgba(255,255,255,.16) 48%, transparent 66%);
+}
+@property --ang{ syntax:'<angle>'; initial-value:0deg; inherits:false; }
+
+/* ── الخلفية: شفق حيّ + شبكة نقاط خافتة ── */
+body::before{
+  inset:-30%;
+  background:
+    radial-gradient(34% 30% at 18% 14%, var(--blob1), transparent 64%),
+    radial-gradient(38% 34% at 84% 18%, var(--blob2), transparent 66%),
+    radial-gradient(36% 32% at 52% 92%, var(--blob3), transparent 64%),
+    radial-gradient(26% 24% at 70% 58%, color-mix(in srgb,var(--br2) 55%,transparent), transparent 70%);
+  opacity:.62;
+  animation:aurora 34s ease-in-out infinite alternate;
+  will-change:transform;
+}
+html[data-theme=dark] body::before{opacity:.55}
+body::after{
+  content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:radial-gradient(color-mix(in srgb,var(--ink) 9%,transparent) 1px, transparent 1.4px);
+  background-size:22px 22px;
+  -webkit-mask:radial-gradient(120% 90% at 50% 0%, #000 30%, transparent 80%);
+          mask:radial-gradient(120% 90% at 50% 0%, #000 30%, transparent 80%);
+}
+@keyframes aurora{
+  0%  {transform:translate3d(0,0,0) rotate(0deg) scale(1)}
+  50% {transform:translate3d(3%,-2%,0) rotate(6deg) scale(1.06)}
+  100%{transform:translate3d(-3%,2%,0) rotate(-5deg) scale(1.02)}
+}
+
+/* ── الأسطح: حافة متدرّجة مضيئة + لمعة علوية ── */
+.card,.it,details.acc,.rolebtn,.shhead{position:relative;isolation:isolate}
+.card::before,.it::before,details.acc::before,.shhead::before{
+  content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
+  background:var(--hair);z-index:1;
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude;
+  opacity:.75;transition:opacity .25s;
+}
+.card{
+  background:linear-gradient(180deg, color-mix(in srgb,var(--glassS) 70%,transparent), var(--glass));
+  box-shadow:var(--sh), inset 0 1px 0 rgba(255,255,255,.35);
+}
+html[data-theme=dark] .card{box-shadow:var(--sh), inset 0 1px 0 rgba(255,255,255,.06)}
+.card.flat::before{opacity:.35}
+.it{transition:transform .18s cubic-bezier(.2,.9,.3,1),box-shadow .2s,border-color .2s}
+.it:hover{transform:translateY(-2px);
+  box-shadow:var(--shL), 0 0 0 1px color-mix(in srgb,var(--br) 35%,transparent),
+             0 10px 30px -14px var(--gl2)}
+.it:hover::before{opacity:1}
+details.acc[open]{box-shadow:var(--shL), 0 0 26px -16px var(--gl2)}
+details.acc>summary .accic{
+  background:linear-gradient(140deg, var(--br2), var(--br));color:var(--on-br);
+  box-shadow:0 6px 16px -8px var(--br), inset 0 1px 0 rgba(255,255,255,.35)}
+
+/* ── العناوين: نصّ متدرّج — فقط حيث يدعمه المتصفح، وإلا بقي النص كما هو ── */
+@supports ((-webkit-background-clip:text) or (background-clip:text)) and (color:color-mix(in srgb, red 50%, blue)){
+  .h1,.h2{
+    background:linear-gradient(120deg, var(--ink) 20%, color-mix(in srgb,var(--br) 80%,var(--ink)) 70%, var(--br2));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+}
+.lbl{color:color-mix(in srgb,var(--br) 55%,var(--ink3))}
+
+/* ── الأزرار: لمعة تمرّ عند المرور ── */
+.btn{position:relative;overflow:hidden;isolation:isolate}
+.btn:not(.gh):not(.sf)::after{
+  content:'';position:absolute;inset:0;background:var(--sheen);z-index:-1;
+  transform:translateX(-120%);transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+html[dir=rtl] .btn:not(.gh):not(.sf)::after{transform:translateX(120%)}
+.btn:not(.gh):not(.sf):hover::after{transform:translateX(0)}
+.btn:not(.gh):not(.sf):not(.dg):not(.ok):not(.wn){
+  background:linear-gradient(135deg, var(--br2), var(--br) 60%, color-mix(in srgb,var(--br) 80%,#000));
+}
+.btn:disabled::after{display:none}
+
+/* ── القائمة الجانبية ── */
+.side{
+  background:linear-gradient(185deg, color-mix(in srgb,var(--glassS) 85%,transparent), var(--glass) 40%, var(--glass2));
+  box-shadow:inset -1px 0 0 var(--stroke);
+}
+.side::after{
+  content:'';position:absolute;inset-block:0;inset-inline-end:-1px;width:2px;pointer-events:none;
+  background:linear-gradient(180deg, transparent, var(--gl2), transparent);opacity:.7}
+.side .brand{padding:6px 6px 18px;margin-bottom:6px;border-bottom:1px solid var(--edge)}
+.side .brand .mk{
+  width:46px;height:46px;border-radius:15px;position:relative;
+  background:linear-gradient(140deg, var(--br2), var(--br));
+  box-shadow:0 10px 26px -12px var(--br), 0 0 0 1px rgba(255,255,255,.25) inset}
+.side .brand .mk::after{
+  content:'';position:absolute;inset:-3px;border-radius:18px;z-index:-1;
+  background:var(--ring);filter:blur(7px);opacity:.55;animation:spin 9s linear infinite}
+.side .brand .mk.img{background:#fff}
+.side .brand .mk img{width:100%;height:100%;object-fit:contain;border-radius:15px;padding:4px}
+@keyframes spin{to{--ang:360deg}}
+.navb{border:1px solid transparent}
+.navb svg{padding:5px;width:30px;height:30px;border-radius:10px;
+  background:var(--glass2);transition:background .2s,color .2s,box-shadow .2s}
+.navb:hover svg{background:var(--brL);color:var(--br)}
+.navb.on{
+  background:linear-gradient(90deg, var(--brL), transparent 85%);
+  border-color:color-mix(in srgb,var(--br) 22%,transparent);color:var(--ink)}
+html[dir=rtl] .navb.on{background:linear-gradient(270deg, var(--brL), transparent 85%)}
+.navb.on svg{background:linear-gradient(140deg,var(--br2),var(--br));color:var(--on-br);
+  box-shadow:0 6px 16px -6px var(--gl2)}
+.navb.on::before{width:4px;box-shadow:0 0 12px var(--gl2)}
+
+/* ── الشريط العلوي ── */
+.topbar{
+  background:linear-gradient(180deg, color-mix(in srgb,var(--glassS) 90%,transparent), var(--glass));
+  border-bottom:none}
+.topbar::after{
+  content:'';position:absolute;inset-inline:0;bottom:0;height:1px;pointer-events:none;
+  background:linear-gradient(90deg, transparent, var(--gl2), transparent)}
+#pagetitle{font-family:'Zain',sans-serif;font-size:21px;font-weight:800;letter-spacing:-.01em}
+
+/* ── الإدخال ── */
+input,select,textarea{background:color-mix(in srgb,var(--glassS) 92%,transparent)}
+input:hover,select:hover,textarea:hover{border-color:color-mix(in srgb,var(--br) 35%,var(--edge))}
+
+/* ── الشارات والأفاتار ── */
+.av{background:linear-gradient(140deg, var(--brL), color-mix(in srgb,var(--br2) 22%,transparent));
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--br) 18%,transparent)}
+.pill.b{background:linear-gradient(120deg,var(--brL),color-mix(in srgb,var(--br2) 18%,transparent))}
+
+/* ── بطاقات الأرقام (الحسابات والإحصائيات) ── */
+.g3>.card.ctr,.g2>.card.ctr{overflow:hidden}
+.g3>.card.ctr::after,.g2>.card.ctr::after{
+  content:'';position:absolute;width:120px;height:120px;border-radius:99px;
+  inset-inline-end:-50px;top:-60px;pointer-events:none;
+  background:radial-gradient(circle, var(--gl2), transparent 70%);opacity:.45}
+.track>i{box-shadow:0 0 12px -2px var(--gl2)}
+
+/* ── شاشة الدخول ── */
+#login{position:relative}
+.lghero{text-align:center;margin-bottom:6px}
+.lgring{width:118px;height:118px;margin:0 auto 18px;border-radius:34px;position:relative;
+  display:grid;place-items:center}
+.lgring::before{content:'';position:absolute;inset:-4px;border-radius:38px;
+  background:var(--ring);animation:spin 7s linear infinite;
+  box-shadow:0 0 40px -6px var(--gl2)}
+.lgring::after{content:'';position:absolute;inset:0;border-radius:34px;background:var(--bg)}
+.lgring .applogo{position:relative;z-index:1;width:104px;height:104px;margin:0;border-radius:30px;
+  box-shadow:0 18px 40px -18px var(--br)}
+.applogo.custom{background:#fff;object-fit:contain;padding:8px}
+.lgname{font-size:34px}
+.lgsub{font-family:'Zain',sans-serif;font-weight:700;font-size:17px;color:var(--br);margin-top:-2px}
+#lg-cloud{box-shadow:var(--shL), 0 0 60px -30px var(--gl2)}
+
+/* ── صفحات الملء الكامل ── */
+.shhead{box-shadow:var(--shL)}
+.shb::after{
+  content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:radial-gradient(color-mix(in srgb,var(--ink) 8%,transparent) 1px, transparent 1.4px);
+  background-size:22px 22px;
+  -webkit-mask:radial-gradient(120% 90% at 50% 0%, #000 30%, transparent 80%);
+          mask:radial-gradient(120% 90% at 50% 0%, #000 30%, transparent 80%)}
+
+/* ── شريط التمرير ── */
+*{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--br) 40%,transparent) transparent}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--br) 35%,transparent);border-radius:99px;
+  border:2px solid transparent;background-clip:padding-box}
+
+/* ── عناصر جديدة: الشعار، اختيار الطبيب، باركود العيادة، الطاقم ── */
+.logoprev{width:58px;height:58px;border-radius:16px;flex-shrink:0;display:grid;place-items:center;
+  font-size:26px;background:#fff;border:1px solid var(--edge);overflow:hidden;
+  box-shadow:0 8px 20px -12px var(--br)}
+.logoprev.lg{width:76px;height:76px;border-radius:20px}
+.logoprev img{width:100%;height:100%;object-fit:contain;padding:5px}
+.pickov{position:fixed;inset:0;z-index:120;display:grid;place-items:center;padding:18px;
+  background:rgba(3,16,19,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  animation:fade .18s}
+.pickbox{width:100%;max-width:420px;max-height:86vh;overflow:auto;padding:18px;border-radius:22px;
+  background:var(--glassS);border:1px solid var(--stroke);box-shadow:var(--shL), 0 0 50px -20px var(--gl2);
+  animation:up .25s cubic-bezier(.2,.9,.3,1)}
+.clcode{background:#fff;border-radius:16px;padding:16px;border:1px solid var(--edge);
+  box-shadow:0 14px 34px -20px var(--br)}
+.clcode-nm{color:#000;text-align:center;font-family:'Zain',sans-serif;font-weight:800;font-size:19px;
+  margin-bottom:9px}
+.clcode-num{color:#000;text-align:center;font-family:'IBM Plex Mono',monospace;font-weight:700;
+  font-size:21px;letter-spacing:.28em;margin-top:6px}
+.stgrp{padding:14px;border-radius:16px;background:var(--glass2);border:1px solid var(--edge)}
 </style>
 </head>
 <body>
 <!-- ═══════════ شاشة الدخول ═══════════ -->
 <div id="login">
   <div style="width:100%;max-width:400px">
-    <div id="applogo"></div>
-    <div class="h1 ctr">أسناني</div>
-    <div class="ctr" style="font-family:'Zain',sans-serif;font-weight:700;
-      font-size:17px;color:var(--br);margin-top:-4px">My teeth</div>
+    <div class="lghero">
+      <div class="lgring"><div id="applogo"></div></div>
+      <div class="h1 ctr lgname" id="lg-name">أسناني</div>
+      <div class="ctr lgsub" id="lg-sub">My teeth</div>
+    </div>
     <div class="sub ctr" id="lg-tag" style="margin-bottom:22px"></div>
 
     <!-- ═══ الدخول عبر السيرفر: شاشة واحدة، والدور يجيء من السيرفر ═══ -->
@@ -744,7 +943,7 @@ html[dir=ltr] .sw.on .tg::after{transform:translateX(22px)}
   <div class="shell">
     <aside class="side" id="side">
       <div class="brand">
-        <div class="mk">
+        <div class="mk" id="hd-mk">
           <svg width="22" height="22" viewBox="0 0 24 24"><path d="M12 3c-3 0-4-1.2-6 0C4 4.2 3.4 7 4 10c.5 2.6 1.3 4 1.8 6.6.4 2 .6 4.4 2 4.4 1.6 0 1.3-2.6 1.8-4.6.4-1.6.8-2.4 2.4-2.4s2 .8 2.4 2.4c.5 2 .2 4.6 1.8 4.6 1.4 0 1.6-2.4 2-4.4.5-2.6 1.3-4 1.8-6.6.6-3 0-5.8-2-7-2-1.2-3 0-6 0z" fill="var(--on-br)"/></svg>
         </div>
         <div class="gr" style="min-width:0">
@@ -1459,6 +1658,68 @@ en:{
  needPharmAcc:'Add a pharmacy account first: Settings → Clinic emails',
 }};
 
+/*──── المستثمر، الطاقم، ربط الطبيب، الهوية، باركود العيادة ────*/
+Object.assign(D.ar, {
+ r_owner:'المستثمر', r_owner_d:'إدارة العيادة وحساباتها',
+ regOwnerHint:'يُنشأ حساب واحد للمستثمر باسم العيادة. حسابات الأطباء والسكرتارية والصيدليات تُنشأ لاحقاً من الإعدادات.',
+ accOwner:'حساب المستثمر', clinicLogo:'شعار العيادة', pickLogo:'اختر صورة الشعار',
+ logoHint:'يُصغَّر تلقائياً — يظهر في الدخول والقائمة وأيقونة التطبيق',
+ regDoneOwner:'سُجّلت العيادة. أكّد بريد حساب المستثمر بالرمز الذي وصلك، ثم ادخل وأنشئ حسابات الطاقم من الإعدادات.',
+ secBrand:'هوية التطبيق', appName:'اسم التطبيق', appNameHint:'يظهر لطاقم هذه العيادة ومراجعيها وحدهم — لا يتغيّر في العيادات الأخرى',
+ brandSaved:'حُفظت هوية العيادة', rmLogo:'إزالة الشعار', logoBig:'الصورة كبيرة جداً — اختر صورة أصغر',
+ secCode:'باركود العيادة', codeHint:'يقرؤه المراجع من تطبيقه ليفتح عيادتك. اطبعه وضعه في الاستقبال.',
+ printCode:'طباعة الباركود', dlClinicCode:'تنزيل صورة الباركود',
+ secStaff:'حسابات الطاقم', staffHint:'كل الحسابات تخصّ هذه العيادة وحدها. العدد محكوم بالحدود التي تضعها لوحة التحكم.',
+ addDoctor:'＋ طبيب', addSec:'＋ سكرتير', addPharm:'＋ صيدلية',
+ newDoctorAcc:'حساب طبيب جديد', docAccName:'اسم الطبيب',
+ used:'المستعمل', ofMax:'من', quotaFull:'وصلت الحدّ المسموح لهذا النوع — راجع لوحة التحكم لزيادته',
+ staffOff:'معطّل', enableAcc:'تفعيل', disableAcc:'تعطيل', disableQ:'تعطيل هذا الحساب؟ لن يستطيع الدخول.',
+ resendCode2:'إعادة إرسال رمز التأكيد', staffLoadFail:'تعذّر تحميل الطاقم — تحقّق من الاتصال',
+ noStaffYet:'لا حسابات بعد',
+ secTeam:'فريقي', teamHint:'اختر من يعمل معك. التغيير يصل إلى زملائك عند دخولهم التالي.',
+ mySecs:'سكرتاريتي', myPharms:'صيدلياتي', myViewers:'أطباء يرون مرضاي',
+ viewersHint:'الطبيب المختار يرى ملفات مرضاك وجلساتهم. اتركها فارغة ليبقى مرضاك لك وحدك.',
+ teamSaved:'حُفظ الفريق', noneOfKind:'لا يوجد حسابات من هذا النوع في العيادة',
+ secProfile:'ملفي الشخصي', profName:'الاسم على الوصفة', profTitle:'اللقب العلمي',
+ pickDoctor:'لأي طبيب هذا المراجع؟', pickDoctorHint:'يظهر ملفه لهذا الطبيب ولمن يسمح لهم',
+ noDoctorLinked:'لم يربطك أي طبيب بعد — اطلب من طبيبك اختيارك من «فريقي» في إعداداته',
+ ownerData:'أنت المستثمر: ترى الحسابات والإحصائيات، وتدير هوية العيادة وطاقمها.',
+ scopeChanged:'تغيّرت صلاحيات الرؤية — جارٍ تحديث البيانات…',
+ legacyManage:'لا يوجد حساب مستثمر لهذه العيادة، فإدارة الطاقم متاحة للطبيب مؤقتاً.',
+ ofDoctor:'طبيب',
+ needPharmAcc:'اختر صيدلياتك أولاً من الإعدادات ← فريقي',
+});
+Object.assign(D.en, {
+ r_owner:'Owner', r_owner_d:'Clinic management and accounts',
+ regOwnerHint:'One owner account is created under the clinic name. Doctor, secretary and pharmacy accounts are created later from Settings.',
+ accOwner:'Owner account', clinicLogo:'Clinic logo', pickLogo:'Choose logo image',
+ logoHint:'Resized automatically — shown on sign-in, sidebar and app icon',
+ regDoneOwner:'Clinic registered. Confirm the owner email with the code you received, then sign in and create staff accounts from Settings.',
+ secBrand:'App identity', appName:'App name', appNameHint:'Seen only by this clinic’s staff and patients — other clinics are unaffected',
+ brandSaved:'Clinic identity saved', rmLogo:'Remove logo', logoBig:'Image too large — choose a smaller one',
+ secCode:'Clinic barcode', codeHint:'Patients scan it in their app to open your clinic. Print it for reception.',
+ printCode:'Print barcode', dlClinicCode:'Download barcode image',
+ secStaff:'Staff accounts', staffHint:'Every account belongs to this clinic only. Counts are limited by the control panel.',
+ addDoctor:'＋ Doctor', addSec:'＋ Secretary', addPharm:'＋ Pharmacy',
+ newDoctorAcc:'New doctor account', docAccName:'Doctor name',
+ used:'Used', ofMax:'of', quotaFull:'Limit reached for this type — ask the control panel to raise it',
+ staffOff:'Disabled', enableAcc:'Enable', disableAcc:'Disable', disableQ:'Disable this account? It will not be able to sign in.',
+ resendCode2:'Resend confirmation code', staffLoadFail:'Could not load staff — check the connection',
+ noStaffYet:'No accounts yet',
+ secTeam:'My team', teamHint:'Choose who works with you. Colleagues see the change at their next sign-in.',
+ mySecs:'My secretaries', myPharms:'My pharmacies', myViewers:'Doctors who see my patients',
+ viewersHint:'A chosen doctor sees your patients’ files and sessions. Leave empty to keep them yours only.',
+ teamSaved:'Team saved', noneOfKind:'No accounts of this type in the clinic',
+ secProfile:'My profile', profName:'Name on prescriptions', profTitle:'Title',
+ pickDoctor:'Which doctor is this patient for?', pickDoctorHint:'The file is visible to this doctor and whoever they allow',
+ noDoctorLinked:'No doctor has linked you yet — ask your doctor to pick you under “My team”',
+ ownerData:'You are the owner: you see accounts and statistics, and manage the clinic identity and staff.',
+ scopeChanged:'Visibility changed — refreshing data…',
+ legacyManage:'This clinic has no owner account, so staff management is open to the doctor for now.',
+ ofDoctor:'Doctor',
+ needPharmAcc:'Pick your pharmacies first: Settings → My team',
+});
+
 let LG = localStorage.getItem('d_lang') || 'ar';
 const T = k => (D[LG][k] ?? k);
 const isAr = () => LG === 'ar';
@@ -1815,6 +2076,13 @@ const DB = {
     /* الختم بساعة متفق عليها بين الأجهزة لا بساعة الجهاز وحده */
     if (store !== 'outbox' && obj && typeof obj === 'object' && !Sync.quiet)
       obj._up = Sync.now();
+    /* ملكية السجل: كل سجل سريري يحمل طبيبه، فيعرف السيرفر من يراه.
+       المراجع يأخذ طبيبه عند تسجيله، وما سواه يرث طبيب مراجعه.
+       يُختم هنا وحده فلا يفوته أي مسار إنشاء. */
+    if (!Sync.quiet && obj && typeof obj === 'object' && !obj._own && Own.STORES.includes(store)){
+      try { obj._own = await Own.of(store, obj); } catch(_){}
+      if (!obj._own) delete obj._own;
+    }
     let done;
     if (this.fallback) done = await MEM.put(store, obj);
     else {
@@ -2257,6 +2525,39 @@ const C39 = {
     }
     return `<svg viewBox="0 0 ${x.toFixed(0)} ${h}" preserveAspectRatio="none"
       style="width:100%;height:${h}px;background:#fff;display:block">${bars}</svg>`;
+  },
+
+  /* صورة PNG للتنزيل: اسم العيادة فوق، الخطوط، والرمز تحتها */
+  png(text, title){
+    const s = '*' + String(text).toUpperCase().replace(/[^0-9A-Z\-. ]/g,'') + '*';
+    const N=1.1, W=2.9, out=[]; let x=0;
+    for (const ch of s){
+      const pat = this.map[ch]; if(!pat) continue;
+      for (let i=0;i<9;i++){
+        const w = pat[i]==='w'?W:N;
+        if (i%2===0) out.push([x,w]);
+        x += w;
+      }
+      x += N;
+    }
+    const SC=4, PAD=32, BH=150;
+    const c = document.createElement('canvas');
+    c.width = Math.round(x*SC) + PAD*2;
+    c.height = PAD + (title?52:0) + BH + 56 + PAD;
+    const g = c.getContext('2d');
+    g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height);
+    g.fillStyle='#000'; g.textAlign='center';
+    let y = PAD;
+    if (title){
+      g.font = 'bold 34px Zain, system-ui, sans-serif';
+      g.fillText(String(title), c.width/2, y+34, c.width-PAD*2);
+      y += 52;
+    }
+    for (const [bx,bw] of out) g.fillRect(PAD + bx*SC, y, bw*SC, BH);
+    y += BH + 44;
+    g.font = 'bold 36px monospace';
+    g.fillText(String(text), c.width/2, y);
+    return c.toDataURL('image/png');
   },
 };
 /*═══════════════ الدخول ═══════════════*/
@@ -3068,55 +3369,263 @@ const Cloud = {
       if (e === 'bad_email')      throw new Error(T('email'));
       /* حدّ التسجيل ليس خطأً في بياناته — يُقال كما هو */
       if (e === 'rate_limited')   throw new Error(T('regBusy'));
+      if (e === 'logo_too_big' || e === 'bad_logo') throw new Error(T('logoBig'));
       throw new Error(r.data?.detail || e || T('regFailed'));
     }
     return r.data;
   },
 
-  /*──── إضافة حساب طاقم إلى العيادة نفسها ────
-    الطريق الأول دالة مخصّصة على السيرفر إن وُجدت، فهي وحدها التي
-    تملك منح الدور. وإن لم توجد يُنشأ الحساب بالتسجيل القياسي مع
-    وسم دوره وعيادته في بياناته، ويصله رمز التأكيد على كل حال.
-    وما يعرفه البرنامج من الاثنين واحد: بريد مؤكَّد يُحوَّل إليه. */
-  async addAccount({ role, email, password, name }){
-    const clinic_id = this.me?.clinic_id || S.user?.clinic_id || null;
-    const mail = String(email||'').trim().toLowerCase();
+  /*──── حسابات الطاقم ────
+    تمرّ كلها بدالة السيرفر وحدها: هي التي تتحقّق من صلاحية المستثمر،
+    وتأخذ العيادة من حسابه لا من الطلب، وتفرض الحدود التي وضعتها
+    لوحة التحكم. لا طريق بديلاً يُنشئ حساباً بلا عضوية. */
+  async staffFn(body){
+    if (this.session && this.session.exp - Date.now() < 60000) await this.refresh();
+    const r = await this.call('/functions/v1/add-account', { method:'POST', raw:true, body });
+    const e = r.data?.error;
+    if (r.ok && !e) return r.data;
+    if (e === 'email_taken')    throw new Error(T('emailTaken'));
+    if (e === 'weak_password')  throw new Error(T('pass8'));
+    if (e === 'bad_email')      throw new Error(T('email'));
+    if (e === 'quota_exceeded') throw new Error(T('quotaFull'));
+    if (e === 'not_allowed')    throw new Error(T('docOnly'));
+    throw new Error(r.data?.detail || e || T('regFailed'));
+  },
 
-    try {
-      const r = await this.call('/functions/v1/add-account', {
-        method:'POST', raw:true,
-        body:{ role, email:mail, password, name:name||'', clinic_id,
-               clinic_name: S.clinicName || CFG.data.clinic || '' },
-      });
-      const e = r.data?.error;
-      if (e === 'email_taken')   throw new Error(T('emailTaken'));
-      if (e === 'weak_password') throw new Error(T('pass8'));
-      if (r.ok && !e) return { ok:true, via:'fn' };
-    } catch(err){
-      const m = String(err.message || err);
-      if (m === T('emailTaken') || m === T('pass8')) throw err;
-      /* الدالة غير موجودة أو غير مسموحة — يُجرَّب الطريق القياسي */
-    }
-
-    const r = await this.call('/auth/v1/signup', {
-      method:'POST', auth:false, raw:true,
-      body:{ email:mail, password,
-             data:{ role, clinic_id, full_name:name || '',
-                    pharmacy_name: role === 'pharmacy' ? (name||'') : '',
-                    clinic_name: S.clinicName || CFG.data.clinic || '' } },
-    });
-    if (!r.ok){
-      const m = String(r.data?.msg || r.data?.error_description || r.data?.error || '');
-      if (/registered|exists|taken/i.test(m)) throw new Error(T('emailTaken'));
-      if (/password/i.test(m))                throw new Error(T('pass8'));
-      throw new Error(m || T('regFailed'));
-    }
-    return { ok:true, via:'signup' };
+  addAccount({ role, email, password, name }){
+    return this.staffFn({ action:'create', role,
+      email:String(email||'').trim().toLowerCase(), password, name:name||'' });
   },
 
   async ping(){
     try { await this.call('/rest/v1/clinics?select=id&limit=1', { auth:false }); return true; }
     catch(_){ return false; }
+  },
+};
+
+/*═══════════════ هوية العيادة ═══════════════
+  اسم التطبيق وشعاره يخصّان العيادة وحدها: يُقرآن من السيرفر عند
+  الدخول، ويُحفظان في هذا الجهاز ليظهرا على شاشة الدخول التالية.
+  عيادة أخرى على جهازها ترى هويتها هي — لا تتأثر بما هنا.
+═══════════════════════════════════════════*/
+const Brand = {
+  KEY:'d_brand',
+  get(){ try { return JSON.parse(localStorage.getItem(this.KEY)) || {}; } catch(_){ return {}; } },
+
+  save(me){
+    const b = { name: me.app_name || me.clinic_name || '', clinic: me.clinic_name || '',
+                logo: me.logo || '', code: me.code || '' };
+    try { localStorage.setItem(this.KEY, JSON.stringify(b)); } catch(_){}
+    this.apply(b);
+  },
+
+  apply(b){
+    b = b || this.get();
+    APP.logo = b.logo || '';
+    APP.title = b.name || '';
+    const nm = b.name || APP.nameAr;
+    document.title = b.name ? `${b.name}` : `${APP.nameAr} — ${APP.nameEn}`;
+    const ln = $('#lg-name'); if (ln) ln.textContent = nm;
+    const ls = $('#lg-sub');  if (ls) ls.textContent = b.name ? (b.clinic && b.clinic !== b.name ? b.clinic : APP.nameEn) : APP.nameEn;
+    const lg = $('#applogo') || document.querySelector('#login .applogo');
+    if (lg) lg.outerHTML = ICON.el();
+    const mk = $('#hd-mk');
+    if (mk){
+      mk.classList.toggle('img', !!b.logo);
+      mk.innerHTML = b.logo
+        ? `<img src="${esc(b.logo)}" alt="">`
+        : `<svg width="22" height="22" viewBox="0 0 24 24"><path d="${ICON.TOOTH}" fill="var(--on-br)"/></svg>`;
+    }
+    try { ICON.cache = {}; Install.manifest(); } catch(_){}
+  },
+
+  /* الشعار يُصغَّر قبل رفعه: ٢٥٦ بكسل تكفي لكل مكان يظهر فيه،
+     ويبقى حجمه عشرات الكيلوبايتات لا ميغابايتات في القاعدة. */
+  async shrink(file, max){
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await new Promise((res, rej) => {
+        const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url;
+      });
+      const M = max || 256, sc = Math.min(1, M / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(img.width * sc));
+      c.height = Math.max(1, Math.round(img.height * sc));
+      const g = c.getContext('2d');
+      g.imageSmoothingQuality = 'high';
+      g.drawImage(img, 0, 0, c.width, c.height);
+      let out = c.toDataURL('image/webp', .9);
+      if (!out.startsWith('data:image/webp')) out = c.toDataURL('image/png');
+      if (out.length > 380000) out = c.toDataURL('image/jpeg', .8);
+      if (out.length > 380000) throw new Error(T('logoBig'));
+      return out;
+    } finally { URL.revokeObjectURL(url); }
+  },
+};
+
+/*═══════════════ طاقم العيادة وروابط الطبيب ═══════════════*/
+const Staff = {
+  data:null, at:0,
+  key(){ return 'd_staff_' + (Cloud.me?.clinic_id || S.user?.clinic_id || 'x'); },
+
+  cache(){
+    if (!this.data){ try { this.data = JSON.parse(localStorage.getItem(this.key())) || null; } catch(_){} }
+    return this.data;
+  },
+
+  /* يُحمَّل عند الحاجة لا مع كل مزامنة — وتُحفظ نسخة للعمل بلا إنترنت */
+  async load(force){
+    if (!Sync.on() || !navigator.onLine) return this.cache();
+    if (!force && this.data && Date.now() - this.at < 120000) return this.data;
+    try {
+      const d = await Cloud.call('/rest/v1/rpc/clinic_staff', { method:'POST', body:{} });
+      this.data = d; this.at = Date.now();
+      try { localStorage.setItem(this.key(), JSON.stringify(d)); } catch(_){}
+    } catch(_){ return this.cache(); }
+    return this.data;
+  },
+
+  members(role){ return ((this.data || {}).members || []).filter(m => !role || m.role === role); },
+  active(role){ return this.members(role).filter(m => m.active !== false); },
+  name(uid){ return (this.members().find(m => m.uid === uid) || {}).name || ''; },
+
+  /* من ربطهم هذا الطبيب بنفسه من نوع ما */
+  linked(kind, doctor){
+    const d = doctor || S.user?.uid;
+    const ids = new Set(((this.data || {}).links || [])
+      .filter(l => l.doctor === d && l.kind === kind).map(l => l.member));
+    return this.members(kind).filter(m => ids.has(m.uid));
+  },
+
+  soleDoctor(){
+    const d = this.active('doctor');
+    return d.length === 1 ? d[0].uid : null;
+  },
+};
+
+/*═══════════════ ملكية السجلات ═══════════════*/
+const Own = {
+  STORES:['patients','visits','works','payments','files','tooth','rx','appts'],
+  pending:null,          /* الطبيب المختار لمراجع يُسجَّل الآن */
+
+  async of(store, obj){
+    if (store === 'patients'){
+      if (this.pending) return this.pending;
+      if (S.role === 'doctor') return S.user?.uid || null;
+      return Staff.cache() ? Staff.soleDoctor() : null;
+    }
+    if (obj.pid){
+      const p = await DB.get('patients', obj.pid);
+      if (p && p._own) return p._own;
+    }
+    if (S.role === 'doctor') return S.user?.uid || null;
+    return Staff.cache() ? Staff.soleDoctor() : null;
+  },
+
+  /* لأي طبيب هذا المراجع الجديد؟
+     الطبيب نفسه لا يُسأل. والسكرتير يُسأل فقط إن خدم أكثر من طبيب.
+     يُرجع المعرّف، أو null إن أُلغي أو لم يوجد طبيب مربوط. */
+  async choose(){
+    if (S.role === 'doctor') return S.user?.uid || '';
+    if (!Sync.on()) return '';                       /* حساب محلي قديم */
+    await Staff.load();
+    const docs = Staff.active('doctor');
+    if (!docs.length){ toast(T('noDoctorLinked'), 'e'); return null; }
+    if (docs.length === 1) return docs[0].uid;
+    return this.pick(docs);
+  },
+
+  pick(docs){
+    return new Promise(res => {
+      const ov = el(`<div class="pickov"><div class="pickbox">
+        <div class="h2">${T('pickDoctor')}</div>
+        <div class="tiny mt">${T('pickDoctorHint')}</div>
+        <div class="col mt2">${docs.map((d,i)=>`
+          <button class="it" data-i="${i}" style="width:100%;text-align:start">
+            <div class="av">${esc((d.name||'?').replace(/^[دdD]\.?\s*/,'').charAt(0))}</div>
+            <div class="gr"><div class="h3 ell">${esc(d.name||'—')}</div>
+              <div class="tiny">${T('ofDoctor')}</div></div>
+          </button>`).join('')}</div>
+        <button class="btn w gh mt2" data-x="1">${T('cancel')}</button>
+      </div></div>`);
+      ov.addEventListener('click', e => {
+        const b = e.target.closest('[data-i],[data-x]');
+        if (!b && e.target !== ov) return;
+        ov.remove();
+        res(b && b.dataset.i != null ? docs[Number(b.dataset.i)].uid : null);
+      });
+      document.body.appendChild(ov);
+    });
+  },
+};
+
+/*═══════════════ ملف الطبيب الشخصي ═══════════════
+  الاسم واللقب والتوقيع لكل طبيب على حدة — في عيادة بعدة أطباء لا
+  يجوز أن تخرج وصفة طبيب بتوقيع زميله. يُحفظ في سجل إعدادات باسم
+  الطبيب، فيصل إلى أجهزة العيادة كلها مع المزامنة.
+═══════════════════════════════════════════════*/
+const Prof = {
+  _me:null,
+  id(uid){ return 'prof:' + uid; },
+  async get(uid){
+    if (!uid) return null;
+    try { const r = await DB.get('settings', this.id(uid)); return (r && r.v) || null; }
+    catch(_){ return null; }
+  },
+  async mine(){
+    if (!S.user?.uid) return null;
+    this._me = await this.get(S.user.uid);
+    return this._me;
+  },
+  cachedName(){ return (this._me && this._me.name) || ''; },
+  async save(v){
+    if (!S.user?.uid) return;
+    await DB.put('settings', { id:this.id(S.user.uid), v });
+    this._me = v;
+  },
+};
+
+/*──── نطاق الرؤية ────
+  حين يربط طبيبٌ زميلاً به أو يفكّ الربط، يتغيّر ما يجوز لهذا الجهاز
+  رؤيته. السحب بالرقم المتسلسل لا يعيد ما فات، ولا يمحو ما لم يعد
+  مسموحاً. فعند تغيّر النطاق: يُرفع ما ينتظر أولاً، ثم تُمحى السجلات
+  السريرية المحلية ويُسحب كل شيء من جديد بالنطاق الجديد. */
+const Scope = {
+  key(){ return 'd_scope_' + (Cloud.me?.clinic_id || 'x'); },
+  CLINICAL:['patients','visits','works','payments','files','tooth','rx','appts'],
+
+  async check(me){
+    if (!me || !me.scope || !Sync.on()) return;
+    const old = localStorage.getItem(this.key());
+    if (old === me.scope) return;
+    if (old){
+      try {
+        if ((await DB.all('outbox')).length) await Sync.push();
+        if (await Img.pending()) await Img.flush();
+        if ((await DB.all('outbox')).length || await Img.pending()) return;
+      } catch(_){ return; }        /* بلا رفع ناجح لا يُمحى شيء — يُعاد لاحقاً */
+      toast(T('scopeChanged'), 'w');
+      Sync.quiet = true;
+      try {
+        for (const st of this.CLINICAL)
+          for (const r of await DB.all(st)) await DB.del(st, r.id);
+      } finally { Sync.quiet = false; }
+      /* الحذف المحلي ليس حذفاً على السيرفر — يُفرَّغ الصادر منه */
+      for (const x of await DB.all('outbox')) await DB.del('outbox', x.id);
+      Sync.setRev(0);
+    }
+    try { localStorage.setItem(this.key(), me.scope); } catch(_){}
+  },
+
+  /* يُسأل السيرفر عن النطاق عند العودة للتطبيق، لا مع كل مزامنة */
+  _at:0,
+  async recheck(){
+    if (!Sync.on() || !navigator.onLine || Date.now() - this._at < 600000) return;
+    this._at = Date.now();
+    try {
+      const me = await Cloud.whoami();
+      if (me && me.role === S.role){ Brand.save(me); await this.check(me); Sync.kick(); }
+    } catch(_){}
   },
 };
 
@@ -3341,9 +3850,12 @@ const Login = {
       /* ★ الدور يقرّره السيرفر، فتُفتح واجهة الطبيب أو السكرتير
          أو الصيدلية أو المراجع تلقائياً من شاشة واحدة. */
       S.role = me.role;
-      S.user = { id:email, role:me.role, name:me.full_name || me.n1 || email,
+      S.user = { id:email, uid:me.uid || null, role:me.role,
+                 name:me.full_name || me.n1 || email,
                  cloud:true, clinic_id:me.clinic_id || null };
       if (me.clinic_name) S.clinicName = me.clinic_name;
+      Brand.save(me);
+      await Scope.check(me);
       App.start();
     } catch (e) {
       const m = String(e.message || e);
@@ -3352,7 +3864,8 @@ const Login = {
         const r = await Guard.offlineIn(email, pass);
         if (r.ok){
           S.role = r.me.role;
-          S.user = { id:email, role:r.me.role, name:r.me.full_name || email,
+          S.user = { id:email, uid:r.me.uid || null, role:r.me.role,
+                     name:r.me.full_name || email,
                      cloud:true, offline:true, clinic_id:r.me.clinic_id };
           S.clinicName = r.me.clinic_name;
           Cloud.me = { role:r.me.role, clinic_id:r.me.clinic_id,
@@ -3377,35 +3890,49 @@ const Login = {
   },
 
   /*──── تسجيل عيادة جديدة ────*/
+  /*──── تسجيل عيادة جديدة ────
+    عيادة واحدة = حساب مستثمر واحد يحمل اسمها وشعارها. حسابات
+    الأطباء والسكرتارية والصيدليات يُنشئها المستثمر لاحقاً من
+    الإعدادات، ضمن الحدود التي تضعها لوحة التحكم. */
+  _logo:'',
   regClinic(){
-    const f = (id, lb, extra='') =>
-      `<div class="mt"><label class="lb">${lb} <span class="req">*</span></label>
+    this._logo = '';
+    const f = (id, lb, extra='', req=true) =>
+      `<div class="mt"><label class="lb">${lb}${req?' <span class="req">*</span>':''}</label>
        <input id="${id}" ${extra}></div>`;
-    const acc = (pre, title) => `
-      <div class="card flat mt" style="padding:12px">
-        <div class="lbl">${title}</div>
-        <div class="mt"><label class="lb">${T('email')}</label>
-          <input id="${pre}-e" type="email" dir="ltr" spellcheck="false" inputmode="email"></div>
-        <div class="mt"><label class="lb">${T('pass')}</label>
-          <input id="${pre}-p" type="password" dir="ltr"></div>
-      </div>`;
     UI.sheet(`
       <div class="shhead">
         <div class="accic" style="width:44px;height:44px;font-size:19px">🏥</div>
-        <div class="gr"><div class="h2">${T('regClinicTitle')}</div></div>
+        <div class="gr"><div class="h2">${T('regClinicTitle')}</div>
+          <div class="tiny">${T('regOwnerHint')}</div></div>
         <button class="ib" onclick="UI.close()">✕</button>
       </div>
       <div class="card">
         ${f('rc-name', T('clinicName'))}
-        ${f('rc-doc',  T('docName'))}
+        <div class="mt"><label class="lb">${T('clinicLogo')}</label>
+          <div class="row">
+            <div class="logoprev" id="rc-lprev">🦷</div>
+            <label class="btn gh gr" style="cursor:pointer">
+              ${T('pickLogo')}
+              <input type="file" id="rc-logo" accept="image/png,image/jpeg,image/webp"
+                class="hide" onchange="Login.regLogo(this)">
+            </label>
+          </div>
+          <div class="tiny mt">${T('logoHint')}</div>
+        </div>
         <div class="g2 mt">
           <div><label class="lb">${T('country')}</label><input id="rc-country" value="العراق"></div>
           <div><label class="lb">${T('gov')}</label><input id="rc-gov"></div>
         </div>
         <div class="mt"><label class="lb">${T('area')}</label><input id="rc-area"></div>
-        ${acc('rc-d', T('accDoctor'))}
-        ${acc('rc-s', T('accSec'))}
-        ${acc('rc-h', T('accPharm'))}
+        ${f('rc-phone', T('clinicPhone'), 'dir="ltr" class="mono" inputmode="tel"', false)}
+        <div class="card flat mt2" style="padding:12px">
+          <div class="lbl">${T('accOwner')}</div>
+          <div class="mt"><label class="lb">${T('email')} <span class="req">*</span></label>
+            <input id="rc-o-e" type="email" dir="ltr" spellcheck="false" inputmode="email"></div>
+          <div class="mt"><label class="lb">${T('pass')} <span class="req">*</span></label>
+            <input id="rc-o-p" type="password" dir="ltr" autocomplete="new-password"></div>
+        </div>
         <div id="rc-err" class="al r mt hide"></div>
         <div class="row mt2" style="gap:9px">
           <button class="btn gh gr" onclick="UI.close()">${T('cancel')}</button>
@@ -3415,57 +3942,51 @@ const Login = {
       </div>`);
   },
 
+  async regLogo(inp){
+    const f = inp.files && inp.files[0]; if (!f) return;
+    try {
+      this._logo = await Brand.shrink(f);
+      const b = $('#rc-lprev');
+      if (b) b.innerHTML = `<img src="${esc(this._logo)}" alt="">`;
+    } catch (e) { toast(String(e.message || e), 'e'); }
+  },
+
   async regClinicSave(){
     const v  = id => ($('#'+id)?.value || '').trim();
     const err = $('#rc-err');
     const show = m => { err.textContent = m; err.classList.remove('hide'); };
     err.classList.add('hide');
 
-    if (!v('rc-name') || !v('rc-doc')) return show(T('fillAll'));
-    const roles = [['rc-d','doctor'], ['rc-s','secretary'], ['rc-h','pharmacy']];
-    for (const [pre] of roles){
-      if (!v(pre+'-e')) return show(T('fillAll'));
-      if (v(pre+'-p').length < 8) return show(T('pass8'));
-    }
-
-    const accounts = {};
-    for (const [pre, role] of roles)
-      accounts[role] = { email:v(pre+'-e').toLowerCase(), password:v(pre+'-p') };
+    if (v('rc-name').length < 2) return show(T('fillAll'));
+    const email = v('rc-o-e').toLowerCase(), pass = $('#rc-o-p').value || '';
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return show(T('email'));
+    if (pass.length < 8) return show(T('pass8'));
 
     const btn = $('#rc-go');
     btn.disabled = true; btn.textContent = T('cloudBusy');
     try {
       await Cloud.registerClinic({
-        clinic:{ name:v('rc-name'), doctor_name:v('rc-doc'),
+        clinic:{ name:v('rc-name'), logo:this._logo || null, phone:v('rc-phone') || null,
                  country:v('rc-country'), gov:v('rc-gov'), area:v('rc-area') },
-        accounts,
+        owner:{ email, password:pass },
       });
       UI.close();
-      $('#cl-email').value = accounts.doctor.email;
+      $('#cl-email').value = email;
       $('#cl-pass').value = '';
-      /* الحسابات الثلاثة تنتظر تأكيد بريدها — يُشرح ذلك صراحةً
-         بدل أن يجرّب الطبيب الدخول فيُرفض بلا سبب مفهوم. */
       UI.sheet(`
         <div class="ctr" style="padding:8px 0">
           <div style="font-size:44px">📩</div>
           <div class="h2 mt">${T('regDone')}</div>
         </div>
-        <div class="al w"><span>!</span><span>${T('confirmAll')}</span></div>
-        <button class="btn w mt2"
-          onclick="UI.close();Login.confirmSheet('${esc(accounts.doctor.email)}')">
-          ${T('confirmGo')}</button>
+        <div class="al w"><span>!</span><span>${T('regDoneOwner')}</span></div>
         <div class="card">
-          <div class="lbl">${T('confirmSteps')}</div>
-          <div class="col mt">
-            ${[accounts.doctor.email, accounts.secretary.email, accounts.pharmacy.email]
-              .map((m,i)=>`<div class="it" style="cursor:default">
-                <div class="av" style="width:28px;height:28px;font-size:13px">${i+1}</div>
-                <div class="gr mono ell" style="font-weight:700">${esc(m)}</div>
-              </div>`).join('')}
-          </div>
+          <div class="lbl">${T('accOwner')}</div>
+          <div class="mono mt" style="font-weight:800">${esc(email)}</div>
           <div class="tiny mt">${T('spamHint')}</div>
         </div>
-        <button class="btn w mt2" onclick="UI.close()">${T('close')}</button>`);
+        <button class="btn w mt2"
+          onclick="UI.close();Login.confirmSheet('${esc(email)}')">${T('confirmGo')}</button>
+        <button class="btn w gh mt" onclick="UI.close()">${T('close')}</button>`);
     } catch (e) {
       show(String(e.message || e));
     } finally {
@@ -3934,8 +4455,12 @@ const Ops = {
       p = await DB.get('patients', id);
       p = { ...p, ...data, up:now };
     } else {
+      /* مراجع جديد: لأي طبيب؟ — يُلغى الحفظ إن لم يُحسم */
+      const own = await Own.choose();
+      if (own === null) return null;
       p = { id:uid(), mrn: await this.nextMrn(), bc: await this.nextBarcode(),
             cid: CFG.data.cid, ...data, at:now, up:now };
+      if (own) p._own = own;
     }
     await DB.put('patients', p);
     await Form.learn(data);
@@ -4574,6 +5099,7 @@ const Sec = {
                    complaint:b.complaint, prevDental:b.prevDental, other:b.other,
                    mh: MH.norm(b.mh) };
     p = await Ops.savePatient(data, p?.id);
+    if (!p) return;
     b.st='accepted'; b.pid=p.id; b.bc=p.bc; await DB.put('bookings', b);
     /* الباركود يصل تطبيق المراجع فيُريه للاستقبال من هاتفه */
     /* معرّف ملفه عندنا يُرسل مع القبول — بلاه لا يستطيع تطبيقه
@@ -4640,6 +5166,7 @@ const Sec = {
     /* إن اختير مراجع سابق من الاقتراح، نحدّث ملفه بدل إنشاء ملف مكرّر */
     const target = id || Form._prevId || null;
     const p = await Ops.savePatient(Form.read(), target);
+    if (!p) return;
     UI.close(); toast(T('saved'),'s');
     /* الملف يحلّ محلّ نموذج التسجيل — الرجوع منه لا يعيد فتح النموذج */
     Nav.stack.pop();
@@ -6910,7 +7437,9 @@ const Perm = {
   addWork(){ return this.chart(); },
   /* كتابة العلاج للطبيب وحده — حتى لو فُتح المخطط للسكرتير */
   writeRx(){ return S.role==='doctor'; },
-  money(){ return S.role==='doctor' || S.role==='secretary'; },
+  money(){ return S.role==='doctor' || S.role==='secretary' || S.role==='owner'; },
+  /* إدارة هوية العيادة وطاقمها: المستثمر، أو الطبيب في عيادة قديمة بلا مستثمر */
+  manage(){ return !!(Cloud.me && Cloud.me.can_manage); },
 };
 
 const Nav = {
@@ -7168,7 +7697,15 @@ const Rx = {
   write(){ S.rxDraft = [{}]; S.rxPh = ''; this.sheet(); },
 
   /* الصيدليات المسجّلة في «إيميلات العيادة» */
-  pharmacies(){ return (CFG.data.accounts || []).filter(a => a.role === 'pharmacy'); },
+  /* الصيدليات التي اختارها هذا الطبيب من «فريقي» — ومع حساب قديم
+     بلا سيرفر تبقى القائمة المحلية القديمة. */
+  pharmacies(){
+    if (Staff.cache()){
+      return Staff.linked('pharmacy').filter(m => m.active !== false)
+        .map(m => ({ id:m.uid, name:m.name || m.email, email:String(m.email||'').toLowerCase() }));
+    }
+    return (CFG.data.accounts || []).filter(a => a.role === 'pharmacy');
+  },
   readPh(){ const n = $('#rx-ph'); return n ? n.value : (S.rxPh || ''); },
 
   sheet(){
@@ -7296,7 +7833,7 @@ const Rx = {
     const ph = this.pharmacies().find(a => a.id === phId) || null;
 
     const rx = { id:uid(), pid:S.patient.id, vid:v.id, items, st:'signed',
-                 doctor: CFG.data.doctor || T('r_doctor'),
+                 doctor: Prof.cachedName() || S.user?.name || CFG.data.doctor || T('r_doctor'),
                  ph: ph ? ph.id : '', phName: ph ? (ph.name || ph.email) : '',
                  phEmail: ph ? ph.email : '', route:1,
                  cid: CFG.data.cid, at:Date.now() };
@@ -7448,8 +7985,18 @@ const Print = {
      ولا يقفز للحقل المجاور — سبب ظهور "٤" مع حقل المدة. */
   seg(v){ return `<bdi style="unicode-bidi:isolate">${esc(v)}</bdi>`; },
 
-  rxBody(rx, p, forScreen){
-    const c = CFG.data;
+  /* بيانات الطبيب صاحب الوصفة: ملفّه الشخصي إن وُجد، وإلا إعدادات
+     العيادة كما كانت — فعيادة بطبيب واحد لا يتغيّر عليها شيء. */
+  async docOf(rx){
+    const pf = await Prof.get(rx && rx._own);
+    if (!pf) return { doctor: rx?.doctor || CFG.data.doctor || '',
+                      title: CFG.data.title || '', sign: CFG.data.sign || '' };
+    return { doctor: pf.name || rx?.doctor || CFG.data.doctor || '',
+             title: pf.title || '', sign: pf.sign || '' };
+  },
+
+  rxBody(rx, p, forScreen, d){
+    const c = { ...CFG.data, ...(d || {}) };
     const head = c.logo
       ? `<div class="phd"><img src="${c.logo}"></div>`
       : `<div class="phd">
@@ -7491,12 +8038,13 @@ const Print = {
   async rxPreview(id){
     const rx = await DB.get('rx', id);
     const p  = await DB.get('patients', rx.pid);
-    return `<div class="paper">${this.rxBody(rx, p, true)}</div>`;
+    return `<div class="paper">${this.rxBody(rx, p, true, await this.docOf(rx))}</div>`;
   },
 
   async rx(id){
     const rx = await DB.get('rx', id);
     const p  = await DB.get('patients', rx.pid);
+    const dc = await this.docOf(rx);
     this.win(`${this.head()}
       <div style="display:flex;justify-content:space-between;font-size:12.5px;
         margin:11px 0;padding:8px 0;border-bottom:1px dashed #999">
@@ -7513,11 +8061,11 @@ const Print = {
       </tr>`).join('')}</tbody></table>
       ${rx.notes?`<div style="margin-top:10px;font-size:12px">${esc(rx.notes)}</div>`:''}
       <div style="margin-top:26px;text-align:center;font-size:12px">
-        ${CFG.data.sign?`<img src="${CFG.data.sign}" style="display:block;margin:0 auto -6px;
+        ${dc.sign?`<img src="${dc.sign}" style="display:block;margin:0 auto -6px;
           max-height:64px;max-width:210px;object-fit:contain">`:''}
         <div style="font-weight:800;font-size:13px;border-top:1px solid #444;
-          display:inline-block;padding-top:5px;min-width:190px">${esc(CFG.data.doctor||'')}</div>
-        ${CFG.data.title?`<div style="font-size:11px;color:#555">${esc(CFG.data.title)}</div>`:''}
+          display:inline-block;padding-top:5px;min-width:190px">${esc(dc.doctor||'')}</div>
+        ${dc.title?`<div style="font-size:11px;color:#555">${esc(dc.title)}</div>`:''}
       </div>`, nm(p), 'a5');
   },
 
@@ -8962,15 +9510,22 @@ const Cfg = {
       <button class="btn w gh mt2" onclick="Guard.lock(false)">${T('lockNow')}</button>`;
 
 
+    const own = S.role === 'owner', doc = S.role === 'doctor', mg = Perm.manage() && Sync.on();
     $('#view').innerHTML =
-        this.acc('g','🏥', T('secGeneral'), general)
-      + this.acc('p','🖨', T('secPrint'),   print)
+        (own ? `<div class="al i" style="margin-bottom:6px"><span>★</span><span>${T('ownerData')}</span></div>` : '')
+      + (doc && Sync.on() ? this.acc('pf','🪪', T('secProfile'), this.profileBox(), true) : '')
+      + (doc && Sync.on() ? this.acc('tm','🤝', T('secTeam'), this.teamBox()) : '')
+      + (mg ? this.acc('br','✨', T('secBrand'), this.brandBox(), own) : '')
+      + (mg ? this.acc('st','👥', T('secStaff'), this.staffBox(), own) : '')
+      + (S.role !== 'pharmacy' && (Cloud.me?.code || Brand.get().code)
+          ? this.acc('cc','▮▮', T('secCode'), this.codeBox()) : '')
+      + this.acc('g','🏥', T('secGeneral'), general)
+      + (own ? '' : this.acc('p','🖨', T('secPrint'),   print))
       + this.acc('l','🎨', T('secLook'),    look)
       + (Sync.on() ? this.acc('sy','🔄', T('syncSection'), sync) : '')
       + this.acc('cl','☁', T('cloudSection'), cloud)
       + this.acc('sk','🎨', T('secSkin'), skin)
-      + (S.role==='doctor' ? this.acc('em','📧', T('secMails'), this.mailsBox()) : '')
-      + (S.role==='doctor' ? this.acc('s','🛡', T('secSafety'), safety) : '')
+      + ((doc || own) ? this.acc('s','🛡', T('secSafety'), safety) : '')
       + (S.role==='doctor' ? this.acc('r','🔐', T('secPerm'), perm) : '')
       + (S.role==='doctor' ? this.acc('t','🦷', T('toothStatuses'), statuses) : '')
       + (S.role==='doctor' ? this.acc('pc','🧰', T('procTypes'), procs) : '')
@@ -8986,6 +9541,8 @@ const Cfg = {
       };
     };
     pick('s-logo','logo'); pick('s-sign','sign');
+    if (mg) this.fillStaff();
+    if (doc && Sync.on()){ this.fillTeam(); this.fillProf(); }
 
     /* محاولة تعرّف صامتة على الطابعات عند فتح الإعدادات: إن وُجد
        جسر يعطي الأسماء ظهرت في القائمتين بلا ضغط زر، وإن لم يوجد
@@ -8995,66 +9552,277 @@ const Cfg = {
     }).catch(()=>{});
   },
 
-  /*──── إيميلات العيادة ────
-    حسابات الطاقم التي تدخل بها إلى البرنامج نفسه: صيدليات
-    وسكرتارية. الصيدليات هنا هي التي تظهر للطبيب عند كتابة العلاج
-    ليختار إلى أيّها يُحوّل. كلمة المرور لا تُحفظ في البرنامج
-    إطلاقاً — تُكتب مرة وتُرسل إلى السيرفر وتُنسى. */
-  mailsBox(){
-    const list = CFG.data.accounts || [];
-    const row = a => `
-      <div class="it" style="cursor:default">
-        <div class="av ${a.ok?'g':'w'}">${a.role==='pharmacy'?'💊':'🗂'}</div>
-        <div class="gr">
-          <div class="h3 ell">${esc(a.name || a.email)}</div>
-          <div class="mono tiny ell">${esc(a.email)}</div>
-        </div>
-        <div style="text-align:end">
-          <span class="pill ${a.ok?'g':'w'}">${a.ok?T('accOk'):T('accPending')}</span>
-          <div class="row mt" style="gap:6px;justify-content:flex-end">
-            ${a.ok?'':`<button class="btn xs gh"
-              onclick="Cfg.accConfirm('${esc(a.email)}')">${T('accConfirm')}</button>`}
-            <button class="btn xs gh" style="color:var(--bd)"
-              onclick="Cfg.accDel('${a.id}')">✕</button>
+  /*════════ هوية العيادة (المستثمر) ════════*/
+  _newLogo:undefined,          /* undefined: بلا تغيير · '': إزالة · dataURL: جديد */
+  brandBox(){
+    const b = Brand.get();
+    this._newLogo = undefined;
+    return `
+      <label class="lb">${T('appName')}</label>
+      <input id="br-name" value="${esc(b.name && b.name !== b.clinic ? b.name : '')}"
+        placeholder="${esc(S.clinicName || b.clinic || '')}">
+      <div class="tiny mt">${T('appNameHint')}</div>
+      <div class="mt2"><label class="lb">${T('clinicLogo')}</label>
+        <div class="row" style="gap:12px">
+          <div class="logoprev lg" id="br-prev">${b.logo?`<img src="${esc(b.logo)}" alt="">`:'🦷'}</div>
+          <div class="col gr">
+            <label class="btn gh" style="cursor:pointer">${T('pickLogo')}
+              <input type="file" class="hide" accept="image/png,image/jpeg,image/webp"
+                onchange="Cfg.brandLogo(this)"></label>
+            ${b.logo?`<button class="btn gh sm" onclick="Cfg.brandLogo(null)">${T('rmLogo')}</button>`:''}
           </div>
         </div>
-      </div>`;
+        <div class="tiny mt">${T('logoHint')}</div>
+      </div>
+      <button class="btn w mt2" id="br-go" onclick="Cfg.brandSave()">${T('save')}</button>`;
+  },
 
-    const group = (role, title, addLbl) => {
-      const rows = list.filter(a => a.role === role);
-      return `
-        <div class="lbl mt2">${title}</div>
-        <div class="col mt">${rows.length ? rows.map(row).join('')
-          : `<div class="emp">${T('noAccounts')}</div>`}</div>
-        <button class="btn w gh mt" onclick="Cfg.accAdd('${role}')">${addLbl}</button>`;
-    };
+  async brandLogo(inp){
+    const box = $('#br-prev');
+    if (!inp){ this._newLogo = ''; if (box) box.innerHTML = '🦷'; return; }
+    const f = inp.files && inp.files[0]; if (!f) return;
+    try {
+      this._newLogo = await Brand.shrink(f);
+      if (box) box.innerHTML = `<img src="${esc(this._newLogo)}" alt="">`;
+    } catch (e) { toast(String(e.message || e), 'e'); }
+  },
 
+  async brandSave(){
+    if (!Sync.on() || !navigator.onLine) return toast(T('syncOff'), 'e');
+    const body = { app_name: ($('#br-name')?.value || '').trim() };
+    if (this._newLogo !== undefined) body.logo = this._newLogo;
+    const b = $('#br-go'); b.disabled = true; b.textContent = T('cloudBusy');
+    try {
+      const d = await Cloud.call('/rest/v1/rpc/clinic_update', { method:'POST', body:{ p:body } });
+      this._newLogo = undefined;
+      Cloud.me = { ...(Cloud.me || {}), app_name:d.app_name, logo:d.logo, code:d.code, clinic_name:d.name };
+      Brand.save(Cloud.me);
+      toast(T('brandSaved'), 's');
+      App.draw();
+    } catch (e) {
+      const m = String(e.message || e);
+      toast(/logo/.test(m) ? T('logoBig') : m, 'e');
+    } finally { if (b){ b.disabled = false; b.textContent = T('save'); } }
+  },
+
+  /*════════ باركود العيادة ════════*/
+  codeBox(){
+    const code = Cloud.me?.code || Brand.get().code;
+    if (!code) return `<div class="emp">—</div>`;
+    const nmx = Brand.get().name || S.clinicName || CFG.data.clinic || '';
     return `
-      <div class="tiny">${T('mailsHint')}</div>
-      ${group('pharmacy', '💊 ' + T('r_pharmacy'), T('addPharmAcc'))}
-      <div class="al i mt"><span>ℹ</span><span>${T('mailsNote')}</span></div>
-      ${group('secretary', '🗂 ' + T('r_secretary'), T('addSecAcc'))}
-      <div class="tiny mt2">${T('accRemoveHint')}</div>`;
+      <div class="tiny">${T('codeHint')}</div>
+      <div class="clcode mt">
+        <div class="clcode-nm">${esc(nmx)}</div>
+        ${C39.svg(code, 78)}
+        <div class="clcode-num">${esc(code)}</div>
+      </div>
+      <div class="row mt" style="gap:8px">
+        <button class="btn gr" onclick="Cfg.codePrint()">🖨 ${T('printCode')}</button>
+        <button class="btn gh gr" onclick="Cfg.codeDl()">⬇ ${T('dlClinicCode')}</button>
+      </div>`;
+  },
+
+  codePrint(){
+    const code = Cloud.me?.code || Brand.get().code; if (!code) return;
+    const b = Brand.get();
+    const nmx = b.name || S.clinicName || CFG.data.clinic || '';
+    Print.win(`<div style="text-align:center;padding-top:18mm">
+        ${b.logo?`<img src="${b.logo}" style="max-width:38mm;max-height:38mm;object-fit:contain">`:''}
+        <div style="font-size:26px;font-weight:800;margin:10px 0 16px">${esc(nmx)}</div>
+        <div style="padding:0 6mm">${C39.svg(code, 120)}</div>
+        <div style="font-family:monospace;font-size:24px;font-weight:800;letter-spacing:.28em;margin-top:8px">${esc(code)}</div>
+        <div style="font-size:14px;margin-top:18px;color:#333">${esc(T('codeHint'))}</div>
+      </div>`, code, 'a5');
+  },
+
+  codeDl(){
+    const code = Cloud.me?.code || Brand.get().code; if (!code) return;
+    try {
+      const a = document.createElement('a');
+      a.href = C39.png(code, Brand.get().name || S.clinicName || '');
+      a.download = `clinic-${code}.png`;
+      a.click();
+    } catch(_){ toast(T('regFailed'), 'e'); }
+  },
+
+  /*════════ حسابات الطاقم (المستثمر) ════════*/
+  staffBox(){ return `<div id="staffbox">${UI.spin()}</div>`; },
+
+  async fillStaff(){
+    const box = $('#staffbox'); if (!box) return;
+    const d = await Staff.load(true);
+    if (!box.isConnected) return;
+    if (!d || !d.limits){ box.innerHTML = `<div class="al r"><span>!</span><span>${T('staffLoadFail')}</span></div>`; return; }
+    const lim = d.limits || {};
+    const ic = { doctor:'🦷', secretary:'🗂', pharmacy:'💊' };
+    const add = { doctor:T('addDoctor'), secretary:T('addSec'), pharmacy:T('addPharm') };
+    const group = role => {
+      const all = Staff.members(role);
+      const act = all.filter(m => m.active !== false).length;
+      const max = Number(lim[role] ?? 0);
+      const full = act >= max;
+      return `<div class="stgrp mt2">
+        <div class="row">
+          <div class="gr h3">${ic[role]} ${T('r_'+role)}</div>
+          <span class="pill ${full?'w':'b'} mono">${act} / ${max}</span>
+        </div>
+        <div class="track mt" style="height:6px"><i style="width:${max?Math.min(100,act/max*100):100}%;
+          background:${full?'var(--wr)':'linear-gradient(90deg,var(--br),var(--br2))'}"></i></div>
+        <div class="col mt">${all.length ? all.map(m => this.staffRow(m, ic[role])).join('')
+          : `<div class="emp" style="padding:18px">${T('noStaffYet')}</div>`}</div>
+        <button class="btn w gh mt" ${full?'disabled':''} onclick="Cfg.accAdd('${role}')">${add[role]}</button>
+        ${full?`<div class="tiny mt" style="color:var(--wr)">${T('quotaFull')}</div>`:''}
+      </div>`;
+    };
+    box.innerHTML = `<div class="tiny">${T('staffHint')}</div>`
+      + (S.role === 'doctor' ? `<div class="al i mt"><span>ℹ</span><span>${T('legacyManage')}</span></div>` : '')
+      + group('doctor') + group('secretary') + group('pharmacy');
+  },
+
+  staffRow(m, ic){
+    const off = m.active === false;
+    const st = off ? ['r', T('staffOff')] : m.confirmed ? ['g', T('accOk')] : ['w', T('accPending')];
+    const self = m.uid === S.user?.uid;
+    return `<div class="it" style="cursor:default">
+      <div class="av ${st[0]}">${ic}</div>
+      <div class="gr">
+        <div class="h3 ell">${esc(m.name || m.email || '—')}</div>
+        <div class="mono tiny ell">${esc(m.email || '')}</div>
+      </div>
+      <div style="text-align:end">
+        <span class="pill ${st[0]}">${st[1]}</span>
+        <div class="row mt" style="gap:6px;justify-content:flex-end">
+          ${(!m.confirmed && !off) ? `<button class="btn xs gh"
+            onclick="Cfg.accConfirm('${esc(m.email)}')">${T('accConfirm')}</button>` : ''}
+          ${self ? '' : `<button class="btn xs ${off?'':'gh'}"
+            onclick="Cfg.staffActive('${m.uid}',${off})">${off?T('enableAcc'):T('disableAcc')}</button>`}
+        </div>
+      </div>
+    </div>`;
+  },
+
+  async staffActive(uid, on){
+    if (!on && !ask(T('disableQ'))) return;
+    try {
+      await Cloud.staffFn({ action:'setActive', user_id:uid, active:!!on });
+      toast(T('saved'), 's');
+      this.fillStaff();
+    } catch (e) { toast(String(e.message || e), 'e'); }
+  },
+
+  /*════════ فريقي (الطبيب) ════════*/
+  teamBox(){ return `<div id="teambox">${UI.spin()}</div>`; },
+
+  async fillTeam(){
+    const box = $('#teambox'); if (!box) return;
+    const d = await Staff.load(true);
+    if (!box.isConnected) return;
+    if (!d){ box.innerHTML = `<div class="al r"><span>!</span><span>${T('staffLoadFail')}</span></div>`; return; }
+    const me = S.user?.uid;
+    const kinds = [['secretary', T('mySecs'), ''], ['pharmacy', T('myPharms'), ''],
+                   ['doctor', T('myViewers'), T('viewersHint')]];
+    box.innerHTML = `<div class="tiny">${T('teamHint')}</div>` + kinds.map(([k, title, hint]) => {
+      const list = Staff.members(k).filter(m => m.uid !== me && m.active !== false);
+      const on = new Set(Staff.linked(k).map(m => m.uid));
+      return `<div class="mt2"><div class="lbl">${title}</div>
+        ${hint ? `<div class="tiny mt">${hint}</div>` : ''}
+        <div class="col mt" data-kind="${k}">${list.length ? list.map(m => `
+          <div class="chk ${on.has(m.uid)?'on':''}" data-uid="${m.uid}" onclick="this.classList.toggle('on')">
+            <div class="bx">✓</div>
+            <div class="gr"><div style="font-weight:700">${esc(m.name || m.email || '—')}</div>
+              <div class="tiny mono">${esc(m.email || '')}</div></div>
+          </div>`).join('') : `<div class="emp" style="padding:16px">${T('noneOfKind')}</div>`}</div>
+      </div>`;
+    }).join('') + `<button class="btn w mt2" id="team-go" onclick="Cfg.teamSave()">${T('save')}</button>`;
+  },
+
+  async teamSave(){
+    if (!Sync.on() || !navigator.onLine) return toast(T('syncOff'), 'e');
+    const b = $('#team-go'); if (b){ b.disabled = true; b.textContent = T('cloudBusy'); }
+    try {
+      for (const k of ['secretary', 'pharmacy', 'doctor']){
+        const ids = [...document.querySelectorAll(`#teambox [data-kind="${k}"] .chk.on`)]
+          .map(x => x.dataset.uid);
+        /* المعطّلون لا يظهرون في القائمة — روابطهم تُحفظ كما هي */
+        for (const m of Staff.linked(k)) if (m.active === false) ids.push(m.uid);
+        await Cloud.call('/rest/v1/rpc/doctor_links_set',
+          { method:'POST', body:{ p_kind:k, p_members:ids } });
+      }
+      await Staff.load(true);
+      toast(T('teamSaved'), 's');
+    } catch (e) { toast(String(e.message || e), 'e'); }
+    finally { if (b){ b.disabled = false; b.textContent = T('save'); } }
+  },
+
+  /*════════ ملفي الشخصي (الطبيب) ════════*/
+  profileBox(){ return `<div id="profbox">${UI.spin()}</div>`; },
+
+  async fillProf(){
+    const box = $('#profbox'); if (!box) return;
+    const pf = (await Prof.mine()) || {};
+    if (!box.isConnected) return;
+    box.innerHTML = `
+      <label class="lb">${T('profName')}</label>
+      <input id="pf-name" value="${esc(pf.name || S.user?.name || CFG.data.doctor || '')}">
+      <div class="mt"><label class="lb">${T('profTitle')}</label>
+        <input id="pf-title" value="${esc(pf.title != null ? pf.title : (CFG.data.title || ''))}"></div>
+      <div class="mt2"><label class="lb">${T('signature')}</label>
+        <div class="tiny" style="margin-bottom:7px">${T('signHint')}</div>
+        <div class="row">
+          ${pf.sign?`<img src="${pf.sign}" style="height:54px;max-width:170px;object-fit:contain;
+            background:#fff;border-radius:10px;padding:5px;border:1px solid var(--edge)">`:''}
+          <input type="file" id="pf-sign" accept="image/png,image/jpeg,image/webp" class="gr">
+        </div>
+        ${pf.sign?`<button class="btn w gh mt" onclick="Cfg.profRmSign()">${T('removeSign')}</button>`:''}
+      </div>
+      <button class="btn w mt2" onclick="Cfg.profSave()">${T('save')}</button>`;
+    const inp = $('#pf-sign');
+    if (inp) inp.onchange = async e => {
+      const f = e.target.files[0]; if (!f) return;
+      try {
+        const sign = await Brand.shrink(f, 600);
+        await Prof.save({ ...((await Prof.mine()) || {}), sign });
+        this.fillProf();
+      } catch (err) { toast(String(err.message || err), 'e'); }
+    };
+  },
+
+  async profSave(){
+    const cur = (await Prof.mine()) || {};
+    await Prof.save({ ...cur, name:($('#pf-name')?.value || '').trim(),
+                      title:($('#pf-title')?.value || '').trim() });
+    toast(T('saved'), 's');
+  },
+
+  async profRmSign(){
+    if (!ask()) return;
+    const cur = (await Prof.mine()) || {};
+    delete cur.sign;
+    await Prof.save(cur);
+    this.fillProf();
   },
 
   accAdd(role){
-    const isPh = role === 'pharmacy';
+    const icon = { pharmacy:'💊', secretary:'🗂', doctor:'🦷' }[role] || '👤';
+    const title = { pharmacy:T('newPharmAcc'), secretary:T('newSecAcc'), doctor:T('newDoctorAcc') }[role];
+    const nameLb = { pharmacy:T('pharmName'), secretary:T('secName'), doctor:T('docAccName') }[role];
     UI.sheet(`
       <div class="shhead">
-        <div class="accic" style="width:44px;height:44px;font-size:19px">${isPh?'💊':'🗂'}</div>
-        <div class="gr"><div class="h2">${isPh?T('newPharmAcc'):T('newSecAcc')}</div>
-          <div class="tiny">${T('mailsHint')}</div></div>
+        <div class="accic" style="width:44px;height:44px;font-size:19px">${icon}</div>
+        <div class="gr"><div class="h2">${title}</div>
+          <div class="tiny">${T('staffHint')}</div></div>
         <button class="ib" onclick="Nav.back()">✕</button>
       </div>
       <div class="card">
-        <label class="lb">${isPh?T('pharmName'):T('secName')} <span class="req">*</span></label>
+        <label class="lb">${nameLb} <span class="req">*</span></label>
         <input id="ac-name" autocomplete="off">
         <div class="mt"><label class="lb">${T('accEmail')} <span class="req">*</span></label>
           <input id="ac-mail" type="email" dir="ltr" spellcheck="false" inputmode="email"></div>
         <div class="mt"><label class="lb">${T('accPass')} <span class="req">*</span></label>
-          <input id="ac-p1" type="password" dir="ltr"></div>
+          <input id="ac-p1" type="password" dir="ltr" autocomplete="new-password"></div>
         <div class="mt"><label class="lb">${T('accPass2')} <span class="req">*</span></label>
-          <input id="ac-p2" type="password" dir="ltr"></div>
+          <input id="ac-p2" type="password" dir="ltr" autocomplete="new-password"></div>
         <div id="ac-err" class="al r mt hide"></div>
         <div class="row mt2" style="gap:9px">
           <button class="btn gh gr" onclick="Nav.back()">${T('cancel')}</button>
@@ -9079,17 +9847,14 @@ const Cfg = {
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) return show(T('email'));
     if (p1.length < 8) return show(T('pass8'));
     if (p1 !== p2)     return show(T('passMatch'));
-    if ((CFG.data.accounts||[]).some(a => a.email === mail)) return show(T('emailTaken'));
+    if (Staff.members().some(m => String(m.email||'').toLowerCase() === mail))
+      return show(T('emailTaken'));
 
     const b = $('#ac-go'); b.disabled = true; b.textContent = T('cloudBusy');
     try {
+      /* السيرفر يتحقّق من الصلاحية والحدّ ويأخذ العيادة من حسابك */
       await Cloud.addAccount({ role, email:mail, password:p1, name });
-
-      CFG.data.accounts = CFG.data.accounts || [];
-      CFG.data.accounts.push({ id:uid(), role, name, email:mail, at:Date.now(), ok:false });
-      /* تاريخ تسجيل أول صيدلية — يُحفظ للمرجع لا للحكم */
-      if (role === 'pharmacy' && !CFG.data.phSince) CFG.data.phSince = Date.now();
-      await CFG.save();
+      await Staff.load(true);
 
       Nav.back();
       toast(T('accAdded'), 's');
@@ -9142,8 +9907,7 @@ const Cfg = {
         body:{ type:'signup', email, token:code } });
       if (!d?.access_token) return show(T('confirmBad'));
 
-      const a = (CFG.data.accounts || []).find(x => x.email === email);
-      if (a){ a.ok = true; await CFG.save(); }
+      await Staff.load(true);
       Nav.back();
       toast(T('confirmDone'), 's');
       this.draw();
@@ -9427,6 +10191,17 @@ const Cfg = {
     }
     await CFG.save();
     await CFG.register();   /* الدليل يعكس التعديل فوراً */
+    /* بيانات العيادة المعروضة للمراجعين على السيرفر — يغيّرها المدير وحده */
+    if (Perm.manage() && Sync.on() && navigator.onLine){
+      try {
+        const d = await Cloud.call('/rest/v1/rpc/clinic_update', { method:'POST', body:{ p:{
+          name:CFG.data.clinic, phone:CFG.data.phone, country:CFG.data.country,
+          gov:CFG.data.gov, area:CFG.data.area, landmark:CFG.data.landmark } } });
+        Cloud.me = { ...(Cloud.me || {}), clinic_name:d.name, app_name:d.app_name, logo:d.logo, code:d.code };
+        S.clinicName = d.name;
+        Brand.save(Cloud.me);
+      } catch(e){ toast(String(e.message || e), 'e'); }
+    }
     toast(T('saved'),'s'); App.draw();
   },
 
@@ -9547,6 +10322,8 @@ const TABS = {
               ['appts','t_appts'],['recall','t_recall'],['money','t_money'],['set','t_set']],
   pharmacy:  [['rx','t_rx'],['docs','t_docs'],['pacc','t_pacc']],
   patient:   [['my','t_my'],['new','t_new']],
+  /* المستثمر: الأرقام والإدارة — لا يكتب في الملفات السريرية */
+  owner:     [['money','t_money'],['set','t_set']],
 };
 const IC = {
  today:'<path d="M3 9h18M7 3v3m10-3v3M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round"/>',
@@ -9573,11 +10350,21 @@ const App = {
     this.draw();
     /* أول مزامنة بعد الدخول: يجلب الجهاز ما فاته قبل أن يبدأ العمل */
     /* ملفات سُجّلت قبل إضافة الباركود تأخذ أرقامها عند أول تشغيل */
-    Ops.backfillBarcodes().catch(()=>{});
-    /* المواعيد التي مضت تُصنَّف قبل أي عرض */
-    Appt.sweepMissed().catch(()=>{});
+    /* المستثمر لا يكتب في السجلات السريرية — هذه للطاقم وحده */
+    if (S.role !== 'owner'){
+      Ops.backfillBarcodes().catch(()=>{});
+      /* المواعيد التي مضت تُصنَّف قبل أي عرض */
+      Appt.sweepMissed().catch(()=>{});
+    }
     Sync.count().then(()=>{ Sync.paint(); if (Sync.pending) Sync.kick(); });
     if (Sync.on()){ Sync.run(); Live.connect(); }
+    /* الطاقم وروابطه: تحويل الوصفات واختيار الطبيب يحتاجانه */
+    Staff.load().then(() => {
+      /* سكرتير أو صيدلية لم يربطهما أي طبيب: لا يرون ملفات بعد — يُقال ذلك صراحة */
+      if ((S.role === 'secretary' || S.role === 'pharmacy') && Staff.cache()
+          && !Staff.active('doctor').length) toast(T('noDoctorLinked'), 'w');
+    }).catch(()=>{});
+    if (S.role === 'doctor') Prof.mine().catch(()=>{});
   },
 
   setTab(t){
@@ -9592,14 +10379,15 @@ const App = {
 
   draw(){
     $$('.lgL').forEach(x=>x.textContent = isAr()?'EN':'ع');
+    const who = (S.user?.name && S.user.name !== S.user.id) ? ' · ' + S.user.name : '';
     $('#hd-role').textContent = S.role==='patient'
-      ? (S.clinic?.name || T('r_patient')) : T('r_'+S.role);
+      ? (S.clinic?.name || T('r_patient')) : T('r_'+S.role) + who;
     $('#hd-name').textContent = S.role==='patient'
-      ? (S.user?.phone || '') : CFG.data.clinic;
+      ? (S.user?.phone || '') : (Brand.get().name || S.clinicName || CFG.data.clinic);
 
     const cur = TABS[S.role].find(([k])=>k===S.tab);
     $('#pagetitle').textContent = cur ? T(cur[1]) : '';
-    $('#scanbtn').classList.toggle('hide', S.role==='patient');
+    $('#scanbtn').classList.toggle('hide', S.role==='patient' || S.role==='owner');
 
     $('#navlist').innerHTML = TABS[S.role].map(([k,l])=>`
       <button class="navb ${S.tab===k?'on':''}" onclick="App.setTab('${k}')">
@@ -9831,7 +10619,7 @@ const Guard = {
       localStorage.setItem('d_off', JSON.stringify({
         email: String(email).toLowerCase(),
         salt, hash: await this.hash(pass, salt),
-        role: me.role, clinic_id: me.clinic_id || null,
+        role: me.role, clinic_id: me.clinic_id || null, uid: me.uid || null,
         clinic_name: me.clinic_name || null, full_name: me.full_name || null,
         at: Date.now(),
       }));
@@ -9871,10 +10659,12 @@ const Auth = { out(){ S.role=null; S.user=null; S.patient=null; S.visit=null;
   الأيقونة تُولَّد داخل الملف نفسه (سن أبيض على أخضر) ثم تُحوَّل
   إلى PNG ليقبلها نظام التشغيل، فيبقى البرنامج ملفاً واحداً.
 ═══════════════════════════════════════════════════════*/
-const APP = { nameAr:'أسناني', nameEn:'My teeth', green:'#00796B', green2:'#00A88F' };
+const APP = { nameAr:'أسناني', nameEn:'My teeth', green:'#00796B', green2:'#00A88F',
+              logo:'', title:'' };   /* logo/title: هوية العيادة إن ضبطها المستثمر */
 
 const ICON = {
   cache:{},
+  TOOTH:'M12 3c-3 0-4-1.2-6 0C4 4.2 3.4 7 4 10c.5 2.6 1.3 4 1.8 6.6.4 2 .6 4.4 2 4.4 1.6 0 1.3-2.6 1.8-4.6.4-1.6.8-2.4 2.4-2.4s2 .8 2.4 2.4c.5 2 .2 4.6 1.8 4.6 1.4 0 1.6-2.4 2-4.4.5-2.6 1.3-4 1.8-6.6.6-3 0-5.8-2-7-2-1.2-3 0-6 0z',
 
   /* السن مرسوم داخل مربع 512 مع هامش أمان للأيقونات المقنّعة */
   svg(size, maskable){
@@ -9897,25 +10687,34 @@ const ICON = {
 
   /* PNG أوثق للتثبيت: أنظمة التشغيل لا تقبل SVG دائماً */
   png(size, maskable){
-    const key = size + (maskable ? 'm' : '');
+    const key = size + (maskable ? 'm' : '') + (APP.logo ? 'L' : '');
     if (this.cache[key]) return Promise.resolve(this.cache[key]);
     return new Promise(res => {
       const img = new Image();
       img.onload = () => {
         const c = document.createElement('canvas');
         c.width = c.height = size;
-        c.getContext('2d').drawImage(img, 0, 0, size, size);
+        const g = c.getContext('2d');
+        if (APP.logo){
+          /* شعار العيادة على خلفية بيضاء، داخل منطقة الأمان */
+          g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, size, size);
+          const pad = size * (maskable ? .2 : .08), box = size - pad * 2;
+          const sc = Math.min(box / img.width, box / img.height);
+          const w = img.width * sc, h = img.height * sc;
+          g.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+        } else g.drawImage(img, 0, 0, size, size);
         this.cache[key] = c.toDataURL('image/png');
         res(this.cache[key]);
       };
       img.onerror = () => res(this.dataSvg(size, maskable));
-      img.src = this.dataSvg(size, maskable);
+      img.src = APP.logo || this.dataSvg(size, maskable);
     });
   },
 
   /* عنصر الشعار المعروض داخل البرنامج */
   el(cls){
-    return `<img class="applogo ${cls||''}" alt="${APP.nameAr}" src="${this.dataSvg(256,false)}">`;
+    return `<img class="applogo ${cls||''} ${APP.logo?'custom':''}" alt="${esc(APP.title||APP.nameAr)}"
+      src="${APP.logo ? esc(APP.logo) : this.dataSvg(256,false)}">`;
   },
 };
 
@@ -9934,8 +10733,8 @@ const Install = {
     const dir  = page.slice(0, page.lastIndexOf('/') + 1);
     const man = {
       id: page,
-      name: `${APP.nameAr} — ${APP.nameEn}`,
-      short_name: APP.nameAr,
+      name: APP.title || `${APP.nameAr} — ${APP.nameEn}`,
+      short_name: APP.title || APP.nameAr,
       description: 'نظام إدارة عيادات الأسنان',
       start_url: page,
       scope: dir,
@@ -10021,9 +10820,9 @@ const Install = {
     if (document.getElementById('instbar')) return;
 
     const box = el(`<div id="instbar"><div class="box">
-      <img class="applogo sm" src="${ICON.dataSvg(160,false)}" alt="">
+      <img class="applogo sm" src="${APP.logo ? esc(APP.logo) : ICON.dataSvg(160,false)}" alt="">
       <div class="gr" style="min-width:0">
-        <div class="nm">${APP.nameAr} — ${APP.nameEn}</div>
+        <div class="nm">${esc(APP.title || `${APP.nameAr} — ${APP.nameEn}`)}</div>
         <div class="ds">${this.isIOS() ? T('iosInstall')
           : this.ready ? T('installHint') : T('installMenu')}</div>
       </div>
@@ -10057,7 +10856,7 @@ const Install = {
     UI.sheet(`
       <div class="shhead"><div class="gr">
         <div class="h2">${T('install')}</div>
-        <div class="sub">${APP.nameAr} — ${APP.nameEn}</div>
+        <div class="sub">${esc(APP.title || `${APP.nameAr} — ${APP.nameEn}`)}</div>
       </div><button class="ib" onclick="Nav.back()">✕</button></div>
 
       <div class="ctr">${ICON.el()}</div>
@@ -10124,9 +10923,13 @@ window.addEventListener('unhandledrejection', e =>
   Sync.init();
 
   /* الشعار نفسه يظهر عند فتح البرنامج وعلى أيقونة التثبيت */
-  const lg = $('#applogo');
-  if (lg) lg.outerHTML = ICON.el();
+  /* هوية العيادة المحفوظة على هذا الجهاز تظهر من أول لحظة */
+  Brand.apply();
   Install.init();
+  /* عند العودة للتطبيق: هل تغيّر من يجوز لهذا الحساب أن يرى؟ */
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && S.role) Scope.recheck();
+  });
 
   try {
     await DB.open();
@@ -10145,7 +10948,7 @@ window.addEventListener('unhandledrejection', e =>
 
     /* جلسة محفوظة: يُستأنف العمل بلا إعادة كتابة البريد والرمز.
        الجلسة على هذا الجهاز وحده، والقفل التلقائي يحرسها. */
-    if (Cloud.session && Cloud.ready() && !Reg.needed()){
+    if (Cloud.session && Cloud.ready()){
       const box = $('#cl-err');
       if (box){ box.textContent = T('resuming'); box.classList.remove('hide'); }
       try {
@@ -10154,19 +10957,21 @@ window.addEventListener('unhandledrejection', e =>
         if (me && me.role && me.role !== 'none'){
           S.role = me.role;
           S.clinicName = me.clinic_name || null;
-          S.user = { id: Cloud.session.email, role:me.role,
+          S.user = { id: Cloud.session.email, uid: me.uid || null, role:me.role,
                      name: me.full_name || Cloud.session.email, cloud:true,
                      clinic_id: me.clinic_id };
           Guard.ok();
           box?.classList.add('hide');
+          Brand.save(me);
+          await Scope.check(me);
           return App.start();
         }
       } catch(_){ /* التذكرة لم تعد صالحة: تُعرض شاشة الدخول */ }
       Cloud.saveSess(null);
       box?.classList.add('hide');
     }
-    /* أول تشغيل قبل أي دخول: تُطلب بيانات العيادة */
-    if (Reg.needed()) Reg.draw();
+    /* بيانات العيادة تُسجَّل الآن على السيرفر (تسجيل عيادة جديدة)
+       وتصل مع أول دخول — فلا تُطلب محلياً قبل الدخول. */
     if (DB.fallback) Storage.warn();
   } catch (err) {
     const box = $('#cl-err');
