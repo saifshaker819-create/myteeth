@@ -1008,6 +1008,32 @@ input:hover,select:hover,textarea:hover{ border-color:color-mix(in srgb,var(--br
 .ses .n{ width:26px; height:26px; border-radius:9px; display:grid; place-items:center; font-weight:800; font-size:12px;
   background:var(--brL); color:var(--br); flex-shrink:0 }
 @media (max-width:560px){ .pf-money{ gap:6px } .pf-m .v{ font-size:16px } .pf-name{ font-size:21px } }
+
+/*──── الاشتراك: عدّاد الشريط وشاشة الإيقاف ────*/
+.subchip{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 11px;border-radius:12px;
+  border:1px solid var(--edge);background:var(--glass2);color:var(--ink);font:inherit;font-size:12.5px;
+  font-weight:700;cursor:pointer;white-space:nowrap;transition:transform .15s}
+.subchip:active{transform:scale(.96)}
+.subchip .sc-d{font-weight:600;opacity:.7;font-size:11.5px;direction:ltr}
+.subchip.warn{border-color:var(--bd);background:var(--bdL);color:var(--bd);animation:subblink 1.15s ease-in-out infinite}
+.subchip.grace{border-color:var(--wr);background:var(--wrL);color:var(--wr)}
+.subchip.warn.grace{border-color:var(--bd);background:var(--bdL);color:var(--bd)}
+@keyframes subblink{0%,100%{box-shadow:0 0 0 0 transparent;opacity:1}
+  50%{box-shadow:0 0 0 4px var(--bdL),0 0 18px -2px var(--bd);opacity:.62}}
+@media (max-width:560px){ .subchip .sc-d{display:none} .subchip{padding:0 9px} }
+@media (prefers-reduced-motion:reduce){ .subchip.warn{animation:none;outline:2px solid var(--bd)} }
+.sublock{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:18px;
+  background:color-mix(in srgb,var(--bg,#0b1416) 55%,transparent);
+  backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2)}
+.sl-card{width:min(420px,100%);text-align:center;padding:26px 22px;border-radius:24px;
+  background:var(--glassS);border:1px solid var(--edge);box-shadow:0 30px 80px -30px rgba(0,0,0,.55)}
+.sl-ic{width:66px;height:66px;margin:0 auto 12px;border-radius:20px;display:grid;place-items:center;
+  font-size:30px;background:var(--bdL);border:1px solid var(--bd)}
+.sl-t{font-size:23px;color:var(--bd);margin-bottom:6px}
+.sl-s{color:var(--ink);opacity:.85;margin-bottom:16px}
+.sl-ph{display:flex;flex-direction:column;gap:4px;margin:0 0 16px;padding:12px;border-radius:16px;
+  background:var(--glass2);border:1px solid var(--edge)}
+.sl-num{font-size:24px;font-weight:800;letter-spacing:.06em;color:var(--br);text-decoration:none}
 </style>
 </head>
 <body>
@@ -1074,6 +1100,7 @@ input:hover,select:hover,textarea:hover{ border-color:color-mix(in srgb,var(--br
         <div class="gr">
           <div class="h3" id="pagetitle"></div>
         </div>
+        <button class="subchip hide" id="subchip" onclick="Sub.info()"></button>
         <button class="syncdot hide" id="syncdot" onclick="Sync.run(true)"></button>
         <button class="ib hide" id="bellbtn" onclick="Notify.open()" title="">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none">
@@ -1797,6 +1824,15 @@ Object.assign(D.ar, {
  legacyManage:'لا يوجد حساب مستثمر لهذه العيادة، فإدارة الطاقم متاحة للطبيب مؤقتاً.',
  ofDoctor:'طبيب',
  needPharmAcc:'اختر صيدلياتك أولاً من الإعدادات ← فريقي',
+ subTitle:'الاشتراك', subDays:'يوم', subLastDay:'آخر يوم', subDue:'موعد الدفع',
+ subLeft:'المتبقي', subPlan:'الباقة', subBilling:'طريقة الدفع', subAnnual:'سنوي', subMonthly:'شهري',
+ subGrace:'مهلة إضافية', subWarn:'اقترب موعد تجديد الاشتراك — باقي',
+ subPayHint:'جدّد قبل موعد الدفع ليبقى البرنامج يعمل عند كل الطاقم دون انقطاع.',
+ subEnded:'تم انتهاء اشتراكك', subEndedHint:'يرجى التواصل مع الدعم لتجديد الاشتراك',
+ subSuspended:'تم إيقاف حساب العيادة', subSuspendedHint:'يرجى التواصل مع الدعم',
+ subSupport:'رقم الدعم', subCall:'اتصال', subWa:'واتساب', subCheck:'تحقّق من التجديد',
+ subBack:'تم تجديد الاشتراك — أهلاً بعودتك', subStill:'الاشتراك ما زال منتهياً',
+ subDataSafe:'بياناتك محفوظة كاملة وتعود فور التجديد.',
 });
 Object.assign(D.en, {
  r_owner:'Owner', r_owner_d:'Clinic management and accounts',
@@ -1827,6 +1863,15 @@ Object.assign(D.en, {
  legacyManage:'This clinic has no owner account, so staff management is open to the doctor for now.',
  ofDoctor:'Doctor',
  needPharmAcc:'Pick your pharmacies first: Settings → My team',
+ subTitle:'Subscription', subDays:'days', subLastDay:'Last day', subDue:'Payment due',
+ subLeft:'Remaining', subPlan:'Plan', subBilling:'Billing', subAnnual:'Annual', subMonthly:'Monthly',
+ subGrace:'Extra grace', subWarn:'Subscription renewal is near —',
+ subPayHint:'Renew before the due date so the app keeps working for all staff.',
+ subEnded:'Your subscription has ended', subEndedHint:'Please contact support to renew',
+ subSuspended:'This clinic account is suspended', subSuspendedHint:'Please contact support',
+ subSupport:'Support', subCall:'Call', subWa:'WhatsApp', subCheck:'Check renewal',
+ subBack:'Subscription renewed — welcome back', subStill:'The subscription is still expired',
+ subDataSafe:'All your data is safe and returns as soon as you renew.',
 });
 
 let LG = localStorage.getItem('d_lang') || 'ar';
@@ -3185,7 +3230,9 @@ const Sync = {
     return { pull: r ? r.pull : SYNC_STORES, push: r ? r.push : SYNC_STORES };
   },
 
-  on(){ return Cloud.ready() && !!Cloud.session && !!Cloud.me?.clinic_id; },
+  /* اشتراك منتهٍ: لا مزامنة ولا بثّ — السيرفر يرفضهما أصلاً،
+     ومحاولتهما كل ثوانٍ استهلاك بلا فائدة. */
+  on(){ return Cloud.ready() && !!Cloud.session && !!Cloud.me?.clinic_id && !Sub.expired(); },
 
   revKey(){ return 'd_rev_' + (Cloud.me?.clinic_id || 'x'); },
   rev(){ return Number(localStorage.getItem(this.revKey()) || 0); },
@@ -3246,6 +3293,12 @@ const Sync = {
     for (const x of items){
       const doc = x.deleted ? null : await DB.get(x.store, x.rid);
       if (!doc && !x.deleted){ await DB.del('outbox', x.id); continue; }
+      /* صورة التُقطت بلا إنترنت وما زالت بكسلاتها داخل السجل:
+         لا تُرسل حتى تُرفع إلى التخزين أولاً. لو أُرسلت لدخلت
+         ملايين البايتات جدول السجلات وسُحبت إلى كل جهاز، ولربما
+         تجاوزت حدّ الطلب فعلق الصادر كله. تبقى في الصندوق
+         وتُرسل خفيفة بعد Img.flush. */
+      if (x.store === 'files' && doc && doc.data && !doc.path && doc.blobType) continue;
       /* بعد الدمج يصير ختم السجل أحدث من وقت كتابتي، فيُرسل
          الأحدث وإلا رفض السيرفر المدموج باعتباره قديماً. */
       const ch = { store:x.store, id:x.rid, doc: doc || {},
@@ -3422,9 +3475,12 @@ const Sync = {
          زميلي، فيُدهس عمله. وبالسحب أولاً يُدمج عمله في نسختي
          ثم أرفع المدموج، فلا يضيع طرف. */
       const down = await this.pull();
+      /* صور التُقطت بلا إنترنت تُرفع إلى التخزين قبل الدفع،
+         فيصل سجلّها إلى الزملاء في الدورة نفسها خفيفاً ومعه مساره.
+         Img.flush يبتلع أخطاء الشبكة ولا يوقف الدورة. */
+      await Img.flush();
       const up   = await this.push();
       const bk   = await this.bookings();
-      await Img.flush();          /* صور التُقطت بلا إنترنت */
       this.last = Date.now();
       this.fails = 0;
       try { localStorage.setItem('d_synced', String(this.last)); } catch(_){}
@@ -3433,6 +3489,14 @@ const Sync = {
       if (down || bk) this.redraw();
     } catch (e) {
       this.err = String(e.message || e);
+      /* السيرفر لم يعد يعدّني عضواً فعّالاً: غالباً انتهى الاشتراك أو
+         أُوقفت العيادة. يُسأل عن الحالة بدل التكرار كل ثوانٍ. */
+      if (/not_a_clinic_member/.test(this.err)){
+        Sub.recheck();
+        clearTimeout(this._retry);
+        this._retry = setTimeout(() => this.run(), 300000);
+        return;
+      }
       if (manual) toast(T('syncFail') + ' — ' + this.err, 'e');
       /* الفشل يعيد المحاولة متباعداً — لا ينتظر المؤقّت البطيء،
          ولا يكرّر بلا توقّف على شبكة متعثّرة. */
@@ -3931,8 +3995,162 @@ const Scope = {
     this._at = Date.now();
     try {
       const me = await Cloud.whoami();
-      if (me && me.role === S.role){ Brand.save(me); await this.check(me); Sync.kick(); }
+      if (me && me.role === S.role){
+        Brand.save(me); Sub.save(me); Sub.tick();
+        if (Sub.expired()) return;
+        await this.check(me); Sync.kick();
+      }
     } catch(_){}
+  },
+};
+
+/*═══════════════ الاشتراك ═══════════════
+  موعد الدفع والانتهاء يقرّرهما السيرفر (whoami.sub) ويفرضهما على
+  القاعدة نفسها: عند الانتهاء لا قراءة ولا كتابة ولا صور. هنا العرض:
+  عدّاد في الشريط العلوي، تنبيه وومض في آخر ١٠ أيام، وشاشة إيقاف.
+  الوقت يُقاس بساعة السيرفر (فرقها محفوظ مع الحالة)، فتغيير ساعة
+  الجهاز لا يمدّ الاشتراك.
+═════════════════════════════════════════*/
+const Sub = {
+  PHONE:'07807632797', WA:'9647807632797', WARN:10,
+  d:null, _t:null, _chk:0,
+
+  key(){ return 'd_sub_' + (Cloud.me?.clinic_id || S.user?.clinic_id || 'x'); },
+  save(me){
+    if (!me || !me.sub) return;
+    const srv = Date.parse(me.sub.now);
+    this.d = { ...me.sub, skew: isNaN(srv) ? 0 : srv - Date.now() };
+    try { localStorage.setItem(this.key(), JSON.stringify(this.d)); } catch(_){}
+  },
+  load(){
+    if (this.d) return this.d;
+    try { this.d = JSON.parse(localStorage.getItem(this.key())) || null; } catch(_){ this.d = null; }
+    return this.d;
+  },
+  now(){ return Date.now() + (this.load()?.skew || 0); },
+  end(){
+    const d = this.load(); if (!d || !d.paid_until) return 0;
+    return Math.max(Date.parse(d.paid_until) || 0, Date.parse(d.grace_until || '') || 0);
+  },
+  staff(){ return !!S.role && S.role !== 'patient'; },
+  limited(){ return this.staff() && !!this.end(); },
+  left(){ const e = this.end(); return e ? e - this.now() : Infinity; },
+  suspended(){ return this.staff() && this.load()?.active === false; },
+  expired(){ return (this.limited() && this.left() <= 0) || this.suspended(); },
+  inGrace(){ const d = this.load(); return !!d?.grace_until && this.now() >= Date.parse(d.paid_until); },
+  days(){ return Math.max(0, Math.ceil(this.left() / 86400000)); },
+  /* الانتهاء عند ٠٠:٠٠ من اليوم التالي — فيوم الاستحقاق هو آخر يوم عمل */
+  due(){ const e = this.end(); return e ? new Date(e - 1000) : null; },
+  fmt(d){
+    if (!d) return '—';
+    try { return d.toLocaleDateString('en-GB', { timeZone:'Asia/Baghdad', day:'2-digit', month:'2-digit', year:'numeric' }); }
+    catch(_){ return d.toISOString().slice(0, 10); }
+  },
+
+  /*──── الشريط العلوي ────*/
+  paint(){
+    const el = $('#subchip'); if (!el) return;
+    if (!this.limited() || this.expired()){ el.classList.add('hide'); return; }
+    const n = this.days(), g = this.inGrace();
+    el.classList.remove('hide');
+    el.classList.toggle('warn', n <= this.WARN);
+    el.classList.toggle('grace', g);
+    el.innerHTML = `<span class="sc-ic">${g ? '⏳' : '📅'}</span>
+      <span class="sc-n">${n <= 1 ? T('subLastDay') : `${n} ${T('subDays')}`}</span>
+      <span class="sc-d">${this.fmt(this.due())}</span>`;
+    el.title = `${g ? T('subGrace') : T('subDue')}: ${this.fmt(this.due())}`;
+  },
+
+  start(){
+    this.d = null; this.load();
+    clearInterval(this._t);
+    this._t = setInterval(() => this.tick(), 60000);
+    this.tick();
+  },
+  tick(){
+    this.paint();
+    if (this.expired()) this.lock(); else this.warn();
+  },
+  stop(){ clearInterval(this._t); this._t = null; this.unlock(); this.d = null; },
+
+  /* تنبيه مرة واحدة يومياً في آخر ١٠ أيام — والومض مستمر في الشريط */
+  warn(){
+    if (!this.limited() || this.days() > this.WARN) return;
+    const day = new Date(this.now()).toISOString().slice(0, 10);
+    const k = 'd_subwarn_' + (Cloud.me?.clinic_id || 'x') + '_' + day;
+    try { if (localStorage.getItem(k)) return; localStorage.setItem(k, '1'); } catch(_){ return; }
+    toast(`${this.inGrace() ? T('subGrace') + ' — ' : T('subWarn') + ' '}${this.days()} ${T('subDays')} · ${this.fmt(this.due())}`, 'w');
+  },
+
+  /*──── شاشة الإيقاف ────*/
+  lock(){
+    if ($('#sublock')) return;
+    Live.stop();
+    clearTimeout(Sync._retry);
+    const sus = this.suspended();
+    const div = document.createElement('div');
+    div.id = 'sublock'; div.className = 'sublock';
+    div.innerHTML = `<div class="sl-card">
+        <div class="sl-ic">${sus ? '⏸' : '⌛'}</div>
+        <div class="dsp sl-t">${T(sus ? 'subSuspended' : 'subEnded')}</div>
+        <div class="sl-s">${T(sus ? 'subSuspendedHint' : 'subEndedHint')}</div>
+        <div class="sl-ph"><span class="lbl">${T('subSupport')}</span>
+          <a class="sl-num" dir="ltr" href="tel:${this.PHONE}">${this.PHONE}</a></div>
+        <div class="row" style="gap:9px">
+          <a class="btn gh gr" href="tel:${this.PHONE}">📞 ${T('subCall')}</a>
+          <a class="btn gr" href="https://wa.me/${this.WA}" target="_blank" rel="noopener">💬 ${T('subWa')}</a>
+        </div>
+        <button class="btn gh w mt2" id="sl-chk" onclick="Sub.recheck(true)">↻ ${T('subCheck')}</button>
+        <div class="tiny mt2">${T('subDataSafe')}</div>
+        <button class="lnk mt2" onclick="Sub.unlock();Auth.out()">⏻ ${T('logout') || 'خروج'}</button>
+      </div>`;
+    document.body.appendChild(div);
+  },
+  unlock(){ $('#sublock')?.remove(); },
+
+  /* يُسأل السيرفر: هل جُدّد الاشتراك؟ — يدوياً من الشاشة، أو عند
+     العودة للتطبيق مرة كل دقيقتين على الأكثر. */
+  async recheck(manual){
+    if (!Cloud.session || !navigator.onLine){ if (manual) toast(T('syncOff'), 'w'); return; }
+    if (!manual && Date.now() - this._chk < 120000) return;
+    this._chk = Date.now();
+    const b = $('#sl-chk'); if (b) b.disabled = true;
+    try {
+      if (Cloud.session.exp - Date.now() < 60000) await Cloud.refresh();
+      const me = await Cloud.whoami();
+      if (!me || me.role !== S.role) return;
+      this.save(me);
+      if (!this.expired()){
+        const was = !!$('#sublock');
+        this.unlock(); this.paint();
+        Brand.save(me);
+        await Scope.check(me);
+        if (Sync.on()){ Sync.run(); Live.connect(); }
+        if (was || manual) toast(T('subBack'), 's');
+      } else {
+        this.lock();
+        if (manual) toast(T('subStill'), 'e');
+      }
+    } catch(_){ if (manual) toast(T('cloudFail'), 'e'); }
+    finally { if (b) b.disabled = false; }
+  },
+
+  info(){
+    const d = this.load() || {};
+    const row = (k, v) => `<div class="row" style="justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--edge)">
+      <span class="lbl">${k}</span><b>${v}</b></div>`;
+    UI.sheet(`<div class="h2">${T('subTitle')}</div>
+      <div class="card flat mt2">
+        ${row(T('subPlan'), esc(d.plan_name || '—'))}
+        ${row(T('subBilling'), d.billing === 'monthly' ? T('subMonthly') : T('subAnnual'))}
+        ${row(this.inGrace() ? T('subGrace') : T('subDue'), this.fmt(this.due()))}
+        ${row(T('subLeft'), this.days() <= 1 ? T('subLastDay') : `${this.days()} ${T('subDays')}`)}
+      </div>
+      <div class="tiny mt2">${T('subPayHint')}</div>
+      <div class="row mt2" style="gap:9px">
+        <a class="btn gh gr" href="tel:${this.PHONE}">📞 <span dir="ltr">${this.PHONE}</span></a>
+        <a class="btn gr" href="https://wa.me/${this.WA}" target="_blank" rel="noopener">💬 ${T('subWa')}</a>
+      </div>`);
   },
 };
 
@@ -4162,6 +4380,7 @@ const Login = {
                  cloud:true, clinic_id:me.clinic_id || null };
       if (me.clinic_name) S.clinicName = me.clinic_name;
       Brand.save(me);
+      Sub.save(me);
       await Scope.check(me);
       App.start();
     } catch (e) {
@@ -10678,6 +10897,8 @@ const App = {
     S.tab = TABS[S.role][0][0];
     Nav.reset();
     this.draw();
+    /* الاشتراك أولاً: منتهٍ = شاشة الإيقاف، ولا مزامنة بعدها */
+    Sub.start();
     /* أول مزامنة بعد الدخول: يجلب الجهاز ما فاته قبل أن يبدأ العمل */
     /* ملفات سُجّلت قبل إضافة الباركود تأخذ أرقامها عند أول تشغيل */
     /* المستثمر لا يكتب في السجلات السريرية — هذه للطاقم وحده */
@@ -10981,6 +11202,7 @@ const Auth = { out(){ S.role=null; S.user=null; S.patient=null; S.visit=null;
   /* الخروج المحلي ينهي جلسة السيرفر أيضاً، فلا تبقى تذكرة صالحة
      على جهاز تركه صاحبه. */
   Live.stop();
+  Sub.stop();
   if (Cloud.session) Cloud.signOut();
   $('#app').classList.add('hide'); $('#login').classList.remove('hide');
   $('#lg-cloud').classList.remove('hide'); Login.drawCloud(); } };
@@ -11270,7 +11492,9 @@ window.addEventListener('unhandledrejection', e =>
   Install.init();
   /* عند العودة للتطبيق: هل تغيّر من يجوز لهذا الحساب أن يرى؟ */
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && S.role) Scope.recheck();
+    if (!document.hidden && S.role){
+      if (Sub.expired()) Sub.recheck(); else Scope.recheck();
+    }
   });
 
   try {
@@ -11305,6 +11529,7 @@ window.addEventListener('unhandledrejection', e =>
           Guard.ok();
           box?.classList.add('hide');
           Brand.save(me);
+          Sub.save(me);
           await Scope.check(me);
           return App.start();
         }
