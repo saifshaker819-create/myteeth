@@ -1034,6 +1034,13 @@ input:hover,select:hover,textarea:hover{ border-color:color-mix(in srgb,var(--br
 .sl-ph{display:flex;flex-direction:column;gap:4px;margin:0 0 16px;padding:12px;border-radius:16px;
   background:var(--glass2);border:1px solid var(--edge)}
 .sl-num{font-size:24px;font-weight:800;letter-spacing:.06em;color:var(--br);text-decoration:none}
+
+/*──── الخلفية: رمادي هادئ بدل البياض (الوضع الفاتح فقط) ────
+  البياض الكامل يجعل البطاقات البيضاء تذوب فيه فيبدو البرنامج باهتاً.
+  أساس رمادي مطفأ يُبرز البطاقات والأقسام كما هي — هي لا تتغيّر. */
+html:not([data-theme=dark]){ --bg:#D6DCE0 }
+html:not([data-theme=dark]) body{ background:linear-gradient(180deg,#DCE1E5 0%,#D1D7DB 100%) fixed }
+html:not([data-theme=dark]) body::before{ opacity:.5 }
 </style>
 </head>
 <body>
@@ -1803,7 +1810,7 @@ Object.assign(D.ar, {
  regDoneOwner:'سُجّلت العيادة. أكّد بريد حساب المستثمر بالرمز الذي وصلك، ثم ادخل وأنشئ حسابات الطاقم من الإعدادات.',
  secBrand:'هوية التطبيق', appName:'اسم التطبيق', appNameHint:'يظهر لطاقم هذه العيادة ومراجعيها وحدهم — لا يتغيّر في العيادات الأخرى',
  brandSaved:'حُفظت هوية العيادة', rmLogo:'إزالة الشعار', logoBig:'الصورة كبيرة جداً — اختر صورة أصغر',
- secCode:'باركود العيادة', codeHint:'يقرؤه المراجع من تطبيقه ليفتح عيادتك. اطبعه وضعه في الاستقبال.',
+ secCode:'باركود العيادة', codeHint:'يمسحه المراجع بكاميرا هاتفه أو عدسة كوكل فيفتح له تطبيق المراجع، وبعد التسجيل تُفتح عيادتك مباشرة. اطبعه وضعه في الاستقبال.',
  printCode:'طباعة الباركود', dlClinicCode:'تنزيل صورة الباركود',
  secStaff:'حسابات الطاقم', staffHint:'كل الحسابات تخصّ هذه العيادة وحدها. العدد محكوم بالحدود التي تضعها لوحة التحكم.',
  addDoctor:'＋ طبيب', addSec:'＋ سكرتير', addPharm:'＋ صيدلية',
@@ -1824,6 +1831,7 @@ Object.assign(D.ar, {
  legacyManage:'لا يوجد حساب مستثمر لهذه العيادة، فإدارة الطاقم متاحة للطبيب مؤقتاً.',
  ofDoctor:'طبيب',
  needPharmAcc:'اختر صيدلياتك أولاً من الإعدادات ← فريقي',
+ offlineResume:'بلا إنترنت الآن — البرنامج يعمل ويزامن حين يعود الاتصال',
  subTitle:'الاشتراك', subDays:'يوم', subLastDay:'آخر يوم', subDue:'موعد الدفع',
  subLeft:'المتبقي', subPlan:'الباقة', subBilling:'طريقة الدفع', subAnnual:'سنوي', subMonthly:'شهري',
  subGrace:'مهلة إضافية', subWarn:'اقترب موعد تجديد الاشتراك — باقي',
@@ -1842,7 +1850,7 @@ Object.assign(D.en, {
  regDoneOwner:'Clinic registered. Confirm the owner email with the code you received, then sign in and create staff accounts from Settings.',
  secBrand:'App identity', appName:'App name', appNameHint:'Seen only by this clinic’s staff and patients — other clinics are unaffected',
  brandSaved:'Clinic identity saved', rmLogo:'Remove logo', logoBig:'Image too large — choose a smaller one',
- secCode:'Clinic barcode', codeHint:'Patients scan it in their app to open your clinic. Print it for reception.',
+ secCode:'Clinic barcode', codeHint:'Patients scan it with their phone camera or Google Lens to open the patient app; after sign-up your clinic opens directly. Print it for reception.',
  printCode:'Print barcode', dlClinicCode:'Download barcode image',
  secStaff:'Staff accounts', staffHint:'Every account belongs to this clinic only. Counts are limited by the control panel.',
  addDoctor:'＋ Doctor', addSec:'＋ Secretary', addPharm:'＋ Pharmacy',
@@ -1863,6 +1871,7 @@ Object.assign(D.en, {
  legacyManage:'This clinic has no owner account, so staff management is open to the doctor for now.',
  ofDoctor:'Doctor',
  needPharmAcc:'Pick your pharmacies first: Settings → My team',
+ offlineResume:'Offline now — the app works and syncs when the connection returns',
  subTitle:'Subscription', subDays:'days', subLastDay:'Last day', subDue:'Payment due',
  subLeft:'Remaining', subPlan:'Plan', subBilling:'Billing', subAnnual:'Annual', subMonthly:'Monthly',
  subGrace:'Extra grace', subWarn:'Subscription renewal is near —',
@@ -2892,7 +2901,7 @@ const QR = (() => {
   }
 
   /* صورة PNG للتنزيل والطباعة */
-  function png(text, title, sub){
+  function png(text, title, sub, label){
     const M = encode(text), n = M.length, q = 4, sc = 14;
     const side = (n + q*2) * sc, head = title ? 70 : 0, foot = 64 + (sub ? 34 : 0);
     const c = document.createElement('canvas');
@@ -2904,12 +2913,18 @@ const QR = (() => {
     for (let y = 0; y < n; y++) for (let x = 0; x < n; x++)
       if (M[y][x]) g.fillRect((x+q)*sc, head + (y+q)*sc, sc, sc);
     g.font = 'bold 40px monospace';
-    g.fillText(String(text), side/2, head + side + 44);
+    g.fillText(String(label || text), side/2, head + side + 44);
     if (sub){ g.font = '600 24px Zain, system-ui, sans-serif'; g.fillText(String(sub), side/2, head + side + 84, side - 40); }
     return c.toDataURL('image/png');
   }
 
-  return { encode, svg, png };
+  /* باركود العيادة رابطٌ لتطبيق المراجع يحمل رمزها: يقرؤه أي ماسح
+     (كاميرا الهاتف، عدسة كوكل) فيفتح التطبيق، وبعد الدخول تُفتح العيادة.
+     والرمز وحده ما زال مقروءاً من داخل التطبيق للباركودات القديمة. */
+  const PATIENT_URL = 'https://myteethsick.vercel.app/';
+  const link = code => PATIENT_URL + '?c=' + encodeURIComponent(String(code || '').toUpperCase());
+
+  return { encode, svg, png, link };
 })();
 
 /*═══════════════ الدخول ═══════════════*/
@@ -3662,7 +3677,7 @@ const Cloud = {
       r = await fetch(this.cfg.url + path, {
         method, headers:h, body: body ? JSON.stringify(body) : undefined,
       });
-    } catch(_){ throw new Error(T('cloudFail')); }
+    } catch(_){ const e = new Error(T('cloudFail')); e.net = true; throw e; }
 
     /* الساعة المشتركة: كل ردّ يحمل وقت السيرفر، فتُقاس فروق
        ساعات الأجهزة عليه ويُحسم التعارض بمرجع واحد. */
@@ -3702,6 +3717,10 @@ const Cloud = {
   async whoami(){
     const d = await this.call('/rest/v1/rpc/whoami', { method:'POST', body:{} });
     this.me = d || { role:'none' };
+    /* آخر هوية معروفة: يُستأنف بها العمل إن فُتح البرنامج بلا إنترنت */
+    try {
+      if (this.me.role && this.me.role !== 'none') localStorage.setItem('d_me', JSON.stringify(this.me));
+    } catch(_){}
     return this.me;
   },
 
@@ -3718,12 +3737,18 @@ const Cloud = {
         email:this.session.email,
       });
       return true;
-    } catch(_){ this.saveSess(null); return false; }
+    } catch(e){
+      /* انقطاع الشبكة لا يعني رفض الجلسة: تبقى ويُعاد التجديد لاحقاً.
+         تُمحى فقط إن رفض السيرفر تذكرة التجديد صراحةً. */
+      if (!e?.net) this.saveSess(null);
+      return false;
+    }
   },
 
   async signOut(){
     try { await this.call('/auth/v1/logout', { method:'POST' }); } catch(_){}
     this.saveSess(null); this.me = null;
+    try { localStorage.removeItem('d_me'); } catch(_){}
   },
 
   /* تسجيل عيادة: الدالة على السيرفر تنشئ العيادة وحساباتها الثلاثة */
@@ -10169,7 +10194,7 @@ const Cfg = {
       <div class="tiny">${T('codeHint')}</div>
       <div class="clcode mt">
         <div class="clcode-nm">${esc(nmx)}</div>
-        <div class="clcode-qr">${QR.svg(code)}</div>
+        <div class="clcode-qr">${QR.svg(QR.link(code))}</div>
         <div class="clcode-num">${esc(code)}</div>
       </div>
       <div class="row mt" style="gap:8px">
@@ -10185,7 +10210,7 @@ const Cfg = {
     Print.win(`<div style="text-align:center;padding-top:18mm">
         ${b.logo?`<img src="${b.logo}" style="max-width:38mm;max-height:38mm;object-fit:contain">`:''}
         <div style="font-size:26px;font-weight:800;margin:10px 0 16px">${esc(nmx)}</div>
-        <div style="width:78mm;margin:0 auto">${QR.svg(code)}</div>
+        <div style="width:78mm;margin:0 auto">${QR.svg(QR.link(code))}</div>
         <div style="font-family:monospace;font-size:24px;font-weight:800;letter-spacing:.28em;margin-top:8px">${esc(code)}</div>
         <div style="font-size:14px;margin-top:18px;color:#333">${esc(T('codeHint'))}</div>
       </div>`, code, 'a5');
@@ -10195,7 +10220,7 @@ const Cfg = {
     const code = Cloud.me?.code || Brand.get().code; if (!code) return;
     try {
       const a = document.createElement('a');
-      a.href = QR.png(code, Brand.get().name || S.clinicName || '', T('codeHint'));
+      a.href = QR.png(QR.link(code), Brand.get().name || S.clinicName || '', T('codeHint'), code);
       a.download = `clinic-${code}.png`;
       a.click();
     } catch(_){ toast(T('regFailed'), 'e'); }
@@ -11105,7 +11130,9 @@ const Skin = {
   لا تغادر الجهاز — سياسة أمن المحتوى في الأعلى تمنع ذلك.
 ═════════════════════════════════════*/
 const Guard = {
-  IDLE_DEF:10, t:null, hidAt:0,
+  /* القفل التلقائي مطفأ افتراضياً: الدخول يبقى محفوظاً على الجهاز.
+     من يريده يفعّله من الإعدادات. */
+  IDLE_DEF:0, t:null, hidAt:0,
 
   hex(buf){ return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join(''); },
   salt(){ return this.hex(crypto.getRandomValues(new Uint8Array(16))); },
@@ -11525,7 +11552,16 @@ window.addEventListener('unhandledrejection', e =>
       if (box){ box.textContent = T('resuming'); box.classList.remove('hide'); }
       try {
         if (Cloud.session.exp - Date.now() < 60000) await Cloud.refresh();
-        const me = Cloud.session && await Cloud.whoami();
+        let me = null;
+        try { me = Cloud.session && await Cloud.whoami(); }
+        catch(e){
+          /* بلا إنترنت أو السيرفر بطيء: الجلسة سليمة، فيُفتح البرنامج
+             بآخر هوية معروفة ويزامن حين يعود الاتصال — لا إعادة دخول. */
+          if (!(e?.net || !navigator.onLine) || !Cloud.session) throw e;
+          try { me = JSON.parse(localStorage.getItem('d_me')) || null; } catch(_){ me = null; }
+          if (me) Cloud.me = me;
+          if (me) toast(T('offlineResume'), 'w');
+        }
         if (me && me.role && me.role !== 'none'){
           S.role = me.role;
           S.clinicName = me.clinic_name || null;
