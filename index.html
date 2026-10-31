@@ -4020,6 +4020,7 @@ const Sub = {
     if (!me || !me.sub) return;
     const srv = Date.parse(me.sub.now);
     this.d = { ...me.sub, skew: isNaN(srv) ? 0 : srv - Date.now() };
+    this._chk = Date.now();
     try { localStorage.setItem(this.key(), JSON.stringify(this.d)); } catch(_){}
   },
   load(){
@@ -4067,9 +4068,12 @@ const Sub = {
     this._t = setInterval(() => this.tick(), 60000);
     this.tick();
   },
+  /* كل دقيقة: العدّاد. وكل ١٠ دقائق سؤال خفيف للسيرفر، فيظهر هنا
+     ما يغيّره المدير من اللوحة (الباقة، شهري/سنوي، تمديد، دفعة). */
   tick(){
     this.paint();
     if (this.expired()) this.lock(); else this.warn();
+    if (this.staff() && Date.now() - this._chk > 600000) this.recheck();
   },
   stop(){ clearInterval(this._t); this._t = null; this.unlock(); this.d = null; },
 
@@ -4122,11 +4126,13 @@ const Sub = {
       this.save(me);
       if (!this.expired()){
         const was = !!$('#sublock');
-        this.unlock(); this.paint();
-        Brand.save(me);
-        await Scope.check(me);
-        if (Sync.on()){ Sync.run(); Live.connect(); }
-        if (was || manual) toast(T('subBack'), 's');
+        this.unlock(); this.paint(); this.warn();
+        if (was){
+          Brand.save(me);
+          await Scope.check(me);
+          if (Sync.on()){ Sync.run(); Live.connect(); }
+          toast(T('subBack'), 's');
+        }
       } else {
         this.lock();
         if (manual) toast(T('subStill'), 'e');
