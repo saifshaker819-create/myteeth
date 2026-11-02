@@ -5868,9 +5868,12 @@ const Sec = {
     · كم عليه، وكم دفع، وكم بقي؟
     · ماذا جرى في كل زيارة — بالتاريخ — وأين وصل علاج كل سن؟
     ثلاثة أزرار للعمل الحاضر، وما سواها في قائمة «المزيد». */
-  fView:'date',
+  /* العرض الافتراضي: الزيارات حسب السن. يُحفظ اختيار التبويب أثناء
+     العمل على المراجع نفسه، ويعود «حسب السن» عند فتح مراجع آخر. */
+  fView:'tooth', _fPid:null,
 
   async file(pid){
+    if (this._fPid !== pid){ this._fPid = pid; this.fView = 'tooth'; }
     const sh = UI.sheet(UI.spin());
     const p = await DB.get('patients', pid); if (!p) return;
     S.patient = p;
@@ -5990,10 +5993,10 @@ const Sec = {
       ${visits.some(v => v.needAppt) ? `<div class="al w mt"><span>!</span><span>${T('needAppt')} — ${T('bySec')}</span></div>` : ''}
 
       <div class="pf-tabs">
-        <button id="pft-date" class="${this.fView==='date'?'on':''}" onclick="Sec.pfTab('date')">
-          📅 ${T('allVisits')}<span class="n">${visits.length}</span></button>
         <button id="pft-tooth" class="${this.fView==='tooth'?'on':''}" onclick="Sec.pfTab('tooth')">
           🦷 ${T('teethFiles')}<span class="n">${files.length}</span></button>
+        <button id="pft-date" class="${this.fView==='date'?'on':''}" onclick="Sec.pfTab('date')">
+          📅 ${T('allVisits')}<span class="n">${visits.length}</span></button>
       </div>
       <div id="pf-date" class="${this.fView==='date'?'':'hide'}">${byDate || `<div class="emp mt">${T('noVisits')}</div>`}</div>
       <div id="pf-tooth" class="${this.fView==='tooth'?'':'hide'}">${byTooth || `<div class="emp mt">${T('noLedger')}</div>`}</div>
