@@ -1884,7 +1884,7 @@ Object.assign(D.ar, {
  tActRx:'العلاج', tActArc:'أرشيف الجلسة', tActInfo:'تفاصيل الجلسة',
  tToothSess:'جلسات الأسنان', tOtherVisits:'زيارات أخرى', tVisitN:'الزيارة', tVisitsN:'زيارة',
  tSessDone:'جلسة منفّذة', tPlanN:'الخطة', tNoTeethYet:'لا توجد جلسات على الأسنان بعد',
- tPrevDone:'اكتمل العمل السابق لهذا السن — ابدأ خطة جديدة',
+ tPrevDone:'اكتمل العمل السابق لهذا السن — ابدأ خطة جديدة', tOpenTooth:'فتح ملف السن',
  tToothPays:'الدفعات المستلمة لهذا السن', tNoToothPays:'لم تُستلم دفعات لهذا السن بعد',
  subTitle:'الاشتراك', subDays:'يوم', subLastDay:'آخر يوم', subDue:'موعد الدفع',
  subLeft:'المتبقي', subPlan:'الباقة', subBilling:'طريقة الدفع', subAnnual:'سنوي', subMonthly:'شهري',
@@ -1930,7 +1930,7 @@ Object.assign(D.en, {
  tActRx:'Treatment', tActArc:'Session archive', tActInfo:'Session details',
  tToothSess:'Tooth sessions', tOtherVisits:'Other visits', tVisitN:'Visit', tVisitsN:'visits',
  tSessDone:'sessions done', tPlanN:'Plan', tNoTeethYet:'No tooth sessions yet',
- tPrevDone:'The previous work on this tooth is complete — start a new plan',
+ tPrevDone:'The previous work on this tooth is complete — start a new plan', tOpenTooth:'Open tooth file',
  tToothPays:'Payments received for this tooth', tNoToothPays:'No payments received for this tooth yet',
  subTitle:'Subscription', subDays:'days', subLastDay:'Last day', subDue:'Payment due',
  subLeft:'Remaining', subPlan:'Plan', subBilling:'Billing', subAnnual:'Annual', subMonthly:'Monthly',
@@ -5406,7 +5406,8 @@ function sessText(nos){
 /*═══════════════ قائمة جلسات المراجع ═══════════════
   تظهر أسفل كل صفحة جلسة، فيتنقّل المستخدم بين الجلسات مباشرة.
 ═══════════════════════════════════════════════════*/
-async function sessionsList(pid, activeVid){
+async function sessionsList(pid, activeVid, opts){
+  opts = opts || {};
   const vs = await DB.by('visits','pid',pid);
   if (!vs.length) return '';
   const vMap = {}; vs.forEach(v => vMap[v.id] = v);
@@ -5444,9 +5445,16 @@ async function sessionsList(pid, activeVid){
       const rows = Object.entries(groups)
         .sort((a,b) => (vMap[a[0]]?.at || 0) - (vMap[b[0]]?.at || 0))
         .map(([vid, ws]) => visitRow(vid, ws)).join('');
+      const dueC = c.total - c.paid;
       return `${courses.length > 1 ? `<div class="tsc-h"><span>${T('tPlanN')} ${c.course}${c.plan ? ' · ' + esc(pName(c.plan.proc)) : ''}</span>
           <span class="pill ${c.complete?'g':'r'}">${c.complete ? '✓ ' + T('completed') : T('inProgress')}</span></div>` : ''}
-        ${rows || `<div class="tiny" style="padding:8px 4px">—</div>`}`;
+        ${rows || `<div class="tiny" style="padding:8px 4px">—</div>`}
+        ${opts.file ? `<div class="vc-sum">
+            <span class="mchip">${T('total')} <b>${N(c.total)}</b></span>
+            <span class="mchip g">${T('paid')} <b>${N(c.paid)}</b></span>
+            ${dueC > 0 ? `<span class="mchip r">${T('due')} <b>${N(dueC)}</b></span>` : ''}
+          </div>
+          <button class="btn sm gh w mt" onclick="Doc.openToothFile('${pid}',${Number(fdi)},${c.course})">🦷 ${T('tOpenTooth')}</button>` : ''}`;
     }).join('');
     return { done:last.complete, lastAt:last.last, here, html:`
       <div class="tsb ${last.complete ? 'done' : 'open'} ${here ? 'here' : ''}">
@@ -5468,7 +5476,8 @@ async function sessionsList(pid, activeVid){
   const withTooth = new Set(); files.forEach(f => f.works.forEach(w => w.vid && withTooth.add(w.vid)));
   const others = vs.filter(v => !withTooth.has(v.id)).sort((a,b)=>(b.at||0)-(a.at||0));
 
-  return `<div class="card mt2">
+  if (opts.file && !teeth.length && !others.length) return '';
+  return `<div class="card ${opts.file ? 'mt' : 'mt2'}">
     <div class="row" style="justify-content:space-between">
       <div class="lbl">${T('tToothSess')}</div><span class="pill n">${teeth.length}</span>
     </div>
@@ -5931,37 +5940,8 @@ const Sec = {
       </div>`;
     }).join('');
 
-    /*──── العلاج حسب السن ────*/
-    const byTooth = files.map(f => {
-      const col = f.plan ? P(f.plan.proc).col : (f.works[0] ? P(f.works[0].proc).col : 'var(--br)');
-      const procName = f.plan ? pName(f.plan.proc) : (f.works[0] ? pName(f.works[0].proc) : '—');
-      const total_ = f.planned || 0, done_ = f.doneNums.length;
-      const left = Math.max(0, total_ - done_);
-      const dueT = f.total - f.paid;
-      const st = f.complete
-        ? `<span class="pill g">✓ ${T('completed')}</span>`
-        : `<span class="pill w">${T('inProgress')}${left ? ` · ${T('remaining')} ${left}` : ''}</span>`;
-      return `<div class="tc ${f.complete ? 'done' : 'open'}" onclick="Doc.openToothFile('${pid}',${f.fdi},${f.course})">
-        <div class="row">
-          <div class="tc-big" style="background:${col};box-shadow:0 10px 20px -10px ${col}">${Chart.lbl(f.fdi)}</div>
-          <div class="gr">
-            <div class="row" style="gap:6px;flex-wrap:wrap"><div class="h3">${esc(procName)}</div>${st}</div>
-            <div class="tiny">${T('tooth')} ${Chart.lbl(f.fdi)} · FDI ${f.fdi}${total_ ? ` · ${done_} ${T('ofN')} ${total_} ${T('toothVisits')}` : ''}</div>
-          </div>
-        </div>
-        ${total_ ? `<div class="steps" style="--c:${col}">${Array.from({length:total_}, (_,i) =>
-            `<i class="${f.complete || f.doneNums.includes(i+1) ? 'on' : ''}"></i>`).join('')}</div>` : ''}
-        ${f.works.length ? `<div class="mt">${f.works.slice().sort((x,y) => (x.at||0)-(y.at||0)).map(w => `
-          <div class="ses"><span class="n">${(w.sessionNos||[]).join(' ' + T('and') + ' ') || '•'}</span>
-            <span class="gr mono">${fmtD(w.at)}</span>
-            <span class="mono" style="font-weight:800">${N(w.price)}</span></div>`).join('')}</div>` : ''}
-        <div class="vc-sum">
-          <span class="mchip">${T('total')} <b>${N(f.total)}</b></span>
-          <span class="mchip g">${T('paid')} <b>${N(f.paid)}</b></span>
-          ${dueT > 0 ? `<span class="mchip r">${T('due')} <b>${N(dueT)}</b></span>` : ''}
-        </div>
-      </div>`;
-    }).join('');
+    /*──── العلاج حسب السن: زرّ لكل سن مثل أسفل شاشة الجلسة ────*/
+    const byTooth = await sessionsList(pid, null, { file:true });
 
     const nx = next[0];
     sh.innerHTML = `
