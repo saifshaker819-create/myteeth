@@ -1061,6 +1061,88 @@ html:not([data-theme=dark]) body::before{ opacity:.5 }
 .sxa-c{ font-size:11px; font-weight:700; padding:2px 9px; border-radius:99px; background:rgba(0,0,0,.18) }
 @media (max-width:420px){ .sxa{ gap:7px } .sxa-t{ padding:12px 4px 10px } .sxa-l{ font-size:12.5px } }
 
+/*──── واجهة العمل: الجلسة على عرض الشاشة ────
+  المخطط يميناً والأزرار الخمسة يساراً بارتفاعه نفسه، ثم الملخص
+  والجلسات تحته. على الهاتف تنزل الأزرار تحت المخطط بصفّين. */
+.sh.wide{ max-width:none }
+@media (min-width:900px){ .sh.wide{ padding:20px 26px 56px } }
+.ws{ display:grid; grid-template-columns:minmax(0,1fr) clamp(230px,23vw,310px); gap:14px; align-items:stretch }
+.ws > .card{ margin:0 }
+.ws-chart .chart{ max-width:660px; max-height:60vh }
+.ws-acts{ display:grid; grid-template-rows:repeat(5,minmax(62px,1fr)); gap:11px }
+.wsb{ --c1:#0FA58C; --c2:#0B6F7A; position:relative; overflow:hidden; isolation:isolate;
+  display:flex; align-items:center; gap:12px; padding:12px 14px; min-height:62px;
+  border:none; border-radius:18px; cursor:pointer; color:#fff; font:inherit; text-align:start;
+  background:linear-gradient(145deg, var(--c1), var(--c2));
+  box-shadow:0 14px 26px -16px var(--c1), inset 0 1px 0 rgba(255,255,255,.22);
+  transition:transform .2s cubic-bezier(.2,.9,.3,1.35), box-shadow .22s, filter .2s;
+  animation:wsIn .42s cubic-bezier(.2,.9,.3,1.2) both; animation-delay:calc(var(--i,0) * 55ms) }
+.wsb[data-i="0"]{--i:0}.wsb[data-i="1"]{--i:1}.wsb[data-i="2"]{--i:2}.wsb[data-i="3"]{--i:3}.wsb[data-i="4"]{--i:4}
+.wsb::before{ content:''; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background:linear-gradient(105deg, transparent 30%, rgba(255,255,255,.35) 50%, transparent 70%);
+  transform:translateX(-130%); transition:transform .8s cubic-bezier(.2,.8,.2,1) }
+html[dir=rtl] .wsb::before{ transform:translateX(130%) }
+.wsb::after{ content:''; position:absolute; width:110px; height:110px; border-radius:50%; top:-55px;
+  inset-inline-end:-36px; background:rgba(255,255,255,.14); pointer-events:none; z-index:-1;
+  transition:transform .35s cubic-bezier(.2,.9,.3,1.3) }
+.wsb:hover{ transform:translateY(-2px); filter:saturate(1.12) brightness(1.06);
+  box-shadow:0 20px 34px -16px var(--c1), inset 0 1px 0 rgba(255,255,255,.25) }
+.wsb:hover::before{ transform:translateX(0) }
+.wsb:hover::after{ transform:scale(1.25) }
+.wsb:active{ transform:scale(.96); transition-duration:.08s }
+.wsb:focus{ outline:none }
+.wsb:focus-visible, .wsb.kf{ box-shadow:0 0 0 3px var(--bg, #fff), 0 0 0 6px var(--c1), 0 18px 34px -14px var(--c1);
+  transform:translateY(-2px) scale(1.015) }
+.wsb.rx { --c1:#14B097; --c2:#0B6F7A }
+.wsb.arc{ --c1:#8B5CF6; --c2:#5B3CC4 }
+.wsb.inf{ --c1:#3B82F6; --c2:#1E4FB8 }
+.wsb.pay{ --c1:#F59E0B; --c2:#C2410C }
+.wsb.bc { --c1:#64748B; --c2:#1E293B }
+.wsb-i{ flex:none; width:42px; height:42px; border-radius:13px; display:grid; place-items:center;
+  font-size:19px; font-weight:800; background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.3);
+  transition:transform .3s cubic-bezier(.2,.9,.3,1.6) }
+.wsb:hover .wsb-i, .wsb.kf .wsb-i, .wsb:focus-visible .wsb-i{ transform:rotate(-8deg) scale(1.08) }
+.wsb-l{ flex:1; min-width:0; font-weight:800; font-size:14.5px; line-height:1.25 }
+.wsb-c{ flex:none; max-width:44%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  font-size:11.5px; font-weight:700; padding:3px 10px; border-radius:99px; background:rgba(0,0,0,.2) }
+@keyframes wsIn{ from{ opacity:0; transform:translateX(-14px) scale(.96) } to{ opacity:1; transform:none } }
+html[dir=ltr] .wsb{ animation-name:wsInL }
+@keyframes wsInL{ from{ opacity:0; transform:translateX(14px) scale(.96) } to{ opacity:1; transform:none } }
+.wsps{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:7px; margin-top:10px }
+.wsp{ position:relative; overflow:hidden; display:inline-flex; align-items:center; gap:7px; padding:5px 10px;
+  border-radius:12px; border:1px solid var(--edge); background:var(--glassS); color:var(--ink); font:inherit;
+  cursor:pointer; transition:transform .16s, box-shadow .2s }
+.wsp:hover{ transform:translateY(-1px); box-shadow:0 8px 18px -10px var(--br) }
+.wsp:active{ transform:scale(.95) }
+.wsp-t{ font-weight:800; font-size:12px; color:var(--br) }
+.wsp-a{ font-weight:800; font-size:12.5px; color:var(--ok) }
+.wsp-c{ font-size:10.5px; opacity:.7 }
+@media (max-width:760px){
+  .ws{ grid-template-columns:1fr }
+  .ws-acts{ grid-template-rows:none; grid-template-columns:repeat(6,1fr); gap:9px }
+  .wsb{ grid-column:span 2; flex-direction:column; justify-content:center; gap:6px; padding:12px 6px 10px;
+        text-align:center; min-height:96px }
+  .wsb[data-i="3"], .wsb[data-i="4"]{ grid-column:span 3 }
+  .wsb-l{ flex:none; font-size:13px }
+  .wsb-c{ max-width:100% }
+  @keyframes wsIn{ from{ opacity:0; transform:translateY(12px) scale(.96) } to{ opacity:1; transform:none } }
+}
+
+/*──── لمسة السن: نبضة وحلقة تتسع ────*/
+svg.chart > g{ cursor:pointer }
+svg.chart > g > g > rect{ transform-box:fill-box; transform-origin:center;
+  transition:filter .18s, transform .22s cubic-bezier(.2,.9,.3,1.5) }
+@media (hover:hover){ svg.chart > g:hover > g > rect{ filter:brightness(1.1) drop-shadow(0 0 4px var(--br)); transform:scale(1.12) } }
+svg.chart > g.tp > g > rect{ animation:tpop .32s cubic-bezier(.2,.9,.3,1.6) }
+@keyframes tpop{ 0%{ transform:scale(1) } 40%{ transform:scale(.82) } 100%{ transform:scale(1.18) } }
+.tring{ fill:none; stroke:var(--br); stroke-width:2.4; transform-box:fill-box; transform-origin:center;
+  pointer-events:none; animation:tring .5s ease-out forwards }
+@keyframes tring{ from{ transform:scale(.5); opacity:.9 } to{ transform:scale(2.2); opacity:0 } }
+@media (prefers-reduced-motion: reduce){
+  .wsb, .wsb-i, svg.chart > g > g > rect{ animation:none !important; transition:none !important }
+  .tring{ display:none }
+}
+
 /*──── جلسات الأسنان: زرّ لكل سن ────*/
 .tsb{ border-radius:16px; border:1px solid var(--edge); background:var(--glass); overflow:hidden;
   border-inline-start:5px solid var(--edge); transition:box-shadow .2s }
@@ -2047,6 +2129,7 @@ Object.assign(D.ar, {
  secProfile:'ملفي الشخصي', profName:'الاسم على الوصفة', profTitle:'اللقب العلمي',
  pickDoctor:'لأي طبيب هذا المراجع؟', pickDoctorHint:'يظهر ملفه لهذا الطبيب ولمن يسمح لهم',
  noDoctorLinked:'لم يربطك أي طبيب بعد — اطلب من طبيبك اختيارك من «فريقي» في إعداداته',
+ wsSummary:'ملخص الجلسة', otherClinicData:'على هذا الجهاز بيانات من عيادة أخرى لم تُرفع بعد.\nالمتابعة تمحوها نهائياً. للحفاظ عليها: ألغِ وادخل بحساب تلك العيادة حتى تُرفع.\n\nمتابعة ومحو؟', stuckN:'سجل رفضه السيرفر — تأكد أن الطبيب ربطك من «فريقي»', giveRx:'إعطاء علاج', bkFuture:'قُبل الحجز — يظهر في قائمة اليوم يوم موعده', phLinked:'رُبطت الصيدلية بك — تصلها وصفاتك',
  ownerData:'أنت المستثمر: ترى الحسابات والإحصائيات، وتدير هوية العيادة وطاقمها.',
  scopeChanged:'تغيّرت صلاحيات الرؤية — جارٍ تحديث البيانات…',
  legacyManage:'لا يوجد حساب مستثمر لهذه العيادة، فإدارة الطاقم متاحة للطبيب مؤقتاً.',
@@ -2093,6 +2176,7 @@ Object.assign(D.en, {
  secProfile:'My profile', profName:'Name on prescriptions', profTitle:'Title',
  pickDoctor:'Which doctor is this patient for?', pickDoctorHint:'The file is visible to this doctor and whoever they allow',
  noDoctorLinked:'No doctor has linked you yet — ask your doctor to pick you under “My team”',
+ wsSummary:'Session summary', otherClinicData:'This device holds unsent data from another clinic.\nContinuing erases it permanently. To keep it: cancel and sign in to that clinic so it uploads.\n\nContinue and erase?', stuckN:'records rejected by the server — make sure your doctor linked you under “My team”', giveRx:'Give treatment', bkFuture:'Booking accepted — it appears in Today on its day', phLinked:'Pharmacy linked to you — your prescriptions reach it',
  ownerData:'You are the owner: you see accounts and statistics, and manage the clinic identity and staff.',
  scopeChanged:'Visibility changed — refreshing data…',
  legacyManage:'This clinic has no owner account, so staff management is open to the doctor for now.',
@@ -2718,8 +2802,8 @@ const UI = {
     if (S.role) App.draw(); else Login.drawCloud();
   },
   /* صفحة مستقلة تغطّي الشاشة — لا تُغلق بالضغط على الخلفية */
-  sheet(html){
-    $('#sheet').innerHTML = `<div class="shb"><div class="sh">${html}</div></div>`;
+  sheet(html, opt){
+    $('#sheet').innerHTML = `<div class="shb"><div class="sh${opt?.wide ? ' wide' : ''}">${html}</div></div>`;
     document.body.style.overflow = 'hidden';
     window.scrollTo(0,0);
     const box = $('#sheet .shb'); if (box) box.scrollTop = 0;
@@ -2751,6 +2835,53 @@ const UI = {
   خيارات إضافية بلا أزرار تزحم القوائم: أي عنصر يحمل data-hold
   يُنفِّذ ما فيه بعد نصف ثانية من الضغط، والضغطة العادية تبقى كما هي.
 ═══════════════════════════════════════════*/
+/*═══════════════ لوحة المفاتيح في واجهة العمل ═══════════════
+  الأسهم تتنقّل بين أزرار الجلسة الخمسة (وتدور من الآخر للأول)،
+  وEnter يفتح الزر المحدّد — أو يحدّد الأول إن لم يكن شيء محدّداً.
+  لا يتدخّل أبداً والمؤشر في حقل كتابة: الأسهم هناك للنص.
+═══════════════════════════════════════════════════════════*/
+const WsKeys = {
+  _on:false,
+  btns(){ return [...document.querySelectorAll('#sheet #ws-acts .wsb')]; },
+  bind(){
+    if (this._on) return;
+    this._on = true;
+    document.addEventListener('keydown', e => this.key(e));
+    /* الفأرة أو اللمس تُطفئ علامة التحديد بالمفاتيح */
+    document.addEventListener('pointerdown', () => this.btns().forEach(b => b.classList.remove('kf')), { passive:true });
+  },
+  key(e){
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    const list = this.btns(); if (!list.length) return;
+    const a = document.activeElement;
+    if (a && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable)) return;
+    /* صفحة فوق الجلسة (اختيار طبيب، تأكيد…) تملك المفاتيح */
+    if (document.querySelector('.pickov')) return;
+    const rtl = document.documentElement.dir === 'rtl';
+    const i = list.indexOf(a);
+    let to = null;
+    switch (e.key){
+      case 'ArrowDown': to = i < 0 ? 0 : (i + 1) % list.length; break;
+      case 'ArrowUp':   to = i < 0 ? list.length - 1 : (i - 1 + list.length) % list.length; break;
+      case 'ArrowLeft': to = i < 0 ? 0 : (i + (rtl ? 1 : -1) + list.length) % list.length; break;
+      case 'ArrowRight':to = i < 0 ? 0 : (i + (rtl ? -1 : 1) + list.length) % list.length; break;
+      case 'Home':      to = 0; break;
+      case 'End':       to = list.length - 1; break;
+      case 'Enter':
+        if (i >= 0) return;                       /* الزر المحدّد يُفتح بسلوكه الطبيعي */
+        if (a && a !== document.body && a.closest && a.closest('button,a,[onclick]')) return;
+        to = 0; break;
+      default: return;
+    }
+    e.preventDefault();
+    list.forEach(b => b.classList.remove('kf'));
+    const b = list[to];
+    b.classList.add('kf');
+    b.focus({ preventScroll:true });
+    b.scrollIntoView({ block:'nearest', behavior:'smooth' });
+  },
+};
+
 const Hold = {
   t:null, fired:false, x:0, y:0, el:null, MS:550, SLIP:12,
 
@@ -2814,6 +2945,24 @@ const UNIV={}; [[18,17,16,15,14,13,12,11],[21,22,23,24,25,26,27,28],
   [38,37,36,35,34,33,32,31],[41,42,43,44,45,46,47,48]].flat().forEach((f,i)=>UNIV[f]=i+1);
 
 const Chart = {
+  /* لمسة السن: نبضة وحلقة تتسع، ثم تُفتح صفحته — مهلة قصيرة تكفي
+     لترى العين أن السن استجاب، ولا تُحسّ تأخيراً. */
+  tap(g, f){
+    if (this._tapT) return;                        /* نقرتان سريعتان لا تفتحان صفحتين */
+    const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (calm || !g || !g.ownerSVGElement){ Doc.tooth(f); return; }
+    g.classList.remove('tp'); void g.getBoundingClientRect(); g.classList.add('tp');
+    try {
+      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('cx', g.dataset.x); c.setAttribute('cy', g.dataset.y); c.setAttribute('r', '13');
+      c.setAttribute('class', 'tring');
+      g.ownerSVGElement.appendChild(c);
+      setTimeout(() => c.remove(), 520);
+    } catch(_){}
+    if (navigator.vibrate && navigator.userActivation?.isActive) try { navigator.vibrate(8); } catch(_){}
+    this._tapT = setTimeout(() => { this._tapT = null; g.classList.remove('tp'); Doc.tooth(f); }, 170);
+  },
+
   lbl(f){
     const nt = CFG.data.notation;
     if (nt==='fdi') return String(f);
@@ -2844,7 +2993,7 @@ const Chart = {
       const col = TS(st).col;
       const gone = st==='extracted'||st==='missing';
       const on = sel===t.f;
-      return `<g onclick="Doc.tooth(${t.f})">
+      return `<g onclick="Chart.tap(this,${t.f})" data-x="${t.x.toFixed(1)}" data-y="${t.y.toFixed(1)}">
         <g transform="translate(${t.x.toFixed(1)} ${t.y.toFixed(1)}) rotate(${t.rot.toFixed(1)})">
           <rect x="${(-t.w/2).toFixed(1)}" y="${(-t.h/2).toFixed(1)}" width="${t.w}" height="${t.h}"
             rx="${(t.w*.3).toFixed(1)}"
@@ -3528,7 +3677,11 @@ const Sync = {
   },
 
   async count(){
-    try { this.pending = (await DB.all('outbox')).length; } catch(_){ this.pending = 0; }
+    try {
+      const box = await DB.all('outbox');
+      this.stuck = box.filter(x => x.stuck).length;
+      this.pending = box.length - this.stuck;
+    } catch(_){ this.pending = 0; this.stuck = 0; }
     this.imgWait = await Img.pending();
     return this.pending;
   },
@@ -3559,7 +3712,10 @@ const Sync = {
     if (!box.length) return 0;
     const F = FBSDK;
     const allow = this.scope().push;
-    const items = box.filter(x => allow.includes(x.store));
+    /* ما رفضه السيرفر مراراً يُنحّى جانباً — لا يُحذف أبداً، ويُعاد
+       عند فتح البرنامج أو حين يتوسّع النطاق (ربطني طبيب) */
+    const retry = this.retryStuck; this.retryStuck = false;
+    const items = box.filter(x => allow.includes(x.store) && (!x.stuck || retry));
     let sent = 0;
     /* الدفعة تُقاس بالحجم لا بالعدد: سجل كبير وحده قد يقارب حدّ الطلب */
     const CAP = 700 * 1024;
@@ -3594,8 +3750,7 @@ const Sync = {
             const e3 = FBC.err(e2);
             if (e3.net) throw e3;
             const t = (it.x.tries || 0) + 1;
-            if (t >= 5) await DB.del('outbox', it.x.id);
-            else await DB.put('outbox', { ...it.x, tries:t }, { quiet:true });
+            await DB.put('outbox', { ...it.x, tries:t, stuck: t >= 5 }, { quiet:true });
           }
         }
       }
@@ -3686,9 +3841,11 @@ const Sync = {
     const want = this.paths();
     const keys = new Set(want.map(p => p.key));
     if (S.role === 'doctor' || S.role === 'secretary') keys.add('bookings');
+    if (S.role && S.role !== 'owner') keys.add('me');
     for (const k of Object.keys(this._subs)) if (!keys.has(k)){ try { this._subs[k](); } catch(_){} delete this._subs[k]; }
     for (const p of want) if (!this._subs[p.key]) this._sub(p);
     if (keys.has('bookings') && !this._subs.bookings) this._subBookings();
+    if (keys.has('me') && !this._subs.me) this._subMe();
     this.paint();
   },
 
@@ -3749,6 +3906,23 @@ const Sync = {
     }
     if (mark) this.setMark(p.key, mark);
     if (got){ this._got += got; this.last = Date.now(); this.redraw(); }
+  },
+
+  /*──── بطاقة عضويتي ────
+    حين يربطني طبيب (أو يفكّ ربطي) يتغيّر حقل الرؤية في بطاقتي.
+    الاستماع إليها قراءة واحدة لكل تغيير — فيصل الربط فوراً بدل
+    انتظار السؤال الدوري، ويُعاد ما رُفض قبل الربط. */
+  _subMe(){
+    const F = FBSDK;
+    this._subs.me = F.onSnapshot(FBC.d('members', Cloud.me.uid),
+      snap => {
+        const m = snap.exists() ? snap.data() : null;
+        if (!m) return;
+        const now = [...new Set(m.vis || [])].sort().join(',');
+        const was = [...new Set(Cloud.me?.vis || [])].sort().join(',');
+        if (now !== was || m.active === false) Scope.recheck('now');
+      },
+      err => { delete this._subs.me; this.listenErr(err); });
   },
 
   /*──── حجوزات تطبيق المراجعين ────
@@ -3835,12 +4009,20 @@ const Sync = {
     old.st = 'cancelled';
     await DB.put('bookings', old);
 
-    /* الجلسة المفتوحة لهذا المراجع تُعلَّم ملغاة */
+    /* موعد قادم سُجّل من هذا الحجز: يُلغى فلا يدخل قائمة يومه */
+    const ap = await DB.get('appts', 'bk_' + old.id);
+    if (ap){
+      if (ap.st === 'open'){ ap.st = 'cancelled'; await DB.put('appts', ap); }
+      if (ap.st !== 'done'){ toast(T('bkCancelled'), 'w'); return; }
+    }
+
+    /* جلسته المفتوحة تُعلَّم ملغاة — جلسة الحجز نفسه أولاً */
     if (old.pid){
+      const own = await DB.get('visits', 'vb_bk_' + old.id);
       const vs = (await DB.by('visits','pid',old.pid))
         .filter(v => v.st !== 'done' && v.date >= today())
         .sort((a,b) => (b.at||0) - (a.at||0));
-      const v = vs[0];
+      const v = (own && own.st !== 'done') ? own : vs[0];
       if (v && v.qstate !== 'cancelled'){
         v.qstate = 'cancelled';
         v._qAt = this.now();          /* ختم الحقل — لا يُدهس بالمزامنة */
@@ -3950,12 +4132,13 @@ const Sync = {
     if (!this.on()){ el.classList.add('hide'); return; }
     el.classList.remove('hide');
     const st = this.busy ? 'busy'
-             : (!navigator.onLine || this.err) ? 'off'
+             : (!navigator.onLine || this.err || this.stuck) ? 'off'
              : (this.pending || this.imgWait) ? 'wait' : 'ok';
     el.className = 'syncdot ' + st + (Live.up() ? ' live' : '');
     el.title = this.busy ? T('syncing')
              : !navigator.onLine ? T('syncOff')
              : this.err ? this.err
+             : this.stuck ? `${this.stuck} ${T('stuckN')}`
              : this.pending ? `${this.pending} ${T('pendingN')}`
              : this.imgWait ? `${this.imgWait} ${T('pendingUp')}`
              : `${T('syncClean')} · ${Live.up() ? T('liveOn') : T('liveOff')}`;
@@ -3963,6 +4146,7 @@ const Sync = {
 
   init(){
     this.last = Number(localStorage.getItem('d_synced') || 0);
+    this.retryStuck = true;              /* ما رُفض في جلسة سابقة يُجرَّب مرة */
     this.count();
     /* عودة الشبكة: يُعاد الاستماع ويُرفع الصادر فوراً */
     window.addEventListener('online',  () => { this.listen(); this.run(); });
@@ -4380,29 +4564,43 @@ const Own = {
   STORES:['patients','visits','works','payments','files','tooth','rx','appts'],
   pending:null,          /* الطبيب المختار لمراجع يُسجَّل الآن */
 
+  /* الأطباء الذين ربطوني بهم — وحدهم من يقبل السيرفر أن أكتب في سجلاتهم.
+     اختيار طبيب لم يربطني كان يُحفظ محلياً ثم يرفضه السيرفر بصمت،
+     فيضيع المراجع وجلسته عند أول تغيّر في النطاق. */
+  linkedIds(){ return (Cloud.me?.vis || []).filter(Boolean); },
+  soleLinked(){ const v = this.linkedIds(); return v.length === 1 ? v[0] : null; },
+
   async of(store, obj){
     if (store === 'patients'){
       if (this.pending) return this.pending;
       if (S.role === 'doctor') return S.user?.uid || null;
-      return Staff.cache() ? Staff.soleDoctor() : null;
+      return Sync.on() ? this.soleLinked() : (Staff.cache() ? Staff.soleDoctor() : null);
     }
     if (obj.pid){
       const p = await DB.get('patients', obj.pid);
       if (p && p._own) return p._own;
     }
     if (S.role === 'doctor') return S.user?.uid || null;
-    return Staff.cache() ? Staff.soleDoctor() : null;
+    return Sync.on() ? this.soleLinked() : (Staff.cache() ? Staff.soleDoctor() : null);
   },
 
   /* لأي طبيب هذا المراجع الجديد؟
-     الطبيب نفسه لا يُسأل. والسكرتير يُسأل فقط إن خدم أكثر من طبيب.
+     الطبيب نفسه لا يُسأل. والسكرتير يختار من الأطباء الذين ربطوه فقط،
+     ويُسأل فقط إن خدم أكثر من طبيب.
      يُرجع المعرّف، أو null إن أُلغي أو لم يوجد طبيب مربوط. */
   async choose(){
     if (S.role === 'doctor') return S.user?.uid || '';
     if (!Sync.on()) return '';                       /* حساب محلي قديم */
+    /* الربط قد يكون تمّ للتو من جهاز الطبيب: يُسأل السيرفر مرة قبل الرفض */
+    if (!this.linkedIds().length) await Scope.recheck(true);
     await Staff.load();
-    const docs = Staff.active('doctor');
-    if (!docs.length){ toast(T('noDoctorLinked'), 'e'); return null; }
+    const ids = new Set(this.linkedIds());
+    const docs = Staff.active('doctor').filter(d => ids.has(d.uid));
+    if (!docs.length){
+      /* القائمة لم تصل بعد (بلا إنترنت مثلاً) والربط معروف — يكفي المعرّف */
+      if (ids.size === 1) return [...ids][0];
+      toast(T('noDoctorLinked'), 'e'); return null;
+    }
     if (docs.length === 1) return docs[0].uid;
     return this.pick(docs);
   },
@@ -4466,24 +4664,74 @@ const Scope = {
   key(){ return 'd_scope_' + (Cloud.me?.clinic_id || 'x'); },
   CLINICAL:['patients','visits','works','payments','files','tooth','rx','appts'],
 
+  /*──── عيادة الجهاز ────
+    قاعدة الجهاز المحلية لعيادة واحدة. دخول عيادة أخرى على الجهاز نفسه
+    كان يُبقي مراجعي الأولى ظاهرين للثانية، ويرفع صادرها إلى مساحة
+    الثانية على السيرفر. الآن: يُمحى الجهاز ويُعاد التحميل نظيفاً — وما
+    لم يُرفع من الأولى لا يُمحى إلا بموافقة صريحة. */
+  TKEY:'d_cid_dev',
+  async tenant(me){
+    const cid = me?.clinic_id; if (!cid) return true;
+    let last = null; try { last = localStorage.getItem(this.TKEY); } catch(_){}
+    if (last === cid) return true;
+    if (!last){
+      /* أول دخول سحابي على هذا الجهاز: ما عليه (إن وُجد) من هذه العيادة */
+      try { localStorage.setItem(this.TKEY, cid); } catch(_){}
+      return true;
+    }
+    let unsent = 0;
+    try { unsent = (await DB.all('outbox')).length + (await Img.pending()); } catch(_){}
+    if (unsent && !ask(T('otherClinicData'))){
+      try { await Cloud.signOut(); } catch(_){}
+      location.reload();
+      return new Promise(() => {});
+    }
+    await DB.clearAll();
+    try {
+      for (let i = localStorage.length - 1; i >= 0; i--){
+        const k = localStorage.key(i);
+        if (k && /^d_(mk_|scope_|synced$|me$)/.test(k)) localStorage.removeItem(k);
+      }
+      localStorage.setItem(this.TKEY, cid);
+    } catch(_){}
+    location.reload();
+    return new Promise(() => {});                 /* لا يُكمَل شيء — الصفحة تُعاد */
+  },
+
   async check(me){
+    if (me && Sync.on()) await this.tenant(me);
     if (!me || !me.scope || !Sync.on()) return;
     const old = localStorage.getItem(this.key());
     if (old === me.scope) return;
+    /* توسّع النطاق فقط (طبيب جديد ربطني): ما عندي ما زال مسموحاً —
+       لا محو ولا إعادة تنزيل، يكفي الاستماع إلى المجموعات الجديدة */
+    const set = s => new Set(String(s || '').split(',').filter(Boolean));
+    const was = set(old), now = set(me.scope);
+    const grew = old && old !== 'owner' && me.scope !== 'owner' && [...was].every(k => now.has(k));
+    if (grew){
+      try { localStorage.setItem(this.key(), me.scope); } catch(_){}
+      Sync.listen();
+      /* ما رُفض سابقاً لأن الربط لم يكن قائماً يُعاد الآن */
+      Sync.retryStuck = true; Sync.kick();
+      return;
+    }
     if (old){
+      const live = async () => (await DB.all('outbox')).filter(x => !x.stuck).length;
       try {
-        if ((await DB.all('outbox')).length) await Sync.push();
+        if (await live()) await Sync.push();
         if (await Img.pending()) await Img.flush();
-        if ((await DB.all('outbox')).length || await Img.pending()) return;
+        if (await live() || await Img.pending()) return;
       } catch(_){ return; }        /* بلا رفع ناجح لا يُمحى شيء — يُعاد لاحقاً */
       toast(T('scopeChanged'), 'w');
+      /* ما لم يصل السيرفر قط لا يُمحى: لا نسخة له في أي مكان آخر */
+      const keep = new Set((await DB.all('outbox')).filter(x => x.stuck).map(x => x.store + '|' + x.rid));
       Sync.quiet = true;
       try {
         for (const st of this.CLINICAL)
-          for (const r of await DB.all(st)) await DB.del(st, r.id);
+          for (const r of await DB.all(st)) if (!keep.has(st + '|' + r.id)) await DB.del(st, r.id);
       } finally { Sync.quiet = false; }
       /* الحذف المحلي ليس حذفاً على السيرفر — يُفرَّغ الصادر منه */
-      for (const x of await DB.all('outbox')) await DB.del('outbox', x.id);
+      for (const x of await DB.all('outbox')) if (!x.stuck) await DB.del('outbox', x.id);
       Sync.setRev(0);
     }
     try { localStorage.setItem(this.key(), me.scope); } catch(_){}
@@ -4491,8 +4739,11 @@ const Scope = {
 
   /* يُسأل السيرفر عن النطاق عند العودة للتطبيق، لا مع كل مزامنة */
   _at:0,
-  async recheck(){
-    if (!Sync.on() || !navigator.onLine || Date.now() - this._at < 600000) return;
+  /* force: سؤال قريب (لا يتكرّر أكثر من مرة كل ٥ ثوانٍ).
+     'now': تغيّر فعلي وصل من بطاقة عضويتي — يُسأل فوراً. */
+  async recheck(force){
+    if (!Sync.on() || !navigator.onLine) return;
+    if (force !== 'now' && Date.now() - this._at < (force ? 5000 : 600000)) return;
     this._at = Date.now();
     try {
       const me = await Cloud.whoami();
@@ -4625,8 +4876,11 @@ const Sub = {
       const me = await Cloud.whoami();
       if (!me || me.role !== S.role) return;
       this.save(me);
+      /* السؤال نفسه يجيب عن النطاق — لا داعي لسؤال ثانٍ بعده */
+      Scope._at = Date.now();
       if (!this.expired()){
         const was = !!$('#sublock');
+        if (!was) Scope.check(me).catch(()=>{});
         this.unlock(); this.paint(); this.warn();
         if (was){
           Brand.save(me);
@@ -4857,6 +5111,8 @@ const Login = {
         await Cloud.signOut();
         return show(T('noMembership'));
       }
+      /* عيادة غير عيادة هذا الجهاز: يُنظَّف قبل أن يُكتب فيه أي شيء */
+      await Scope.tenant(me);
       Guard.ok();
       await Guard.remember(email, pass, me);   /* ليعمل بلا إنترنت لاحقاً */
       /* اسم العيادة والطبيب معروفان من السيرفر — لا يُسأل عنهما مرة أخرى */
@@ -4883,6 +5139,9 @@ const Login = {
       /* الشبكة مقطوعة: تُجرَّب ذاكرة الجهاز بدل أن يقف العمل */
       if (/cloudFail|تعذّر|Failed to fetch|NetworkError|^network$/i.test(m) || !navigator.onLine){
         const r = await Guard.offlineIn(email, pass);
+        /* بلا إنترنت لا يُمحى شيء — فلا دخول لعيادة غير عيادة هذا الجهاز */
+        let dev = null; try { dev = localStorage.getItem(Scope.TKEY); } catch(_){}
+        if (r.ok && dev && r.me?.clinic_id && dev !== r.me.clinic_id) return show(T('noOffline'));
         if (r.ok){
           S.role = r.me.role;
           S.user = { id:email, uid:r.me.uid || null, role:r.me.role,
@@ -5487,14 +5746,57 @@ const Ops = {
     return p;
   },
 
-  async openVisit(pid, note){
+  /* فتح جلسة اليوم لمراجع حاضر الآن.
+     جلسة مفتوحة من يوم سابق لا تُعاد كما هي — وإلا بقي المراجع
+     خارج قائمة اليوم: الفارغة تُنقل إلى اليوم، والتي عُمل فيها تُغلق
+     في يومها (فهي تاريخ) وتُفتح جلسة جديدة.
+     id اختياري: معرّف ثابت حين قد يفتح جهازان الجلسة نفسها معاً. */
+  async openVisit(pid, note, id){
     const vs = await DB.by('visits','pid',pid);
-    const open = vs.find(v=>v.st==='open');
-    if (open) return open;
-    const v = { id:uid(), pid, cid:CFG.data.cid, code:newCode(), date:today(), at:Date.now(),
+    const t = today();
+    const cur = vs.find(v => v.st === 'open' && v.date === t) || (id && vs.find(v => v.id === id));
+    if (cur) return cur;
+    for (const v of vs.filter(x => x.st === 'open' && x.date < t)){
+      const used = (await DB.by('works','vid',v.id)).length
+                || (await DB.by('payments','pid',pid)).some(x => x.vid === v.id)
+                || (await DB.by('files','pid',pid)).some(x => x.vid === v.id);
+      if (!used){
+        v.date = t; v.at = Date.now();
+        v.qstate = 'waiting'; v._qAt = Sync.now();
+        if (note && !v.note) v.note = note;
+        await DB.put('visits', v);
+        return v;
+      }
+      v.st = 'done'; v.qstate = 'done'; v._qAt = Sync.now();
+      await DB.put('visits', v);
+    }
+    const v = { id:id || uid(), pid, cid:CFG.data.cid, code:newCode(), date:t, at:Date.now(),
                 st:'open', qstate:'waiting', no:vs.length+1, note:note||'' };
     await DB.put('visits', v);
     return v;
+  },
+
+  /* حجوزات التطبيق المقبولة لموعد اليوم تدخل قائمة اليوم وحدها.
+     المعرّف ثابت من الحجز، فلو فعلها جهازا الطبيب والسكرتير معاً
+     كانت جلسة واحدة لا اثنتين. محلي بالكامل — بلا أي قراءة من السيرفر.
+     وما مضى يومه يتركه sweepMissed يصنّفه. */
+  _bt:null,
+  bookedToday(){
+    if (S.role !== 'doctor' && S.role !== 'secretary') return Promise.resolve(0);
+    /* استدعاءان متزامنان (رسم + وصول مزامنة) لا يفتحان جلستين */
+    return this._bt || (this._bt = (async () => {
+      const t = today();
+      const due = (await DB.all('appts')).filter(a => a.bk && a.st === 'open' && a.day === t);
+      let n = 0;
+      for (const a of due){
+        if (!(await DB.get('patients', a.pid))) continue;
+        await this.openVisit(a.pid, a.note || '', 'vb_' + a.id);
+        a.st = 'done'; a.doneAt = Date.now();
+        await DB.put('appts', a);
+        n++;
+      }
+      return n;
+    })().finally(() => { this._bt = null; }));
   },
 
   async visitTotals(vid){
@@ -5946,6 +6248,7 @@ const Sec = {
 
   async queue(){
     const box = $('#q-list'); if (!box) return;
+    try { await Ops.bookedToday(); } catch(_){}
 
     /* الترقيم بترتيب الوصول، والعرض من الأحدث للأقدم */
     const vs = (await DB.all('visits')).filter(x=>x.date===today())
@@ -6184,7 +6487,9 @@ const Sec = {
 
     /* القبول ينشئ ملف المراجع كاملاً ببياناته التي أدخلها بنفسه */
     const all = await DB.all('patients');
-    let p = all.find(x => x.phone.replace(/\D/g,'') === (b.phone||'').replace(/\D/g,''));
+    const ph = (b.phone||'').replace(/\D/g,'');
+    let p = ph ? all.find(x => (!x.cid || x.cid === CFG.data.cid)
+                            && String(x.phone||'').replace(/\D/g,'') === ph) : null;
     const data = { name:nm(b), n1:b.n1,n2:b.n2,n3:b.n3,n4:b.n4, age:b.age, gender:b.gender,
                    phone:b.phone, address:b.address, job:b.job,
                    complaint:b.complaint, prevDental:b.prevDental, other:b.other,
@@ -6203,8 +6508,17 @@ const Sec = {
     /* معرّف ملفه عندنا يُرسل مع القبول — بلاه لا يستطيع تطبيقه
        أن يجد مواعيده ولا جلساته. */
     if (b.srv) Sync.bookStatus(b.id, 'accepted', p.bc, p.id);
-    await Ops.openVisit(p.id, b.complaint);
-    toast(T('accepted'),'s');
+    /* موعد اليوم (أو بلا يوم): يدخل قائمة اليوم فوراً.
+       موعد قادم: يُسجَّل موعداً، ويدخل قائمة اليوم وحده يوم موعده. */
+    const t = today();
+    if (b.day && b.day > t){
+      await DB.put('appts', { id:'bk_' + b.id, pid:p.id, bk:b.id, day:b.day, time:b.time || '',
+                              note:b.complaint || '', st:'open', at:Date.now() });
+      toast(T('bkFuture') + ' — ' + fmtD(b.day), 's');
+    } else {
+      await Ops.openVisit(p.id, b.complaint, 'vb_bk_' + b.id);
+      toast(T('accepted'),'s');
+    }
     Nav.home();
   },
 
@@ -6848,21 +7162,26 @@ const Doc = {
            قديمة لسنّ بدأ خطة جديدة تبقى تُظهر حسابها الصحيح */
         const wc = tt.works.find(w => Number(w.fdi) === f)?.course;
         const cs = await Ops.courseTotals(p.id, f, wc || null);
-        parts.push(`<div class="it" style="cursor:pointer;padding:10px 12px"
-          onclick="Doc.tooth(${f})">
-          <div class="av mono" style="width:36px;height:36px;font-size:13px">${Chart.lbl(f)}</div>
-          <div class="gr">
-            <div class="tiny">${T('paidTooth')}</div>
-            <div class="mono h3" style="color:var(--ok)">${N(cs.paid)}</div>
-          </div>
-          <span class="pill b">${T('courseNo')} ${cs.course}</span>
-        </div>`);
+        parts.push(`<button class="wsp" onclick="Doc.tooth(${f})" title="${T('paidTooth')}">
+          <span class="wsp-t mono">${Chart.lbl(f)}</span>
+          <span class="wsp-a mono">${N(cs.paid)}</span>
+          <span class="wsp-c">${T('courseNo')} ${cs.course}</span>
+        </button>`);
       }
-      courseRows = `<div class="sep"></div><div class="col">${parts.join('')}</div>`;
+      courseRows = `<div class="wsps"><span class="tiny">${T('paidTooth')}</span>${parts.join('')}</div>`;
     }
 
     /* أسنان هذه الجلسة تُبرز في المخطط */
     const touched = tt.works.map(w=>Number(w.fdi)).filter(Boolean);
+
+    /* الأزرار بترتيب ثابت يطابق سير العمل؛ الأسهم وEnter تتنقّل بينها */
+    const acts = [
+      ['rx',  '℞',  T('sessionRx'),  rxs.length ? '✓ ' + rxs.length : '—',          `Doc.sessionRx('${vid}')`],
+      ['arc', '🖼', T('sessionArc'), files.length || '—',                              `Doc.sessionArc('${vid}')`],
+      ['inf', 'ⓘ',  T('sessionInfo'), `${T('session')} ${v.no}`,                       `Doc.sessionInfo('${vid}')`],
+      ['pay', '💵', T('pay'),         N(tt.paid),                                       `Sec.pay('${v.pid}','${vid}')`],
+      ['bc',  '▦',  T('barcode'),     esc(p.bc || v.code || '—'),                       `Sec.barcode('${vid}')`],
+    ];
 
     UI.sheet(`
       <div class="shhead">
@@ -6873,58 +7192,44 @@ const Doc = {
         <button class="ib" onclick="Nav.back()">✕</button>
       </div>
 
-      <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <div class="lbl">${T('toothChart')}</div>${Chart.switcher()}
+      <div class="ws">
+        <div class="card ws-chart">
+          <div class="row" style="justify-content:space-between">
+            <div class="lbl">${T('toothChart')}</div>${Chart.switcher()}
+          </div>
+          ${Chart.svg(map, touched[0] || null)}
+          ${touched.length ? `<div class="row wrapv" style="gap:5px;justify-content:center">
+            ${touched.map(f=>`<span class="pill b mono">${Chart.lbl(f)}</span>`).join('')}</div>` : ''}
+          ${courseRows || ''}
+          ${Chart.legend()}
         </div>
-        ${Chart.svg(map, touched[0] || null)}
-        ${touched.length ? `<div class="row wrapv" style="gap:5px;justify-content:center">
-          ${touched.map(f=>`<span class="pill b mono">${Chart.lbl(f)}</span>`).join('')}</div>` : ''}
-        ${Chart.legend()}
-      </div>
 
-      <div class="sxa mt">
-        <button class="sxa-t rx" onclick="Doc.sessionRx('${vid}')">
-          <span class="sxa-i">℞</span><span class="sxa-l">${T('tActRx')}</span>
-          <span class="sxa-c">${rxs.length ? '✓' : '—'}</span></button>
-        <button class="sxa-t arc" onclick="Doc.sessionArc('${vid}')">
-          <span class="sxa-i">🖼</span><span class="sxa-l">${T('tActArc')}</span>
-          <span class="sxa-c">${files.length || '—'}</span></button>
-        <button class="sxa-t inf" onclick="Doc.sessionInfo('${vid}')">
-          <span class="sxa-i">ⓘ</span><span class="sxa-l">${T('tActInfo')}</span>
-          <span class="sxa-c">${T('session')} ${v.no}</span></button>
+        <div class="ws-acts" id="ws-acts" role="toolbar" aria-orientation="vertical">
+          ${acts.map(([k, ic, lb, ct, fn], i) => `
+            <button class="wsb ${k}" data-i="${i}" onclick="${fn}">
+              <span class="wsb-i">${ic}</span>
+              <span class="wsb-l">${lb}</span>
+              <span class="wsb-c mono">${ct}</span>
+            </button>`).join('')}
+        </div>
       </div>
 
       ${Perm.writeRx()?`<div class="card mt">
-        <div class="lbl">${T('doneNote')}</div>
+        <div class="lbl">📝 ${T('wsSummary')}</div>
         <textarea id="dn-${vid}" placeholder="${T('doneNoteHint')}"
           style="margin-top:9px">${esc(v.done||'')}</textarea>
         <button class="btn w sf mt" onclick="Doc.saveNote('${vid}')">${T('saveNote')}</button>
       </div>`
-      : (v.done?`<div class="card mt"><div class="lbl">${T('doneNote')}</div>
+      : (v.done?`<div class="card mt"><div class="lbl">📝 ${T('wsSummary')}</div>
           <div class="mt" style="font-weight:600;line-height:1.6">${esc(v.done)}</div></div>`:'')}
 
-      <div class="card mt">
-        <div class="lbl">${T('payments')}</div>
-        <div class="ctr mt">
-          <div class="tiny">${T('paidSession')}</div>
-          <div class="mono h1" style="color:var(--ok)">${N(tt.paid)}</div>
-        </div>
-        ${courseRows || ''}
-      </div>
-
-      <div class="row mt" style="gap:8px">
-        <button class="btn sm sf gr" onclick="Sec.barcode('${vid}')">${T('barcode')}</button>
-        ${Perm.writeRx()?`<button class="btn sm gr" onclick="Doc.rxFor('${vid}')">${T('writeRx')}</button>`:''}
-        <button class="btn sm gh gr" onclick="Sec.pay('${v.pid}','${vid}')">${T('pay')}</button>
-      </div>
-
       ${v.st==='open' && Perm.writeRx()
-        ? `<button class="btn w ok mt2" onclick="Sec.closeVisit('${vid}')">${T('closeVisit')}</button>` : ''}
+        ? `<button class="btn w ok mt" onclick="Sec.closeVisit('${vid}')">${T('closeVisit')}</button>` : ''}
 
       ${await sessionsList(p.id, vid)}
 
-      <button class="btn w gh mt" onclick="Nav.back()">${T('back')}</button>`);
+      <button class="btn w gh mt" onclick="Nav.back()">${T('back')}</button>`, { wide:true });
+    WsKeys.bind();
   },
 
   /* العلاج المعطى في هذه الجلسة تحديداً */
@@ -6936,7 +7241,7 @@ const Doc = {
         <div class="sub">${T('session')} ${v.no} · ${fmtD(v.date)}</div>
         <div class="al w mt2"><span>ℹ</span><span>${T('noSessionRx')}</span></div>
         ${Perm.writeRx()?`<button class="btn w mt2" onclick="Doc.rxFor('${vid}')">
-          ${T('writeRx')}</button>`:''}
+          ℞ ${T('giveRx')}</button>`:''}
         <button class="btn w gh mt" onclick="Nav.back()">${T('back')}</button>`);
     }
     UI.sheet(`
@@ -6956,8 +7261,11 @@ const Doc = {
               <div class="tiny mono">${[i.dose,i.freq,i.dur].filter(Boolean).map(esc).join(' · ')||'—'}</div>
               ${i.instr?`<div class="tiny" style="margin-top:3px">${esc(i.instr)}</div>`:''}</div>
           </div></div>`).join('')}</div>
+        ${r.phName ? `<div class="tiny mt">💊 ${esc(r.phName)}</div>` : ''}
         <button class="btn w gh mt" onclick="Print.rx('${r.id}')">${T('printA5')}</button>
       </div>`).join('')}
+      ${Perm.writeRx()?`<button class="btn w mt2" onclick="Doc.rxFor('${vid}')">
+        ℞ ${T('giveRx')}</button>`:''}
       <button class="btn w gh mt" onclick="Nav.back()">${T('back')}</button>`);
   },
 
@@ -8814,17 +9122,48 @@ const Del = {
 const Rx = {
   /* التحويل يبدأ فارغاً في كل وصفة: الإرسال قرار يُتَّخذ كل مرة،
      لا إعداد يُنسى فتذهب وصفة إلى صيدلية لم تُقصد. */
-  write(){ S.rxDraft = [{}]; S.rxPh = ''; this.sheet(); },
+  write(){
+    S.rxDraft = [{}]; S.rxPh = ''; this.sheet();
+    /* قائمة الطاقم لم تصل بعد: تُجلب ثم تُملأ قائمة الصيدليات وحدها */
+    if (!Staff.cache() && Sync.on()) Staff.load().then(() => this.fillPh()).catch(()=>{});
+  },
+  fillPh(){
+    const sel = $('#rx-ph'); if (!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = `<option value="">${T('noPharmSel')}</option>` + this.pharmacies().map(a =>
+      `<option value="${a.id}" ${cur===a.id?'selected':''}>${esc(a.name || a.email)}</option>`).join('');
+    const h = sel.parentElement.querySelector('.tiny');
+    if (h) h.textContent = this.pharmacies().length ? T('phHint') : T('needPharmAcc');
+  },
 
   /* الصيدليات المسجّلة في «إيميلات العيادة» */
   /* الصيدليات التي اختارها هذا الطبيب من «فريقي» — ومع حساب قديم
      بلا سيرفر تبقى القائمة المحلية القديمة. */
+  /* كل صيدليات العيادة الفعّالة — المربوطة بهذا الطبيب أولاً.
+     كانت القائمة تقتصر على المربوطة، فصيدلية أُضيفت ولم تُربط من
+     «فريقي» لا تظهر ويبقى «بلا تحويل» وحده. اختيارها الآن يربطها
+     بالطبيب عند الحفظ، فتصلها الوصفة فعلاً. */
   pharmacies(){
     if (Staff.cache()){
-      return Staff.linked('pharmacy').filter(m => m.active !== false)
-        .map(m => ({ id:m.uid, name:m.name || m.email, email:String(m.email||'').toLowerCase() }));
+      const linked = new Set(Staff.linked('pharmacy').map(m => m.uid));
+      return Staff.active('pharmacy')
+        .map(m => ({ id:m.uid, name:m.name || m.email, email:String(m.email||'').toLowerCase(),
+                     linked:linked.has(m.uid) }))
+        .sort((a,b) => (b.linked?1:0) - (a.linked?1:0));
     }
     return (CFG.data.accounts || []).filter(a => a.role === 'pharmacy');
+  },
+
+  /* الصيدلية المختارة غير مربوطة: تُربط بالطبيب (حقل رؤيتها يضمّه) */
+  async ensureLinked(ph){
+    if (!ph || ph.linked === undefined || ph.linked || S.role !== 'doctor' || !Sync.on()) return true;
+    try {
+      const ids = Staff.linked('pharmacy').map(m => m.uid);
+      await Cloud.linksSet('pharmacy', [...new Set([...ids, ph.id])]);
+      await Staff.load(true);
+      toast(T('phLinked'), 's');
+      return true;
+    } catch(e){ toast(T('syncFail') + ' — ' + (e.message || e), 'e'); return false; }
   },
   readPh(){ const n = $('#rx-ph'); return n ? n.value : (S.rxPh || ''); },
 
@@ -8951,6 +9290,7 @@ const Rx = {
        يُختَر له عنوان لا يصل إلى أحد. */
     const phId = this.readPh();
     const ph = this.pharmacies().find(a => a.id === phId) || null;
+    if (ph && !(await this.ensureLinked(ph))) return;
 
     const rx = { id:uid(), pid:S.patient.id, vid:v.id, items, st:'signed',
                  doctor: Prof.cachedName() || S.user?.name || CFG.data.doctor || T('r_doctor'),
@@ -11476,8 +11816,8 @@ const App = {
     /* الطاقم وروابطه: تحويل الوصفات واختيار الطبيب يحتاجانه */
     Staff.load().then(() => {
       /* سكرتير أو صيدلية لم يربطهما أي طبيب: لا يرون ملفات بعد — يُقال ذلك صراحة */
-      if ((S.role === 'secretary' || S.role === 'pharmacy') && Staff.cache()
-          && !Staff.active('doctor').length) toast(T('noDoctorLinked'), 'w');
+      if ((S.role === 'secretary' || S.role === 'pharmacy') && Sync.on()
+          && !Own.linkedIds().length) toast(T('noDoctorLinked'), 'w');
     }).catch(()=>{});
     if (S.role === 'doctor') Prof.mine().catch(()=>{});
   },
@@ -12043,7 +12383,7 @@ window.addEventListener('unhandledrejection', e =>
   /* الشعار نفسه يظهر عند فتح البرنامج وعلى أيقونة التثبيت */
   /* تموّج عند اللمس — إحساس بأن الزر استجاب */
   document.addEventListener('pointerdown', e => {
-    const b = e.target.closest && e.target.closest('.btn,.navb,.pf-act');
+    const b = e.target.closest && e.target.closest('.btn,.navb,.pf-act,.wsb,.wsp,.sxa-t');
     if (!b || b.disabled || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const r = b.getBoundingClientRect(), d = Math.max(r.width, r.height);
     const s = document.createElement('span');
