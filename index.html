@@ -2129,7 +2129,7 @@ Object.assign(D.ar, {
  secProfile:'ملفي الشخصي', profName:'الاسم على الوصفة', profTitle:'اللقب العلمي',
  pickDoctor:'لأي طبيب هذا المراجع؟', pickDoctorHint:'يظهر ملفه لهذا الطبيب ولمن يسمح لهم',
  noDoctorLinked:'لم يربطك أي طبيب بعد — اطلب من طبيبك اختيارك من «فريقي» في إعداداته',
- wsSummary:'ملخص الجلسة', otherClinicData:'على هذا الجهاز بيانات من عيادة أخرى لم تُرفع بعد.\nالمتابعة تمحوها نهائياً. للحفاظ عليها: ألغِ وادخل بحساب تلك العيادة حتى تُرفع.\n\nمتابعة ومحو؟', stuckN:'سجل رفضه السيرفر — تأكد أن الطبيب ربطك من «فريقي»', giveRx:'إعطاء علاج', bkFuture:'قُبل الحجز — يظهر في قائمة اليوم يوم موعده', phLinked:'رُبطت الصيدلية بك — تصلها وصفاتك',
+ wsSummary:'ملخص الجلسة', legacyGone:'نُظِّف الجهاز من {n} سجلاً قديماً من النسخة السابقة لم تكن على السيرفر', upcomingBk:'حجوزات مقبولة لأيام قادمة', upcomingBkH:'تدخل قائمة اليوم وحدها يوم موعدها', otherClinicData:'على هذا الجهاز بيانات من عيادة أخرى لم تُرفع بعد.\nالمتابعة تمحوها نهائياً. للحفاظ عليها: ألغِ وادخل بحساب تلك العيادة حتى تُرفع.\n\nمتابعة ومحو؟', stuckN:'سجل رفضه السيرفر — تأكد أن الطبيب ربطك من «فريقي»', giveRx:'إعطاء علاج', bkFuture:'قُبل الحجز — يظهر في قائمة اليوم يوم موعده', phLinked:'رُبطت الصيدلية بك — تصلها وصفاتك',
  ownerData:'أنت المستثمر: ترى الحسابات والإحصائيات، وتدير هوية العيادة وطاقمها.',
  scopeChanged:'تغيّرت صلاحيات الرؤية — جارٍ تحديث البيانات…',
  legacyManage:'لا يوجد حساب مستثمر لهذه العيادة، فإدارة الطاقم متاحة للطبيب مؤقتاً.',
@@ -2176,7 +2176,7 @@ Object.assign(D.en, {
  secProfile:'My profile', profName:'Name on prescriptions', profTitle:'Title',
  pickDoctor:'Which doctor is this patient for?', pickDoctorHint:'The file is visible to this doctor and whoever they allow',
  noDoctorLinked:'No doctor has linked you yet — ask your doctor to pick you under “My team”',
- wsSummary:'Session summary', otherClinicData:'This device holds unsent data from another clinic.\nContinuing erases it permanently. To keep it: cancel and sign in to that clinic so it uploads.\n\nContinue and erase?', stuckN:'records rejected by the server — make sure your doctor linked you under “My team”', giveRx:'Give treatment', bkFuture:'Booking accepted — it appears in Today on its day', phLinked:'Pharmacy linked to you — your prescriptions reach it',
+ wsSummary:'Session summary', legacyGone:'Removed {n} old records left from the previous version that were never on the server', upcomingBk:'Accepted bookings for upcoming days', upcomingBkH:'They enter Today automatically on their day', otherClinicData:'This device holds unsent data from another clinic.\nContinuing erases it permanently. To keep it: cancel and sign in to that clinic so it uploads.\n\nContinue and erase?', stuckN:'records rejected by the server — make sure your doctor linked you under “My team”', giveRx:'Give treatment', bkFuture:'Booking accepted — it appears in Today on its day', phLinked:'Pharmacy linked to you — your prescriptions reach it',
  ownerData:'You are the owner: you see accounts and statistics, and manage the clinic identity and staff.',
  scopeChanged:'Visibility changed — refreshing data…',
  legacyManage:'This clinic has no owner account, so staff management is open to the doctor for now.',
@@ -2568,6 +2568,11 @@ const DB = {
     /* ملكية السجل: كل سجل سريري يحمل طبيبه، فيعرف السيرفر من يراه.
        المراجع يأخذ طبيبه عند تسجيله، وما سواه يرث طبيب مراجعه.
        يُختم هنا وحده فلا يفوته أي مسار إنشاء. */
+    if (!quiet && obj && typeof obj === 'object' && Own.STORES.includes(store)
+        && (obj._own || obj._k) && Own.valid(obj._k || obj._own) === false){
+      /* منسوب لمعرّف ليس طبيباً هنا (بقايا النسخة القديمة): يُعاد نسبه */
+      delete obj._own; delete obj._k;
+    }
     if (!quiet && obj && typeof obj === 'object' && !obj._own && Own.STORES.includes(store)){
       try { obj._own = await Own.of(store, obj); } catch(_){}
       if (!obj._own) delete obj._own;
@@ -3760,9 +3765,18 @@ const Sync = {
     for (const x of items){
       const doc = x.deleted ? null : await DB.get(x.store, x.rid);
       if (!doc && !x.deleted){ await DB.del('outbox', x.id); continue; }
+      /* حذف سجل قديم لم يكن على هذا السيرفر قط: لا شاهدة له */
+      if (!doc && Own.STORES.includes(x.store) && Own.valid(x.own) === false){ await DB.del('outbox', x.id); continue; }
       /* صورة ما زالت بكسلاتها داخل سجلّها: تُرفع إلى التخزين أولاً */
       if (x.store === 'files' && doc && doc.data && !doc.path && doc.blobType) continue;
-      const K = this.recK(x.store, doc, x.own);
+      /* سجل منسوب لمعرّف ليس طبيباً في العيادة: يُنسب لطبيب صالح قبل الرفع */
+      if (doc && Own.STORES.includes(x.store) && Own.valid(doc._k || doc._own) === false){
+        delete doc._k; delete doc._own;
+        const k2 = await Own.of(x.store, doc);
+        if (k2) doc._own = k2;
+        await DB.put(x.store, doc, { quiet:true });
+      }
+      const K = this.recK(x.store, doc, doc ? null : x.own);
       /* المسار يُثبَّت في السجل نفسه: لا يتنقّل بين مجموعتين أبداً */
       if (doc && !doc._k){ doc._k = K; await DB.put(x.store, doc, { quiet:true }); }
       const ua = Math.max(Number(x.at || 0), Number(doc?._up || 0));
@@ -4570,15 +4584,34 @@ const Own = {
   linkedIds(){ return (Cloud.me?.vis || []).filter(Boolean); },
   soleLinked(){ const v = this.linkedIds(); return v.length === 1 ? v[0] : null; },
 
+  /* هل هذا المعرّف طبيبٌ في هذه العيادة؟
+     true/false حين نعرف، وnull حين لا نعرف (بلا قائمة طاقم بعد).
+     معرّفات النسخة القديمة (قبل Firebase) ليست أطباء هنا — والسجل
+     المنسوب إليها يرفضه السيرفر إلى الأبد، فيُعاد نسبه. */
+  valid(k){
+    if (!k) return null;
+    if (k === '_' || !Sync.on()) return true;      /* المشترك مسار صالح دائماً */
+    if (S.role === 'doctor' && k === S.user?.uid) return true;
+    if (this.linkedIds().includes(k)) return true;
+    const d = Staff.data || Staff.cache();
+    if (!d || !Array.isArray(d.members)) return null;
+    return d.members.some(m => m.uid === k && m.role === 'doctor');
+  },
+
+  /* الطبيب البديل حين لا يُعرف طبيب صالح للسجل */
+  fallback(){
+    if (S.role === 'doctor') return S.user?.uid || null;
+    return Sync.on() ? this.soleLinked() : (Staff.cache() ? Staff.soleDoctor() : null);
+  },
+
   async of(store, obj){
     if (store === 'patients'){
       if (this.pending) return this.pending;
-      if (S.role === 'doctor') return S.user?.uid || null;
-      return Sync.on() ? this.soleLinked() : (Staff.cache() ? Staff.soleDoctor() : null);
+      return this.fallback();
     }
     if (obj.pid){
       const p = await DB.get('patients', obj.pid);
-      if (p && p._own) return p._own;
+      if (p && p._own && this.valid(p._own) !== false) return p._own;
     }
     if (S.role === 'doctor') return S.user?.uid || null;
     return Sync.on() ? this.soleLinked() : (Staff.cache() ? Staff.soleDoctor() : null);
@@ -4698,8 +4731,40 @@ const Scope = {
     return new Promise(() => {});                 /* لا يُكمَل شيء — الصفحة تُعاد */
   },
 
+  /*──── بقايا النسخة القديمة ────
+    قاعدة الجهاز نفسها كانت تخدم النسخة السابقة (قبل Firebase)، فبقيت
+    فيها سجلات لا وجود لها على السيرفر الجديد: مواعيد ومراجعون منسوبون
+    لحسابات لم تعد موجودة. تظهر على جهاز واحد فقط، والسيرفر يرفض كل
+    ما يُبنى عليها. تُعرف بأنها بلا مسار سيرفر (_k) ولا تنتظر رفعاً.
+      · أقدم من انتقال العيادة إلى Firebase ← تُحذف من الجهاز.
+      · أحدث منه (رفضها إصدار سابق ثم تركها) ← تُعاد للرفع.
+    تجري مرة واحدة لكل جهاز. محلية بالكامل — بلا قراءة من السيرفر. */
+  GEN:'d_gen_fb1', CUT:1794206000000,
+  async legacy(){
+    try { if (localStorage.getItem(this.GEN)) return; } catch(_){ return; }
+    let gone = 0;
+    try {
+      const inBox = new Set((await DB.all('outbox')).map(x => x.store + '|' + x.rid));
+      const again = [];
+      Sync.quiet = true;
+      try {
+        for (const st of this.CLINICAL){
+          for (const r of await DB.all(st)){
+            if (r._k || inBox.has(st + '|' + r.id)) continue;
+            if (Number(r._up || 0) >= this.CUT){ again.push([st, r.id]); continue; }
+            await DB.del(st, r.id); gone++;
+          }
+        }
+      } finally { Sync.quiet = false; }
+      for (const [st, id] of again) await Sync.queue(st, id, false);
+      localStorage.setItem(this.GEN, String(Date.now()));
+    } catch(_){ return; }
+    if (gone) toast(T('legacyGone').replace('{n}', gone), 'w');
+  },
+
   async check(me){
     if (me && Sync.on()) await this.tenant(me);
+    if (me && Sync.on()) await this.legacy();
     if (!me || !me.scope || !Sync.on()) return;
     const old = localStorage.getItem(this.key());
     if (old === me.scope) return;
@@ -6302,6 +6367,30 @@ const Sec = {
                  ${lblOf[vi.qstate||'waiting']}</button>` : ''}
         </div>
       </div>`;}).join('') : `<div class="emp">${T('noQueue')}</div>`;
+
+    /* حجوزات قُبلت لأيام قادمة — تُرى هنا حتى لا يُظنّ أنها ضاعت */
+    if (q) return;
+    const t = today();
+    const up = [];
+    for (const a of (await DB.all('appts')).filter(a => a.bk && a.st === 'open' && a.day > t)
+                      .sort((a,b) => String(a.day + (a.time||'')).localeCompare(String(b.day + (b.time||''))))){
+      const p = await DB.get('patients', a.pid); if (p) up.push({ a, p });
+    }
+    if (!up.length || !$('#q-list')) return;
+    box.insertAdjacentHTML('beforeend', `
+      <div class="card" style="margin-top:6px">
+        <div class="row" style="justify-content:space-between">
+          <div class="lbl">📅 ${T('upcomingBk')}</div><span class="pill b">${up.length}</span>
+        </div>
+        <div class="tiny mt">${T('upcomingBkH')}</div>
+        <div class="col mt">${up.slice(0, 6).map(({a,p}) => `
+          <div class="it" onclick="Appt.detail('${a.id}','${p.id}')">
+            <div class="av w">${esc(nm(p).charAt(0) || '?')}</div>
+            <div class="gr"><div class="h3 ell">${esc(nm(p))}</div>
+              <div class="tiny ell">${esc(a.note || '')}</div></div>
+            <span class="pill i mono">${fmtD(a.day)}${a.time ? ' · ' + esc(a.time) : ''}</span>
+          </div>`).join('')}</div>
+      </div>`);
   },
 
   /*──── هل يجوز إنهاء هذه الزيارة؟ ────
