@@ -1423,10 +1423,11 @@ const FBC = {
 
   /*──── الباقات ────*/
   PLANS:{
-    basic:  { name:'الأساسية', monthly:40000,  annual:245000,  doctor:1, secretary:1, pharmacy:1, sort:1 },
-    clinic: { name:'العيادة',  monthly:60000,  annual:350000,  doctor:2, secretary:2, pharmacy:1, sort:2 },
-    center: { name:'المركز',   monthly:80000,  annual:595000,  doctor:4, secretary:3, pharmacy:1, sort:3 },
-    complex:{ name:'المجمّع',  monthly:150000, annual:1050000, doctor:8, secretary:5, pharmacy:2, sort:4 },
+    /* الاشتراك سنوي فقط (يُدفع كل ٢٥/١٢) */
+    basic:  { name:'الأساسية', annual:200000, doctor:1, secretary:1, pharmacy:1, sort:1 },
+    clinic: { name:'العيادة',  annual:300000, doctor:2, secretary:2, pharmacy:1, sort:2 },
+    center: { name:'المركز',   annual:400000, doctor:4, secretary:3, pharmacy:1, sort:3 },
+    complex:{ name:'المجمّع',  annual:500000, doctor:8, secretary:5, pharmacy:2, sort:4 },
   },
   /* هل اشتراك العيادة سارٍ؟ (القواعد تفرض الشيء نفسه على السيرفر) */
   subOk(c, nowMs){
@@ -4968,7 +4969,7 @@ const Sub = {
     UI.sheet(`<div class="h2">${T('subTitle')}</div>
       <div class="card flat mt2">
         ${row(T('subPlan'), esc(d.plan_name || '—'))}
-        ${row(T('subBilling'), d.billing === 'monthly' ? T('subMonthly') : T('subAnnual'))}
+        ${row(T('subBilling'), T('subAnnual'))}
         ${row(this.inGrace() ? T('subGrace') : T('subDue'), this.fmt(this.due()))}
         ${row(T('subLeft'), this.days() <= 1 ? T('subLastDay') : `${this.days()} ${T('subDays')}`)}
       </div>
