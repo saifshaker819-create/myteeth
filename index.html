@@ -1033,6 +1033,68 @@ body.offline #offbar{display:flex}
 .safe.ok{border-color:color-mix(in srgb,var(--ok) 40%,transparent);background:color-mix(in srgb,var(--ok) 6%,var(--surface));border-inline-start-color:var(--ok)}
 .safe.ok h4{color:var(--ok)}
 
+
+/*══════════ الملاءمة لكل شاشة ══════════
+  · ارتفاع الشاشة الحقيقي (dvh) لا 100vh: شريط عنوان متصفح الهاتف لا يقصّ أسفل البرنامج.
+  · المساحات الآمنة (الحزّ وشريط الإيماءات) في الهاتف والتطبيق المثبّت.
+  · لا شيء يتجاوز عرض الشاشة: الشبكات تنكمش، والجداول تُمرَّر أفقياً داخل مكانها.
+  · القائمة الجانبية تتمرّر وحدها في نوافذ الحاسبة القصيرة، وأزرارها السفلى تبقى ظاهرة. */
+.shell{min-height:100vh;min-height:100dvh}
+#login{min-height:100vh;min-height:100dvh}
+.side{height:100vh;height:100dvh;
+  padding-top:max(18px,env(safe-area-inset-top));padding-bottom:max(14px,env(safe-area-inset-bottom))}
+#navlist{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;margin-inline:-4px;padding-inline:4px;scrollbar-width:none}
+#navlist::-webkit-scrollbar{display:none}
+.side .foot{flex-shrink:0}
+.topbar{padding-top:max(10px,env(safe-area-inset-top))}
+.topbar > .gr{min-width:0}
+#pagetitle,#pagedate{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wrap{padding-bottom:calc(72px + env(safe-area-inset-bottom));
+  padding-left:max(var(--gx,28px),env(safe-area-inset-left));padding-right:max(var(--gx,28px),env(safe-area-inset-right))}
+.sh{padding-top:max(14px,env(safe-area-inset-top));padding-bottom:calc(46px + env(safe-area-inset-bottom))}
+#toast{bottom:calc(26px + env(safe-area-inset-bottom))}
+#instbar{padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+body:has(#instbar) .wrap,body:has(#instbar) .sh{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g2>*,.g3>*,.g4>*,.row>*{min-width:0}
+input,select,textarea{min-width:0;max-width:100%}
+input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;padding-inline:10px}
+img,svg,video,canvas{max-width:100%}
+.card,.it,details.acc,.vc,.tc{max-width:100%}
+@media (max-width:899px){ .wrap{--gx:14px} }
+@media (max-width:640px){
+  .tbl{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap}
+  .tbl td.ell{max-width:140px}
+  #instbar{padding:10px 10px calc(10px + env(safe-area-inset-bottom))}
+  #instbar .box{padding:10px 12px;gap:10px;border-radius:16px}
+  #instbar .nm{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #instbar .ds{font-size:11.5px}
+  #instbar .applogo.sm,#instbar img{width:42px;height:42px}
+  #instbar .btn{height:38px;padding:0 13px;font-size:13px}
+  .sh{padding-left:12px;padding-right:12px}
+}
+@media (max-width:420px){
+  .it{gap:10px;padding:12px}
+  .it .wa{width:32px;padding:0}
+  .it .wa .wa-t{display:none}
+  .g3{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .btn{padding:0 16px}
+  #pagedate{font-size:11.5px}
+}
+@media (max-width:360px){
+  .g2{grid-template-columns:minmax(0,1fr)}
+  .segs button{font-size:12.5px;padding:0 4px}
+  .pf-acts{gap:7px} .pf-act{padding:12px 4px;font-size:12.5px}
+}
+/* نوافذ الحاسبة القصيرة (تطبيق مثبّت بنافذة صغيرة) */
+@media (min-width:900px) and (max-height:640px){
+  .side .brand{padding-bottom:12px;margin-bottom:6px}
+  .navb{height:40px}
+  .topbar{min-height:62px}
+}
+
 /*──────── الحركة والطباعة ────────*/
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
@@ -4863,18 +4925,21 @@ const Sub = {
     const d = this.load() || {};
     const row = (k, v) => `<div class="row" style="justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--edge)">
       <span class="lbl">${k}</span><b>${v}</b></div>`;
-    UI.sheet(`<div class="h2">${T('subTitle')}</div>
-      <div class="card flat mt2">
+    UI.sheet(`<div class="shhead">
+        <div class="gr"><div class="h2">${T('subTitle')}</div></div>
+        <button class="ib" onclick="UI.close()" aria-label="${T('close')}">✕</button>
+      </div>
+      <div class="card flat">
         ${row(T('subPlan'), esc(d.plan_name || '—'))}
         ${row(T('subBilling'), T('subAnnual'))}
         ${row(this.inGrace() ? T('subGrace') : T('subDue'), this.fmt(this.due()))}
         ${row(T('subLeft'), this.days() <= 1 ? T('subLastDay') : `${this.days()} ${T('subDays')}`)}
       </div>
       <div class="tiny mt2">${T('subPayHint')}</div>
-      <div class="row mt2" style="gap:9px">
-        <a class="btn gh gr" href="tel:${this.PHONE}">📞 <span dir="ltr">${this.PHONE}</span></a>
-        <a class="btn gr" href="https://wa.me/${this.WA}" target="_blank" rel="noopener">💬 ${T('subWa')}</a>
-      </div>`);
+      <div class="sl-ph mt2"><span class="lbl">${T('subSupport')}</span>
+        <span class="sl-num" dir="ltr" style="user-select:all">${this.PHONE}</span></div>
+      <a class="btn w" href="https://wa.me/${this.WA}" target="_blank" rel="noopener">💬 ${T('subWa')}</a>
+      <button class="btn gh w mt" onclick="UI.close()">${T('back')}</button>`);
   },
 };
 
@@ -12685,6 +12750,8 @@ const Wa = {
     (root || document).querySelectorAll('a[href^="tel:"]:not([data-wa]):not(.sl-num)').forEach(a => {
       a.dataset.wa = '1';
       if (a.closest('.sublock')) return;
+      /* في المكان زرّ واتساب أصلاً: لا يُضاف ثانٍ */
+      if (a.parentElement && a.parentElement.querySelector('a[href*="wa.me/"],a[href*="api.whatsapp.com"],a.wa')) return;
       const href = Wa.url(a.getAttribute('href').slice(4), Wa.hello());
       if (!href) return;
       const w = document.createElement('a');
@@ -12692,7 +12759,7 @@ const Wa = {
       w.dataset.waN = Wa.num(a.getAttribute('href').slice(4)); w.dataset.waT = Wa.hello();
       w.setAttribute('onclick', 'event.stopPropagation()');
       if (a.classList.contains('pf-chip')){ w.className = 'pf-chip'; w.textContent = '💬 ' + L('واتساب', 'WhatsApp'); }
-      else { w.className = 'wa'; w.textContent = '💬 ' + L('واتساب', 'WhatsApp'); }
+      else { w.className = 'wa'; w.innerHTML = '💬<span class="wa-t"> ' + L('واتساب', 'WhatsApp') + '</span>'; w.title = 'WhatsApp'; }
       a.after(w);
     });
   },
