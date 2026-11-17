@@ -908,6 +908,34 @@ html[data-theme=dark] .wsb.bc{--c1:#6E7E90}
 .tsv-go{color:var(--ink3);font-size:18px}
 .tsb.other{border-inline-start-color:var(--ink3)}
 
+/*══════════ نماذج ترويسة الوصفة ══════════*/
+.tplgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tplc{display:flex;flex-direction:column;gap:8px;padding:8px 8px 10px;border-radius:14px;cursor:pointer;
+  background:var(--surface);border:1.5px solid var(--line2);font-family:var(--fd);font-size:13px;font-weight:600;color:var(--ink2);
+  transition:border-color .15s,box-shadow .15s,transform .15s}
+.tplc:hover{transform:translateY(-1px);border-color:color-mix(in srgb,var(--br) 45%,var(--line2))}
+.tplc.on{border-color:var(--br);color:var(--br);box-shadow:0 0 0 4px var(--brL)}
+.tplc.on span::before{content:'✓ '}
+.tplthumb{height:100px;overflow:hidden;border-radius:9px;background:#fff;border:1px solid #e5e2da;position:relative;pointer-events:none}
+.tplthumb .paper{width:530px;zoom:.3;box-shadow:none;border:none;border-radius:0;padding:26px 22px}
+.tplacc{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+.tplacc button{width:36px;height:36px;border-radius:11px;background:var(--a);cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 0 1px rgba(0,0,0,.08);transition:transform .14s,box-shadow .14s}
+.tplacc button:hover{transform:scale(1.07)}
+.tplacc button.on{box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--a)}
+.tplpick{position:relative;width:36px;height:36px;border-radius:11px;border:1.5px dashed var(--line2);display:grid;place-items:center;
+  color:var(--ink3);cursor:pointer;overflow:hidden}
+.tplpick input{position:absolute;inset:0;opacity:0;cursor:pointer;height:100%}
+.tplprev{background:repeating-linear-gradient(135deg,transparent 0 10px,color-mix(in srgb,var(--ink) 3%,transparent) 10px 11px),var(--surface2);
+  border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;justify-content:center;overflow:auto}
+.tplprev .paper.a5{width:min(100%,532px);flex-shrink:0;aspect-ratio:148/210;padding:22px 21px;display:flex;flex-direction:column;border-radius:4px}
+.tplprev .paper.a5 .psig{margin-top:auto;padding-top:14px}
+.paper .rxrow:last-of-type{border-bottom:none}
+/* على الهاتف: الورقة بعرضها الحقيقي مصغّرةً، فتبقى سطورها كما ستُطبع */
+@media (max-width:640px){ .tplprev{padding:12px} .tplprev .paper.a5{width:532px;zoom:.62} }
+@media (max-width:440px){ .tplprev .paper.a5{zoom:.54} }
+@media (max-width:370px){ .tplprev .paper.a5{zoom:.48} }
+
 /*══════════ ملحقات: الترحيب ولوحة اليوم ══════════*/
 .hello{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:2px 0 18px}
 .hello .hi{font-family:var(--fd);font-weight:700;font-size:30px;letter-spacing:-.025em;line-height:1.2}
@@ -9365,20 +9393,150 @@ const Prn = {
 
 /*═══════════════ الطباعة ═══════════════*/
 const Print = {
-  /* الشعار المرفوع في الإعدادات هو رأس الورقة نفسه — يُطبع بعرض
-     الصفحة كاملاً. النص يظهر فقط عند غياب الشعار. */
-  head(){
-    const c = CFG.data;
-    if (c.logo){
-      return `<div style="text-align:center;padding-bottom:6px">
-        <img src="${c.logo}" style="width:100%;max-height:130px;object-fit:contain;display:block">
-      </div>`;
-    }
-    return `<div style="text-align:center;border-bottom:3px solid #00695C;padding-bottom:8px">
-      <div style="font-size:19px;font-weight:800">${esc(c.header||c.clinic)}</div>
-      ${c.doctor?`<div style="font-size:13px">${esc(c.doctor)}${c.title?' — '+esc(c.title):''}</div>`:''}
-    </div>`;
+  /*──── ترويسة ورقة A5 ────
+    خمسة نماذج تُبنى من بيانات العيادة وشعارها، ويُختار أحدها من
+    الإعدادات مع لونه. الأنماط مكتوبة داخل العناصر نفسها، فتطابق
+    المعاينة داخل البرنامج الورقة المطبوعة حرفاً بحرف.
+    «صورة الترويسة» هو السلوك القديم: الشعار المرفوع يُطبع بعرض الصفحة،
+    ويبقى الافتراضي لكل عيادة رفعت شعاراً قبل وجود النماذج. */
+  TPLS:['classic','split','band','minimal','banner'],
+  ACCENTS:['#0B6E66','#1E3A6E','#8A1E3C','#1F7A47','#2A2F36','#9A6A12'],
+  tpl(c){
+    c = c || CFG.data;
+    const t = this.TPLS.includes(c.rxTpl) ? c.rxTpl : (c.logo ? 'banner' : 'classic');
+    return (t === 'banner' && !c.logo) ? 'classic' : t;
   },
+  accent(c){ c = c || CFG.data; return /^#[0-9a-f]{6}$/i.test(c.rxAccent || '') ? c.rxAccent : '#0B6E66'; },
+  tplName(t){
+    const n = { classic:['كلاسيكي','Classic'], split:['عصري','Modern'], band:['شريط ملوّن','Color band'],
+                minimal:['بسيط','Minimal'], banner:['صورة الترويسة','Letterhead image'] }[t] || [t, t];
+    return isAr() ? n[0] : n[1];
+  },
+  addr(c){ return [c.gov, c.area, c.landmark].map(x => String(x || '').trim()).filter(Boolean).join(' — '); },
+
+  head(d, cc){
+    const c = { ...CFG.data, ...(cc || {}) };
+    const doc = (d && d.doctor != null) ? d : { doctor:c.doctor || '', title:c.title || '' };
+    const A = this.accent(c), t = this.tpl(c);
+    const title = esc(c.header || c.clinic || '');
+    const dn = esc(doc.doctor || ''), dt = esc(doc.title || '');
+    const ph = c.phone ? `<bdi dir="ltr" style="unicode-bidi:isolate">${esc(c.phone)}</bdi>` : '';
+    const ad = esc(this.addr(c));
+    const contact = [ph, ad].filter(Boolean).join(' &nbsp;·&nbsp; ');
+    const logo = (s, round) => c.logo
+      ? `<img src="${c.logo}" alt="" style="width:${s}px;height:${s}px;object-fit:contain;display:block;${round ? 'border-radius:50%;' : ''}">`
+      : `<div style="width:${s}px;height:${s}px;border-radius:${round ? '50%' : Math.round(s * .28) + 'px'};background:${A};color:#fff;
+           display:flex;align-items:center;justify-content:center;font-weight:800;font-size:${Math.round(s * .46)}px">${esc((c.clinic || c.header || '؟').trim().charAt(0))}</div>`;
+    const wrap = s => `<div style="-webkit-print-color-adjust:exact;print-color-adjust:exact;color:#111;font-family:'Readex Pro','IBM Plex Sans Arabic',sans-serif">${s}</div>`;
+
+    if (t === 'banner') return wrap(`<div style="text-align:center;padding-bottom:6px">
+        <img src="${c.logo}" alt="" style="width:100%;max-height:130px;object-fit:contain;display:block"></div>`);
+
+    if (t === 'split') return wrap(`
+      <div style="display:flex;align-items:center;gap:12px;padding-bottom:10px;border-bottom:2.5px solid ${A}">
+        ${logo(56)}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:19px;font-weight:800;line-height:1.25">${title}</div>
+          ${dn ? `<div style="font-size:12.5px;font-weight:700;color:${A};margin-top:2px">${dn}</div>` : ''}
+        </div>
+        <div style="text-align:end;font-size:10.5px;color:#444;line-height:1.7;border-inline-start:1px solid #ddd;padding-inline-start:12px;max-width:46%">
+          ${dt ? `<div style="font-weight:700;color:#222">${dt}</div>` : ''}
+          ${ph ? `<div>${ph}</div>` : ''}${ad ? `<div>${ad}</div>` : ''}
+        </div>
+      </div>`);
+
+    if (t === 'band') return wrap(`
+      <div style="background:${A};color:#fff;border-radius:10px;padding:13px 15px;display:flex;align-items:center;gap:12px">
+        <div style="width:58px;height:58px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">${logo(46, true)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:19px;font-weight:800;line-height:1.25">${title}</div>
+          ${dn || dt ? `<div style="font-size:12.5px;opacity:.92;margin-top:2px">${dn}${dn && dt ? ' — ' : ''}${dt}</div>` : ''}
+        </div>
+        ${contact ? `<div style="text-align:end;font-size:10.5px;line-height:1.7;opacity:.92;max-width:40%">${ph ? `<div>${ph}</div>` : ''}${ad ? `<div>${ad}</div>` : ''}</div>` : ''}
+      </div>`);
+
+    if (t === 'minimal') return wrap(`
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px">
+        <div style="min-width:0">
+          <div style="font-size:22px;font-weight:800;line-height:1.2">${dn || title}</div>
+          <div style="font-size:12px;font-weight:700;color:${A};margin-top:3px">${dn ? dt : ''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;text-align:end">
+          ${dn ? `<div style="font-size:12.5px;font-weight:700;color:#333">${title}</div>` : ''}${logo(40)}
+        </div>
+      </div>
+      <div style="height:3px;border-radius:3px;margin:9px 0 4px;background:linear-gradient(90deg,${A},${A}22)"></div>
+      ${contact ? `<div style="font-size:10.5px;color:#666">${contact}</div>` : ''}`);
+
+    /* classic */
+    return wrap(`
+      <div style="text-align:center;padding-bottom:9px;border-bottom:3px double ${A}">
+        <div style="display:flex;justify-content:center">${logo(52)}</div>
+        <div style="font-size:20px;font-weight:800;color:${A};margin-top:5px;line-height:1.25">${title}</div>
+        ${dn ? `<div style="font-size:13px;font-weight:700;color:#222;margin-top:1px">${dn}${dt ? `<span style="font-weight:500;color:#555"> — ${dt}</span>` : ''}</div>` : ''}
+        ${contact ? `<div style="font-size:10.5px;color:#555;margin-top:3px">${contact}</div>` : ''}
+      </div>`);
+  },
+
+  /*──── اختيار النموذج من الإعدادات ────*/
+  sample(){
+    const v = id => { const n = document.getElementById(id); return n ? n.value : null; };
+    const c = {};
+    for (const [id, k] of [['s-clinic','clinic'],['s-head','header'],['s-phone','phone'],['s-gov','gov'],
+                           ['s-area','area'],['s-landmark','landmark'],['s-foot','footer']]){
+      const x = v(id); if (x != null) c[k] = x;
+    }
+    const d = { doctor: v('s-doc') ?? (CFG.data.doctor || ''), title: v('s-title') ?? (CFG.data.title || ''), sign: CFG.data.sign || '' };
+    const p = { name: isAr() ? 'اسم المراجع' : 'Patient name', age: 34, mrn: '1024' };
+    const rx = { at: Date.now(), items: [
+      { drug:'Amoxicillin 500 mg', dose:'1 cap', freq: isAr() ? 'كل ٨ ساعات' : 'every 8 h', dur: isAr() ? '٥ أيام' : '5 days' },
+      { drug:'Ibuprofen 400 mg',  dose:'1 tab', freq: isAr() ? 'عند الألم' : 'when needed', instr: isAr() ? 'بعد الأكل' : 'after meals' },
+      { drug:'Chlorhexidine 0.12% mouthwash', freq: isAr() ? 'مرتين يومياً' : 'twice daily', dur: isAr() ? '٧ أيام' : '7 days' } ] };
+    return { c, d, p, rx };
+  },
+  tplBox(){
+    const s = this.sample(), cur = this.tpl(), A = this.accent();
+    const cards = this.TPLS.filter(t => t !== 'banner' || CFG.data.logo).map(t => `
+      <button type="button" class="tplc ${cur === t ? 'on' : ''}" data-tpl="${t}" onclick="Print.setTpl('${t}')">
+        <div class="tplthumb"><div class="paper">${this.head(s.d, { ...s.c, rxTpl:t })}</div></div>
+        <span>${this.tplName(t)}</span>
+      </button>`).join('');
+    return `
+      <div class="lbl">${isAr() ? 'تصميم ترويسة ورقة العلاج A5' : 'A5 prescription letterhead'}</div>
+      <div class="tiny mt">${isAr() ? 'تُبنى من اسم العيادة والطبيب والهاتف والعنوان والشعار. اختر نموذجاً ولوناً، والمعاينة تتحدّث فوراً.'
+                                    : 'Built from your clinic name, doctor, phone, address and logo. Pick a layout and colour — the preview updates live.'}</div>
+      <div class="tplgrid mt" id="tpl-grid">${cards}</div>
+      <label class="lb mt2">${isAr() ? 'لون الترويسة' : 'Letterhead colour'}</label>
+      <div class="tplacc" id="tpl-acc">${this.ACCENTS.map(x => `
+        <button type="button" class="${x.toLowerCase() === A.toLowerCase() ? 'on' : ''}" style="--a:${x}" data-acc="${x}"
+          onclick="Print.setAccent('${x}')" aria-label="${x}"></button>`).join('')}
+        <label class="tplpick" title="${isAr() ? 'لون آخر' : 'Custom'}"><input type="color" value="${A}" onchange="Print.setAccent(this.value)"><span>＋</span></label>
+      </div>
+      <label class="lb mt2">${isAr() ? 'معاينة الورقة' : 'Page preview'}</label>
+      <div class="tplprev" id="tpl-prev"><div class="paper a5">${this.rxBody(s.rx, s.p, true, s.d, s.c)}</div></div>
+      <div class="sep"></div>`;
+  },
+  tplRefresh(){
+    const s = this.sample();
+    const pv = document.getElementById('tpl-prev');
+    if (pv) pv.innerHTML = `<div class="paper a5">${this.rxBody(s.rx, s.p, true, s.d, s.c)}</div>`;
+    document.querySelectorAll('#tpl-grid .tplc').forEach(b => {
+      b.classList.toggle('on', b.dataset.tpl === this.tpl());
+      const th = b.querySelector('.paper'); if (th) th.innerHTML = this.head(s.d, { ...s.c, rxTpl:b.dataset.tpl });
+    });
+    document.querySelectorAll('#tpl-acc [data-acc]').forEach(b => b.classList.toggle('on', b.dataset.acc.toLowerCase() === this.accent().toLowerCase()));
+  },
+  async setTpl(t){ if (!this.TPLS.includes(t)) return; CFG.data.rxTpl = t; await CFG.save(); this.tplRefresh(); },
+  async setAccent(x){ if (!/^#[0-9a-f]{6}$/i.test(x)) return; CFG.data.rxAccent = x; await CFG.save(); this.tplRefresh(); },
+  wireTpl(){
+    if (!document.getElementById('tpl-prev')) return;
+    let tm;
+    ['s-clinic','s-head','s-doc','s-title','s-phone','s-gov','s-area','s-landmark','s-foot'].forEach(id => {
+      const n = document.getElementById(id);
+      if (n && !n._tpl){ n._tpl = 1; n.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(() => this.tplRefresh(), 120); }); }
+    });
+  },
+
   /* ورقتان مختلفتان تماماً: ورقة العلاج A5 بترويستها وتذييلها،
      وملصق الباركود بقياس الملصق بلا شيء حوله. لكل واحدة طابعتها
      المختارة في الإعدادات. */
@@ -9393,9 +9551,10 @@ const Print = {
 
     const html = `<!DOCTYPE html><html lang="${LG}" dir="${isAr()?'rtl':'ltr'}"><head>
       <meta charset="utf-8"><title>${esc(title)}</title>
-      <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700;800&display=swap" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;600;700;800&display=swap" rel="stylesheet">
       <style>${page}
         body{font-family:'IBM Plex Sans Arabic',sans-serif;margin:0;color:#111;
+             -webkit-print-color-adjust:exact;print-color-adjust:exact;
              font-size:${isLbl?'12px':'13px'}}
         table{width:100%;border-collapse:collapse;margin-top:8px}
         td,th{padding:7px 5px;border-bottom:1px solid #ccc;text-align:start}
@@ -9440,18 +9599,14 @@ const Print = {
              title: pf.title || '', sign: pf.sign || '' };
   },
 
-  rxBody(rx, p, forScreen, d){
-    const c = { ...CFG.data, ...(d || {}) };
-    const head = c.logo
-      ? `<div class="phd"><img src="${c.logo}"></div>`
-      : `<div class="phd">
-           <div style="font-size:19px;font-weight:800">${esc(c.header||c.clinic)}</div>
-           ${c.doctor?`<div style="font-size:13px">${esc(c.doctor)}${c.title?' — '+esc(c.title):''}</div>`:''}
-         </div>`;
+  rxBody(rx, p, forScreen, d, cc){
+    const c = { ...CFG.data, ...(cc || {}), ...(d || {}) };
+    const A = this.accent(c);
+    const head = this.head(d || null, cc);
 
     const items = rx.items.map((i,n)=>`
       <div class="rxrow">
-        <div class="n">${n+1}</div>
+        <div class="n" style="color:${A}">${n+1}</div>
         <div class="rxtxt">
           <div class="dname">${esc(i.drug)}</div>
           <div class="ddose">${[i.dose,i.freq,i.dur,i.instr]
@@ -9468,7 +9623,7 @@ const Print = {
       </div>
       ${rx.phName?`<div style="font-size:12px;font-weight:700;margin-top:6px">
         ${T('dispenseAt')}: ${esc(rx.phName)}</div>`:''}
-      <div style="font-size:16px;font-weight:800;margin:8px 0 2px;color:#00695C">℞</div>
+      <div style="font-size:16px;font-weight:800;margin:8px 0 2px;color:${A}">℞</div>
       ${items}
       ${rx.notes?`<div style="margin-top:10px;font-size:12px">${esc(rx.notes)}</div>`:''}
       <div class="psig">
@@ -9490,14 +9645,15 @@ const Print = {
     const rx = await DB.get('rx', id);
     const p  = await DB.get('patients', rx.pid);
     const dc = await this.docOf(rx);
-    this.win(`${this.head()}
+    const A = this.accent();
+    this.win(`${this.head(dc)}
       <div style="display:flex;justify-content:space-between;font-size:12.5px;
         margin:11px 0;padding:8px 0;border-bottom:1px dashed #999">
         <span><b>${esc(nm(p))}</b></span><span>${p.age||''} ${T('yrs')}</span>
         <span>${esc(p.mrn)}</span><span>${fmtD(rx.at)}</span></div>
-      <div style="font-size:16px;font-weight:800;margin-top:6px;color:#00695C">℞</div>
+      <div style="font-size:16px;font-weight:800;margin-top:6px;color:${A}">℞</div>
       <table dir="ltr"><tbody>${rx.items.map((i,n)=>`<tr>
-        <td style="width:24px;font-weight:800;color:#00695C;text-align:left">${n+1}</td>
+        <td style="width:24px;font-weight:800;color:${A};text-align:left">${n+1}</td>
         <td style="text-align:left">
           <b style="font-size:14.5px">${esc(i.drug)}</b>
           <div style="font-size:11.5px;color:#444;margin-top:2px;unicode-bidi:plaintext">
@@ -10751,6 +10907,7 @@ const Cfg = {
       <button class="btn w mt2" onclick="Cfg.save()">${T('save')}</button>`;
 
     const print = `
+      ${Print.tplBox()}
       <label class="lb">${T('header')}</label><input id="s-head" value="${esc(c.header)}">
       <div class="mt"><label class="lb">${T('footer')}</label><input id="s-foot" value="${esc(c.footer)}"></div>
       <div class="mt"><label class="lb">${T('logo')}</label>
@@ -10985,6 +11142,7 @@ const Cfg = {
       };
     };
     pick('s-logo','logo'); pick('s-sign','sign');
+    Print.wireTpl();
     if (mg) this.fillStaff();
     if (doc && Sync.on()){ this.fillTeam(); this.fillProf(); }
 
