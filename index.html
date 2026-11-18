@@ -982,6 +982,34 @@ html[data-theme=dark] .wsb.bc{--c1:#6E7E90}
   .kpi .ki{width:30px;height:30px} .kpi .kh{margin-bottom:4px} .kpi .s{display:none} .kpi .v small{display:block;margin:2px 0 0;font-size:11px} .kpi.hero{grid-column:1/-1} }
 @media (max-width:760px){ .kpis{grid-template-columns:repeat(3,1fr)} .kpi:not(.hero) .ki{display:none} .kpi:not(.hero) .v{font-size:17px} .kpi:not(.hero) .k{font-size:12px;line-height:1.35} }
 
+.tdtop{display:grid;grid-template-columns:minmax(260px,.9fr) minmax(0,2.1fr);gap:12px;margin-bottom:18px;align-items:stretch}
+.kp-hero{display:flex;min-width:0}
+.kp-hero .kpi{flex:1}
+.tdside{display:grid;grid-template-rows:minmax(0,1fr) auto;gap:12px;min-width:0}
+.kp-three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;min-height:0}
+.kp-three.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.kp-three .kpi{padding:10px 14px;border-radius:16px;justify-content:center;min-width:0}
+.kp-three .kpi .kh{margin-bottom:2px}
+.kp-three .kpi .k{font-size:12.5px;line-height:1.3}
+.kp-three .kpi .ki{width:28px;height:28px;border-radius:9px}
+.kp-three .kpi .ki svg{width:16px;height:16px}
+.kp-three .kpi .v{font-size:21px}
+.kp-three .kpi .v small{font-size:11.5px;margin-inline-start:4px}
+.kp-three .kpi .s{font-size:11.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tdsearch{min-width:0}
+.tdsearch .sbar{margin:0}
+.tdsearch .sbar input{height:48px}
+.tdsearch .sbar .pill{height:48px;min-width:48px}
+@media (max-width:1100px){ .tdtop{grid-template-columns:minmax(220px,.8fr) minmax(0,2.2fr)} .kp-three .kpi .v{font-size:18px} .kp-three .kpi .s{display:none} }
+@media (max-width:760px){
+  .tdtop{grid-template-columns:minmax(0,1fr);gap:9px;margin-bottom:14px}
+  .tdside{grid-template-rows:auto auto;gap:9px}
+  .kp-three{gap:8px}
+  .kp-three .kpi{padding:9px 10px;border-radius:14px}
+  .kp-three .kpi .ki{display:none}
+  .kp-three .kpi .k{font-size:11.5px}
+  .kp-three .kpi .v{font-size:17px} .kp-three .kpi .v small{display:block;margin:1px 0 0;font-size:10.5px}
+}
 /*══════════ لوحة الأوامر ══════════*/
 .cmdk-ov{position:fixed;inset:0;z-index:300;display:flex;justify-content:center;align-items:flex-start;
   padding:12vh 16px 16px;background:rgba(6,12,14,.5);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);animation:fade .14s}
@@ -1350,7 +1378,9 @@ const FBC = {
     };
     const net = code === 'auth/network-request-failed' || code === 'unavailable'
              || code === 'deadline-exceeded' || /network|offline|Failed to fetch/i.test(String(e?.message || ''));
-    const out = new Error(net ? 'network' : (map[code] || e?.message || String(e)));
+    /* اسم الخدمة الخلفية لا يُعرض للمستخدم أبداً، حتى في نصّ خطأ خام */
+    const clean = s => String(s || '').replace(/firebase(\s*storage)?\s*:?\s*/ig, '').replace(/\(?auth\/[a-z-]+\)?\.?/ig, '').replace(/\s{2,}/g, ' ').trim();
+    const out = new Error(net ? 'network' : (map[code] || clean(e?.message || String(e)) || 'error'));
     out.code = code; out.net = !!net; out.cause = e;
     return out;
   },
@@ -1648,7 +1678,7 @@ ar:{
  email:'البريد الإلكتروني', cloudLogin:'الدخول', cloudBusy:'جارٍ الدخول…',
  newClinic:'تسجيل عيادة جديدة', cloudSetup:'ربط السيرفر', cloudUrl:'رابط المشروع',
  cloudKey:'المفتاح العام', cloudSave:'حفظ الاتصال', cloudNotSet:'لم يُضبط الاتصال بالسيرفر بعد',
- cloudOk:'متصل بالسيرفر', cloudFail:'تعذّر الاتصال بالسيرفر', cloudSaved:'حُفظ الاتصال',
+ cloudSecure:'اتصال مشفّر بسيرفر العيادة', cloudOk:'متصل بالسيرفر', cloudFail:'تعذّر الاتصال بالسيرفر', cloudSaved:'حُفظ الاتصال',
  badCloudLogin:'البريد أو كلمة المرور غير صحيحة',
  badKey:'مفتاح الاتصال غير صحيح — راجع CLOUD_KEY في أعلى الملف',
  needConfirm:'أكّد بريدك من الرسالة المرسلة إليك ثم أعد الدخول', noMembership:'هذا الحساب غير مرتبط بأي عيادة',
@@ -1976,7 +2006,7 @@ en:{
  email:'Email', cloudLogin:'Sign in', cloudBusy:'Signing in…',
  newClinic:'Register a new clinic', cloudSetup:'Server connection', cloudUrl:'Project URL',
  cloudKey:'Publishable key', cloudSave:'Save connection', cloudNotSet:'The server connection is not set yet',
- cloudOk:'Connected to the server', cloudFail:'Could not reach the server', cloudSaved:'Connection saved',
+ cloudSecure:'Encrypted connection to your clinic server', cloudOk:'Connected to the server', cloudFail:'Could not reach the server', cloudSaved:'Connection saved',
  badCloudLogin:'Wrong email or password',
  badKey:'Invalid connection key — check CLOUD_KEY at the top of the file',
  needConfirm:'Confirm your email from the message we sent, then sign in', noMembership:'This account is not linked to any clinic',
@@ -2655,8 +2685,10 @@ const P = c => {
 };
 const pName = c => { const p=P(c); return isAr()?p.ar:p.en; };
 
+/* اسم الخدمة الخلفية لا يظهر للمستخدم في أي رسالة */
+const noBrand = s => String(s ?? '').replace(/firebase(\s*storage)?\s*:?\s*/ig, '').replace(/\s{2,}/g, ' ').trim();
 function toast(m, kind){
-  $('#toast').innerHTML = `<div class="${kind||''}">${esc(m)}</div>`;
+  $('#toast').innerHTML = `<div class="${kind||''}">${esc(noBrand(m))}</div>`;
   clearTimeout(toast._t); toast._t = setTimeout(()=>$('#toast').innerHTML='', 3000);
 }
 function ask(msg){ return confirm(msg || T('areYouSure')); }
@@ -11119,7 +11151,7 @@ const Cfg = {
           <div class="tiny">${T('liveSection')}</div>
         </div>
       </div>
-      ${Sync.err?`<div class="al r mt"><span>!</span><span>${esc(Sync.err)}</span></div>`:''}
+      ${Sync.err?`<div class="al r mt"><span>!</span><span>${esc(noBrand(Sync.err))}</span></div>`:''}
       <button class="btn w mt2" onclick="Sync.run(true)">${T('syncNow')}</button>`;
 
     /* السيرفر: حالة الاتصال والجلسة */
@@ -11128,7 +11160,7 @@ const Cfg = {
         <div class="av ${Cloud.ready()?'g':'w'}">☁</div>
         <div class="gr">
           <div class="h3">${Cloud.ready()?T('cloudOk'):T('cloudNotSet')}</div>
-          <div class="tiny mono ell">${esc(Cloud.cfg.url||'—')}</div>
+          <div class="tiny">${T('cloudSecure')}</div>
         </div>
       </div>
       ${Cloud.session?`<div class="it" style="cursor:default">
@@ -12802,8 +12834,18 @@ const Kpi = {
     const sb = v.querySelector('.sbar'); if (!sb) return;
     let hello = document.getElementById('hello');
     if (!hello){ hello = document.createElement('div'); hello.id = 'hello'; hello.className = 'hello'; sb.before(hello); }
-    let box = document.getElementById('kpis');
-    if (!box){ box = document.createElement('div'); box.id = 'kpis'; box.className = 'kpis'; sb.before(box); }
+    /* الهيكل يُبنى مرة واحدة: بطاقة المراجعين يميناً، وعلى يسارها ثلاث بطاقات
+       صغيرة وتحتها شريط البحث (الشريط نفسه ينتقل بعقدته فلا يُفقد ما كُتب فيه).
+       الارتفاع كله ارتفاع بطاقة المراجعين. */
+    let top = document.getElementById('tdtop');
+    if (!top || !top.contains(sb)){
+      top?.remove();
+      top = document.createElement('div'); top.id = 'tdtop'; top.className = 'tdtop';
+      top.innerHTML = '<div id="kp-hero" class="kp-hero"></div><div class="tdside"><div id="kp-three" class="kp-three"></div><div id="tdsearch" class="tdsearch"></div></div>';
+      sb.before(top);
+      top.querySelector('#tdsearch').appendChild(sb);
+    }
+    const heroBox = document.getElementById('kp-hero'), box = document.getElementById('kp-three');
     const d = await this.data();
     const showMoney = Perm.money();
     const who = this.who();
@@ -12816,11 +12858,13 @@ const Kpi = {
       <div class="clock"><i></i>${esc(Mina.dateLong())}</div>`;
     const t = Math.max(1, d.total);
     const seg = [[d.waiting, 'var(--gold2)', L('انتظار', 'Waiting')], [d.chair, 'var(--br2)', L('كرسي', 'Chair')], [d.done, '#8FF0BF', L('مكتمل', 'Done')]];
-    box.innerHTML = `
+    heroBox.innerHTML = `
       <div class="kpi hero"><div class="kh"><span class="k">${L('مراجعو اليوم', 'Patients today')}</span><span class="ki">${this.ICON.users}</span></div>
         <div class="v">${d.total}<small>${L('مراجع', 'patients')}</small></div>
         <div class="seg">${seg.map(([n, c]) => n ? `<i style="flex:${n / t};background:${c}"></i>` : '').join('') || '<i style="flex:1;background:rgba(255,255,255,.14)"></i>'}</div>
-        <div class="leg">${seg.map(([n, c, l]) => `<span style="--d:${c}">${l} ${n}</span>`).join('')}</div></div>
+        <div class="leg">${seg.map(([n, c, l]) => `<span style="--d:${c}">${l} ${n}</span>`).join('')}</div></div>`;
+    box.className = 'kp-three' + (showMoney ? '' : ' two');
+    box.innerHTML = `
       ${showMoney ? `
       <div class="kpi ok"><div class="kh"><span class="k">${L('المقبوض اليوم', 'Collected today')}</span><span class="ki">${this.ICON.cash}</span></div>
         <div class="v">${money(d.collected)}<small>${esc(cur())}</small></div>
