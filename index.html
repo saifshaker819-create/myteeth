@@ -4124,7 +4124,9 @@ const Sync = {
     const typing = document.activeElement &&
       /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
     const inPage = Nav.stack.length > 0;
-    if (typing || inPage){ this.dirty = true; return; }
+    /* الإعدادات لا تعرض سجلات واردة: إعادة رسمها كل مزامنة كانت تُغلق القائمة المفتوحة
+       وتمحو ما يُكتب في الحقول. تُرسم من جديد عند التنقّل أو الحفظ. */
+    if (typing || inPage || S.tab === 'set'){ this.dirty = true; return; }
     this.dirty = false;
     App.draw();
   },
@@ -10971,8 +10973,13 @@ const Pt = {
 /*═══════════════ الإعدادات ═══════════════*/
 const Cfg = {
   /* كل قسم قائمة منسدلة مستقلة — الشاشة لا تعود جداراً من الحقول */
+  /* القوائم المنسدلة تتذكّر ما فُتح منها: أي إعادة رسم (وصول بيانات من السيرفر،
+     تعرّف الطابعات، رفع صورة…) لا تُغلق ما يعمل عليه المستخدم. */
+  _open:new Set(),
+  tg(id, on){ on ? this._open.add(id) : this._open.delete(id); },
   acc(id, icon, title, body, open){
-    return `<details class="acc" ${open?'open':''}>
+    return `<details class="acc" data-k="${id}" ${(open || this._open.has(id))?'open':''}
+      ontoggle="Cfg.tg('${id}',this.open)">
       <summary><span class="accic">${icon}</span><span>${title}</span>
         <span class="ar">${isAr()?'‹':'›'}</span></summary>
       <div class="bd">${body}</div></details>`;
@@ -10980,6 +10987,7 @@ const Cfg = {
 
   async draw(){
     const c = CFG.data;
+    const _sy = window.scrollY;
     const dark = document.documentElement.getAttribute('data-theme')==='dark';
 
     const general = `
@@ -11246,8 +11254,19 @@ const Cfg = {
     /* محاولة تعرّف صامتة على الطابعات عند فتح الإعدادات: إن وُجد
        جسر يعطي الأسماء ظهرت في القائمتين بلا ضغط زر، وإن لم يوجد
        لم يتغيّر شيء ولم تظهر رسالة. */
+    requestAnimationFrame(() => window.scrollTo(0, _sy));
     Prn.detect().then(l => {
-      if (l.length && !Prn._auto){ Prn._auto = true; Cfg.draw(); }
+      if (!l.length || Prn._auto) return;
+      Prn._auto = true;
+      /* القائمتان فقط تُحدَّثان — لا إعادة رسم للصفحة فلا يضيع نصّ مكتوب ولا قسم مفتوح */
+      const names = Prn.names();
+      for (const kind of ['a5', 'bc']){
+        const s = document.querySelector(`select[onchange^="Cfg.prnSet('${kind}'"]`); if (!s) continue;
+        const cur = Prn.get(kind, '');
+        s.innerHTML = `<option value="">${T('prnDefault')}</option>` + names.map(n =>
+          `<option value="${esc(n)}" ${cur===n?'selected':''}>${esc(n)}</option>`).join('') +
+          ((cur && !names.includes(cur)) ? `<option value="${esc(cur)}" selected>${esc(cur)}</option>` : '');
+      }
     }).catch(()=>{});
   },
 
