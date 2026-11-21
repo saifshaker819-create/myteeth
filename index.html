@@ -1713,6 +1713,8 @@ ar:{
  removeToday:'إزالة من قائمة اليوم فقط', removeTodayQ:'إزالة هذه الجلسة من قائمة اليوم؟ يبقى ملف المراجع كما هو.',
  removed:'تمت الإزالة', holdHint:'اضغط مطوّلاً على الاسم لخيارات الحذف',
  ptOptions:'خيارات المراجع', docOnly:'هذا الإجراء متاح للطبيب وحده',
+ docSecOnly:'هذا الإجراء متاح للطبيب والسكرتير',
+ waPt:'مراسلة عبر واتساب', waNoPhone:'لا يوجد رقم هاتف صالح لهذا المراجع',
  sealedEarly:'أُنهيت قبل اكتمال الجلسات', notDone:'لم تُنفَّذ',
  planSummary:'ملخص خطة السن', whatDoctorWrote:'ما كتبه الطبيب لهذه الجلسة',
  noDoctorNote:'لم يُكتب شيء لهذه الجلسة', workNote:'ملاحظة العمل',
@@ -2041,6 +2043,8 @@ en:{
  removeToday:"Remove from today's list only", removeTodayQ:"Remove this session from today's list? The patient file stays.",
  removed:'Removed', holdHint:'Press and hold a name for delete options',
  ptOptions:'Patient options', docOnly:'This action is for the doctor only',
+ docSecOnly:'This action is for the doctor and secretary only',
+ waPt:'Message on WhatsApp', waNoPhone:'This patient has no valid phone number',
  sealedEarly:'Closed before all sessions were done', notDone:'Not done',
  planSummary:'Tooth plan summary', whatDoctorWrote:'What the doctor wrote for this session',
  noDoctorNote:'Nothing was written for this session', workNote:'Work note',
@@ -6640,7 +6644,7 @@ const Sec = {
     if (!$('#sc-q')){
       v.innerHTML = `
         <div class="sbar"><input id="sc-q" placeholder="${T('search')}" value="${esc(q||'')}"></div>
-        ${S.role==='doctor'?`<div class="tiny ctr" style="margin-top:7px;color:var(--ink3)">
+        ${Del.ptAllowed(true)?`<div class="tiny ctr" style="margin-top:7px;color:var(--ink3)">
           ${T('holdHint')}</div>`:''}
         <div id="sc-list" class="col mt2"></div>`;
       const i = $('#sc-q'); let tm;
@@ -6656,7 +6660,7 @@ const Sec = {
     for (const p of ps.slice(0,60)){
       const t = await Ops.patientTotals(p.id);
       rows.push(`<div class="it" onclick="Sec.file('${p.id}')"
-        ${S.role==='doctor'?`data-hold="delPatient" data-hold-arg="${p.id}"`:''}>
+        ${Del.ptAllowed(true)?`data-hold="delPatient" data-hold-arg="${p.id}"`:''}>
         <div class="av">${esc(nm(p).charAt(0))}</div>
         <div class="gr">
           <div class="h3 ell">${esc(nm(p))}</div>
@@ -6867,7 +6871,8 @@ const Sec = {
       ${Perm.chart() ? `<button onclick="Doc.open('${pid}')">🦷 ${T('toothChart')}</button>` : ''}
       <button onclick="Money.ptVisits('${pid}')">₪ ${T('perTooth')}</button>
       ${S.patient.bc ? `<button onclick="Sec.ptCode('${pid}')">▮▮ ${T('ptCode')}</button>` : ''}
-      ${S.role==='doctor' ? `<hr><button class="dg" onclick="Del.patient('${pid}')">🗑 ${T('delPt')}</button>` : ''}
+      <button onclick="Sec.waPt('${pid}')">💬 ${T('waPt')}</button>
+      ${Del.ptAllowed(true) ? `<hr><button class="dg" onclick="Del.patient('${pid}')">🗑 ${T('delPt')}</button>` : ''}
     </div>`);
     m._btn = btn;
     const r = btn.getBoundingClientRect();
@@ -6878,6 +6883,17 @@ const Sec = {
     setTimeout(() => document.addEventListener('click', function off(ev){
       if (!m.contains(ev.target)){ m.remove(); document.removeEventListener('click', off); }
     }), 0);
+  },
+
+  /* مراسلة المراجع عبر واتساب برقمه المسجّل في ملفه */
+  async waPt(pid){
+    /* المراجع المفتوح يُقرأ مباشرة دون انتظار، فيبقى الفتح ضمن نقرة المستخدم
+       ولا يحجبه المتصفح كنافذة منبثقة */
+    const p = (S.patient && S.patient.id === pid) ? S.patient : await DB.get('patients', pid);
+    const W = window.Mina && window.Mina.Wa;
+    const n = W ? W.num(p?.phone) : '';
+    if (!n) return toast(T('waNoPhone'), 'e');
+    W.open(n, W.hello());
   },
 
   async showMH(pid){
@@ -9184,12 +9200,19 @@ const PickProc = {
 };
 
 /*═══════════════ الحذف ═══════════════
-  الطبيب وحده يحذف. كل حذف يمرّ بتأكيدين لأنه لا يُسترجع.
+  الطبيب يحذف الجلسات والمراجعين، والسكرتير يحذف المراجع من الملفات.
+  كل حذف يمرّ بتأكيدين لأنه لا يُسترجع.
 ═══════════════════════════════════════*/
 const Del = {
   allowed(){
     if (S.role === 'doctor') return true;
     toast(T('docOnly'), 'e'); return false;
+  },
+  /* حذف المراجع نهائياً: الطبيب والسكرتير. silent: فحص بلا رسالة (لرسم الأزرار) */
+  ptAllowed(silent){
+    if (S.role === 'doctor' || S.role === 'secretary') return true;
+    if (!silent) toast(T('docSecOnly'), 'e');
+    return false;
   },
 
   /* قائمة خيارات عند الضغط المطوّل في قسم اليوم */
@@ -9220,7 +9243,7 @@ const Del = {
   },
 
   async patient(pid){
-    if (!this.allowed()) return;
+    if (!this.ptAllowed()) return;
     const p = await DB.get('patients', pid); if (!p) return;
     if (!ask(nm(p) + '\n\n' + T('delPtQ'))) return;
     if (!ask(T('delPtQ2'))) return;
