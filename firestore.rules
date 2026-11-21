@@ -1,0 +1,244 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signed()  { return request.auth != null; }
+    function uid()     { return request.auth.uid; }
+    function memberDoc(){ return /databases/$(database)/documents/members/$(uid()); }
+    function isMember(){ return signed() && exists(memberDoc()); }
+    function me()      { return get(memberDoc()).data; }
+    function clinicPath(cid){ return /databases/$(database)/documents/clinics/$(cid); }
+    function clinic(cid){ return get(clinicPath(cid)).data; }
+
+    function isAdmin() {
+      return signed() && request.auth.token.email_verified == true && (
+        request.auth.token.email == 'saif07807632797@gmail.com' ||
+        request.auth.token.email in get(/databases/$(database)/documents/config/admins).data.emails);
+    }
+
+    function clinicOk(cid) {
+      let c = clinic(cid);
+      return c.active == true && (
+        c.paid_until == null || request.time < c.paid_until ||
+        (c.grace_until != null && request.time < c.grace_until));
+    }
+    function inClinic(cid) { return isMember() && me().cid == cid && me().active == true; }
+    function activeIn(cid) { return inClinic(cid) && clinicOk(cid); }
+    function role()        { return me().role; }
+    function isOwnerOf(cid){ return inClinic(cid) && role() == 'owner'; }
+    function staffOf(cid)  { return activeIn(cid) && (role() == 'doctor' || role() == 'secretary'); }
+    function canSee(K)     { return K == '_' || role() == 'owner' || K in me().vis; }
+
+    function onlyKeys(keys){ return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys); }
+    function serverNow(f)  { return request.resource.data[f] == request.time; }
+
+    match /config/{id} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+    match /audit/{id} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && request.resource.data.by == uid();
+    }
+
+    match /codes/{code} {
+      allow get: if signed();
+      allow list: if isAdmin();
+      allow create: if isAdmin() || (
+        isMember() && request.resource.data.cid == me().cid && role() == 'owner')
+        || (signed() && !exists(memberDoc())
+            && getAfter(memberDoc()).data.cid == request.resource.data.cid
+            && getAfter(memberDoc()).data.role == 'owner');
+      allow update: if isAdmin() || (isOwnerOf(resource.data.cid)
+        && request.resource.data.cid == resource.data.cid);
+      allow delete: if isAdmin();
+    }
+
+    match /members/{mid} {
+      allow get: if signed() && (mid == uid()
+        || (isMember() && resource.data.cid == me().cid) || isAdmin());
+      allow list: if (isMember() && resource.data.cid == me().cid) || isAdmin();
+
+      allow create: if (isOwnerOf(request.resource.data.cid) && newStaffOk(mid))
+        || (mid == uid() && request.resource.data.role == 'owner'
+            && request.resource.data.active == true
+            && getAfter(clinicPath(request.resource.data.cid)).data.owner_uid == uid()
+            && !exists(clinicPath(request.resource.data.cid)))
+        || isAdmin();
+
+      allow update: if
+        (mid == uid() && onlyKeys(['seen', 'last_login']) && serverNow('seen'))
+        || (isOwnerOf(resource.data.cid) && resource.data.role != 'owner'
+            && onlyKeys(['active', 'name']) && activeChangeOk(mid))
+        || (isMember() && role() == 'doctor' && activeIn(resource.data.cid)
+            && resource.data.cid == me().cid && onlyKeys(['vis'])
+            && request.resource.data.vis.toSet().difference(resource.data.vis.toSet()).hasOnly([uid()])
+            && resource.data.vis.toSet().difference(request.resource.data.vis.toSet()).hasOnly([uid()]))
+        || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    function newStaffOk(mid) {
+      let d = request.resource.data;
+      let before = get(clinicPath(d.cid)).data;
+      let after  = getAfter(clinicPath(d.cid)).data;
+      return d.role in ['doctor', 'secretary', 'pharmacy'] && d.active == true
+        && d.keys().hasOnly(['cid', 'role', 'name', 'email', 'active', 'vis', 'created_at', 'created_by'])
+        && d.created_by == uid()
+        && d.vis == (d.role == 'doctor' ? [mid] : [])
+        && after.cnt[d.role] == before.cnt[d.role] + 1
+        && after.cnt[d.role] <= before.max[d.role]
+        && after.cnt_by == mid;
+    }
+    function activeChangeOk(mid) {
+      let r = resource.data.role;
+      let before = get(clinicPath(resource.data.cid)).data;
+      let after  = getAfter(clinicPath(resource.data.cid)).data;
+      return request.resource.data.active == resource.data.active
+        || (request.resource.data.active == false && after.cnt[r] == before.cnt[r] - 1 && after.cnt_by == mid)
+        || (request.resource.data.active == true  && after.cnt[r] == before.cnt[r] + 1
+            && after.cnt[r] <= before.max[r] && after.cnt_by == mid);
+    }
+
+    match /clinics/{cid} {
+      allow get: if inClinic(cid) || isAdmin();
+      allow list: if isAdmin();
+
+      allow create: if isAdmin() || (signed() && !exists(memberDoc())
+        && request.resource.data.owner_uid == uid()
+        && request.resource.data.active == true
+        && request.resource.data.kind == 'clinic'
+        && request.resource.data.max == {'doctor': 1, 'secretary': 1, 'pharmacy': 1}
+        && request.resource.data.cnt == {'doctor': 0, 'secretary': 0, 'pharmacy': 0}
+        && request.resource.data.plan == null
+        && request.resource.data.grace_until == null
+        && request.resource.data.paid_until > request.time + duration.value(13, 'd')
+        && request.resource.data.paid_until < request.time + duration.value(15, 'd')
+        && getAfter(memberDoc()).data.cid == cid
+        && getAfter(memberDoc()).data.role == 'owner');
+
+      allow update: if
+        (isOwnerOf(cid) && clinicOk(cid) && onlyKeys(['name', 'app_name', 'logo', 'phone', 'country',
+              'gov', 'area', 'landmark', 'doctor_name', 'u'])
+            && (!('logo' in request.resource.data) || request.resource.data.logo == null
+                || request.resource.data.logo.size() < 400000))
+        || (isOwnerOf(cid) && clinicOk(cid) && onlyKeys(['cnt', 'cnt_by']) && cntChangeOk(cid))
+        || isAdmin();
+      allow delete: if isAdmin();
+
+      match /o/{K}/{col}/{rid} {
+        allow read: if (activeIn(cid) && canSee(K) && (col == 'pub' || role() != 'pharmacy')) || isAdmin();
+        allow create, update: if activeIn(cid) && canSee(K) && recOk(K, col, rid)
+          && (resource == null || request.resource.data.ua >= resource.data.ua);
+        allow delete: if isAdmin();
+      }
+
+      match /bookings/{bid} {
+        allow read: if staffOf(cid) || (signed() && resource.data.pu == uid()) || isAdmin();
+        allow create: if signed() && request.auth.token.email_verified == true
+          && exists(/databases/$(database)/documents/patients/$(uid())/clinics/$(cid))
+          && clinicOk(cid)
+          && request.resource.data.pu == uid()
+          && request.resource.data.status == 'pending'
+          && request.resource.data.keys().hasOnly(['pu', 'doc', 'status', 'u', 'created_at'])
+          && request.resource.data.doc is map
+          && serverNow('u')
+          && getAfter(/databases/$(database)/documents/patients/$(uid())).data.lb == request.time;
+        allow update: if serverNow('u') && (
+          (staffOf(cid) && onlyKeys(['status', 'code', 'patient_ref', 'u'])
+             && request.resource.data.status in ['pending', 'accepted', 'declined'])
+          || (signed() && resource.data.pu == uid() && onlyKeys(['status', 'u'])
+             && request.resource.data.status == 'cancelled'));
+        allow delete: if isAdmin();
+      }
+
+      match /links/{doc} {
+        allow read: if activeIn(cid) || isAdmin();
+        allow write: if activeIn(cid) && role() == 'doctor' && doc == uid();
+        allow delete: if isAdmin();
+      }
+
+      match /payments/{pid} {
+        allow read, write: if isAdmin();
+      }
+    }
+
+    function cntChangeOk(cid) {
+      let mp = /databases/$(database)/documents/members/$(request.resource.data.cnt_by);
+      let ma = getAfter(mp).data;
+      let r  = ma.role;
+      let dlt = request.resource.data.cnt[r] - resource.data.cnt[r];
+      return ma.cid == cid && r in ['doctor', 'secretary', 'pharmacy']
+        && request.resource.data.cnt.diff(resource.data.cnt).affectedKeys().hasOnly([r])
+        && ((dlt == 1 && ma.active == true && request.resource.data.cnt[r] <= resource.data.max[r]
+             && (!exists(mp) || get(mp).data.active == false))
+         || (dlt == -1 && ma.active == false && exists(mp) && get(mp).data.active == true));
+    }
+
+    function recOk(K, col, rid) {
+      let d = request.resource.data;
+      let s = d.store;
+      let pub = s in ['patients', 'rx'];
+      let shared = s in ['settings', 'suggest'];
+      return col in ['pub', 'prv']
+        && (pub ? col == 'pub' : col == 'prv')
+        && s in ['patients', 'visits', 'works', 'payments', 'files', 'tooth', 'rx', 'appts', 'settings', 'suggest']
+        && (!shared || K == '_')
+        && d.keys().hasOnly(['store', 'j', 'ua', 'del', 'u', 'by'])
+        && d.j is string && d.j.size() < 1000000
+        && d.ua is number && d.del is bool && d.by == uid()
+        && rid.matches(s + '~.+')
+        && serverNow('u')
+        && (role() != 'pharmacy' || s == 'rx')
+        && (role() != 'owner' || shared);
+    }
+
+    function lbOk() {
+      let n = request.resource.data.get('lb', null);
+      let o = resource.data.get('lb', null);
+      return n == o || (n == request.time && (o == null || request.time > o + duration.value(10, 's')));
+    }
+
+    match /patients/{pu} {
+      allow get: if signed() && (pu == uid() || isAdmin());
+      allow list: if isAdmin();
+      allow create: if signed() && pu == uid() && !exists(memberDoc())
+        && request.resource.data.keys().hasOnly(['n1', 'n2', 'n3', 'n4', 'sex', 'birth', 'phone', 'email', 'created_at'])
+        && request.resource.data.email == request.auth.token.email;
+      allow update: if signed() && pu == uid()
+        && request.resource.data.keys().hasOnly(['n1', 'n2', 'n3', 'n4', 'sex', 'birth', 'phone', 'email', 'created_at', 'lb'])
+        && request.resource.data.email == request.auth.token.email
+        && lbOk();
+      allow delete: if isAdmin() || (signed() && pu == uid());
+
+      match /clinics/{cid} {
+        allow read: if signed() && pu == uid();
+        allow create, update: if signed() && pu == uid()
+          && get(/databases/$(database)/documents/codes/$(request.resource.data.code)).data.cid == cid;
+        allow delete: if signed() && pu == uid();
+      }
+
+      match /bookings/{bid} {
+        allow read: if signed() && pu == uid();
+        allow create: if signed() && pu == uid()
+          && request.resource.data.status == 'pending'
+          && exists(/databases/$(database)/documents/clinics/$(request.resource.data.cid)/bookings/$(bid)) == false
+          && getAfter(/databases/$(database)/documents/clinics/$(request.resource.data.cid)/bookings/$(bid)).data.pu == uid()
+          && exists(/databases/$(database)/documents/patients/$(uid())/clinics/$(request.resource.data.cid));
+        allow update: if (signed() && pu == uid() && onlyKeys(['status', 'hidden', 'u'])
+              && request.resource.data.status in ['pending', 'cancelled', resource.data.status])
+          || (staffOf(resource.data.cid) && onlyKeys(['status', 'code', 'patient_ref', 'u']));
+        allow delete: if signed() && pu == uid();
+      }
+
+      match /care/{key} {
+        allow read: if signed() && pu == uid();
+        allow create, update: if staffOf(request.resource.data.cid)
+          && key.matches(request.resource.data.cid + '_.+')
+          && (resource == null || resource.data.cid == request.resource.data.cid)
+          && exists(/databases/$(database)/documents/patients/$(pu)/clinics/$(request.resource.data.cid));
+        allow delete: if resource == null || staffOf(resource.data.cid);
+      }
+    }
+  }
+}

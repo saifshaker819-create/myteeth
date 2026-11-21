@@ -4264,12 +4264,14 @@ const Cloud = {
       const cr = await FBSDK.signInWithEmailAndPassword(FBC.auth, String(email).trim().toLowerCase(), password);
       this.session = { email:cr.user.email, uid:cr.user.uid, exp:Infinity };
     } catch(e){ throw FBC.err(e); }
-    const me = await this.whoami();
-    /* حساب عيادة لم يؤكّد بريده: لا جلسة — يُوجَّه إلى شاشة التأكيد */
-    if (me && me.role !== 'none' && me.role !== 'patient' && await FBC.unverified()){
+    /* حساب لم يؤكّد بريده: لا جلسة — يُوجَّه إلى شاشة التأكيد.
+       يُفحص قبل سؤال السيرفر عن العضوية، لأن القواعد قد ترفض
+       قراءة العيادة لحساب غير مؤكّد فيظهر خطأ صلاحية مبهم. */
+    if (await FBC.unverified()){
       await this.signOut();
       throw new Error('Email not confirmed');
     }
+    const me = await this.whoami();
     if (me && me.role !== 'none' && me.role !== 'patient'){
       try { await FBSDK.updateDoc(FBC.d('members', me.uid), { last_login:FBSDK.serverTimestamp(), seen:FBSDK.serverTimestamp() }); } catch(_){}
     }
@@ -12849,6 +12851,8 @@ window.addEventListener('unhandledrejection', e =>
       try {
         if (Cloud.session.exp - Date.now() < 60000) await Cloud.refresh();
         let me = null;
+        /* جلسة محفوظة لحساب لم يؤكّد بريده: تُغلق وتُعرض شاشة الدخول */
+        if (await FBC.unverified().catch(() => false)) throw new Error('unverified');
         try { me = Cloud.session && await Cloud.whoami(); }
         catch(e){
           /* بلا إنترنت أو السيرفر بطيء: الجلسة سليمة، فيُفتح البرنامج
@@ -12858,9 +12862,6 @@ window.addEventListener('unhandledrejection', e =>
           if (me) Cloud.me = me;
           if (me) toast(T('offlineResume'), 'w');
         }
-        /* جلسة محفوظة لحساب لم يؤكّد بريده: تُغلق وتُعرض شاشة الدخول */
-        if (me && me.role && me.role !== 'none' && me.role !== 'patient'
-            && await FBC.unverified().catch(() => false)) me = null;
         if (me && me.role && me.role !== 'none' && me.role !== 'patient'){
           S.role = me.role;
           S.clinicName = me.clinic_name || null;
