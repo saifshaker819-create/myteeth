@@ -1759,6 +1759,10 @@ ar:{
  ptOptions:'خيارات المراجع', docOnly:'هذا الإجراء متاح للطبيب وحده',
  docSecOnly:'هذا الإجراء متاح للطبيب والسكرتير',
  qMine:'مراجعيني', qOthers:'مراجعو أطباء العيادة', qAll:'الكل',
+ trBtn:'تحويل', trTitle:'تحويل المراجع إلى طبيب آخر', trHint:'يُحوَّل دور اليوم فقط، ويبقى الملف عند طبيبه. يظهر هنا الأطباء الذين يرون مراجعي هذا الطبيب.',
+ trDone:'حُوِّل المراجع إلى', trNotWaiting:'لا يُحوَّل إلا مراجع لم يُستدعَ بعد',
+ trNone:'لا يوجد طبيب آخر يرى مراجعي هذا الطبيب — يفعّل الطبيب ظهور مراجعيه لزميله من إعداداته أولاً',
+ trFrom:'محوّل من', fMine:'مراجعيني', fTreated:'مراجعو زملائي عالجتهم',
  waPt:'مراسلة عبر واتساب', waNoPhone:'لا يوجد رقم هاتف صالح لهذا المراجع',
  sealedEarly:'أُنهيت قبل اكتمال الجلسات', notDone:'لم تُنفَّذ',
  planSummary:'ملخص خطة السن', whatDoctorWrote:'ما كتبه الطبيب لهذه الجلسة',
@@ -2093,6 +2097,10 @@ en:{
  ptOptions:'Patient options', docOnly:'This action is for the doctor only',
  docSecOnly:'This action is for the doctor and secretary only',
  qMine:'My patients', qOthers:'Clinic doctors’ patients', qAll:'All',
+ trBtn:'Transfer', trTitle:'Transfer the patient to another doctor', trHint:'Only today’s turn moves; the file stays with its doctor. Listed are the doctors who can see this doctor’s patients.',
+ trDone:'Patient transferred to', trNotWaiting:'Only a patient who has not been called yet can be transferred',
+ trNone:'No other doctor can see this doctor’s patients — the doctor must first share their patients with a colleague in Settings',
+ trFrom:'Transferred from', fMine:'My patients', fTreated:'Colleagues’ patients I treated',
  waPt:'Message on WhatsApp', waNoPhone:'This patient has no valid phone number',
  sealedEarly:'Closed before all sessions were done', notDone:'Not done',
  planSummary:'Tooth plan summary', whatDoctorWrote:'What the doctor wrote for this session',
@@ -4144,7 +4152,7 @@ const Sync = {
     فلكل حقل مشترك ختمه الخاص، ويفوز صاحب الختم الأحدث وحده.
     base هي النسخة الفائزة، وother النسخة الأخرى.
     تُرجع null إذا لم يكن في other ما يستحق النقل. */
-  FIELDS:{ visits:[['done','_doneAt'], ['qstate','_qAt']] },
+  FIELDS:{ visits:[['done','_doneAt'], ['qstate','_qAt'], ['dr','_drAt']] },
 
   merge(store, base, other, baseAt, otherAt){
     const map = this.FIELDS[store];
@@ -4697,11 +4705,11 @@ const Own = {
     return this.pick(docs);
   },
 
-  pick(docs){
+  pick(docs, title, hint){
     return new Promise(res => {
       const ov = el(`<div class="pickov"><div class="pickbox">
-        <div class="h2">${T('pickDoctor')}</div>
-        <div class="tiny mt">${T('pickDoctorHint')}</div>
+        <div class="h2">${esc(title || T('pickDoctor'))}</div>
+        <div class="tiny mt">${esc(hint || T('pickDoctorHint'))}</div>
         <div class="col mt2">${docs.map((d,i)=>`
           <button class="it" data-i="${i}" style="width:100%;text-align:start">
             <div class="av">${esc((d.name||'?').replace(/^[دdD]\.?\s*/,'').charAt(0))}</div>
@@ -6395,7 +6403,23 @@ const Sec = {
     لا شيء يُكتب ولا يُسحب زيادة: التصفية على ما في الجهاز أصلاً.
     بلا أطباء آخرين لا يظهر شريط ولا يتغيّر شيء عمّا كان. */
   qd:null,                                   /* 'me' | 'all' | معرّف طبيب */
-  qOwner(r){ return (r && (r._k || r._own)) || '_'; },
+  /* طبيب الدور: المحوَّل إليه إن حُوِّل، وإلا صاحب السجل */
+  qOwner(r){ return (r && (r.dr || r._k || r._own)) || '_'; },
+  ownerOf(r){ return (r && (r._k || r._own)) || '_'; },
+
+  /* معرّف الطبيب المعالج يُختم على كل عمل يسجّله طبيب —
+     منه يُعرف «مراجعو زملائي عالجتهم» في الملفات */
+  du(){ return (S.role === 'doctor' && S.user?.uid) ? { du:S.user.uid } : {}; },
+
+  /* «مراجعيني»: سجلي، أو مشترك، أو منسوب لمعرّف ليس طبيباً معروفاً
+     (نسخة قديمة). وكل طبيب معروف آخر ليس من «مراجعيني» — حتى لو
+     لم يشارك مراجعيه معي (مراجع حُوِّل منّي إليه مثلاً). */
+  isMineK(k, others){
+    const me = S.user?.uid;
+    if (k === me || k === '_') return true;
+    if (others && others.has(k)) return false;
+    return !Staff.members('doctor').some(m => m.uid === k);
+  },
 
   qDocList(){
     const me = S.user?.uid;
@@ -6418,7 +6442,8 @@ const Sec = {
 
   qSel(docs){
     docs = docs || this.qDocList();
-    if (!this.qOn(docs)) return 'all';
+    /* طبيب لا يشاركه أحد: بلا شريط، لكن من حُوِّل منه إلى زميل لا يبقى في قائمته */
+    if (!this.qOn(docs)) return S.role === 'doctor' ? 'me' : 'all';
     let f = this.qd;
     if (f && f !== 'me' && f !== 'all' && !docs.some(d => d.uid === f)) f = null;
     if (S.role === 'doctor'    && (!f || f === 'all')) f = 'me';
@@ -6432,7 +6457,7 @@ const Sec = {
     const f = this.qSel(docs);
     if (f === 'all') return () => true;
     const others = new Set(docs.map(d => d.uid));
-    if (f === 'me') return r => !others.has(this.qOwner(r));
+    if (f === 'me') return r => this.isMineK(this.qOwner(r), others);
     return r => this.qOwner(r) === f;
   },
 
@@ -6454,7 +6479,7 @@ const Sec = {
         onclick="Sec.qPick('${esc(key)}')">${esc(label)}<span class="n">${n}</span></button>`;
     const chips = docs.map(d => chip(d.uid, d.name, cnt(d.uid))).join('');
     if (S.role === 'doctor'){
-      const mine = vs.filter(v => !others.has(this.qOwner(v))).length;
+      const mine = vs.filter(v => this.isMineK(this.qOwner(v), others)).length;
       box.innerHTML = `<div class="pf-tabs qd-tabs">
           <button class="${f === 'me' ? 'on' : ''}" onclick="Sec.qPick('me')">${T('qMine')}<span class="n">${mine}</span></button>
           <button class="${f !== 'me' ? 'on' : ''}" onclick="Sec.qPick('others')">${T('qOthers')}<span class="n">${vs.length - mine}</span></button>
@@ -6463,6 +6488,34 @@ const Sec = {
       return;
     }
     box.innerHTML = `<div class="qd-chips">${chip('all', T('qAll'), vs.length)}${chips}</div>`;
+  },
+
+  /*──── تحويل دور اليوم إلى طبيب آخر ────
+    السجلات لا تنتقل بين مسارات الأطباء (المسار ثابت في كل سجل)، بل
+    يُختم على جلسة اليوم «الطبيب المعالج» dr. فيظهر الدور عند الطبيب
+    المحوَّل إليه، ويبقى الملف عند طبيبه. لذلك يُعرض فقط الأطباء الذين
+    يرون مراجعي صاحب الملف — وهم وحدهم من يقبل السيرفر أن يكتبوا فيه. */
+  async transfer(vid){
+    if (S.role !== 'secretary') return;
+    const v = await DB.get('visits', vid); if (!v) return;
+    if ((v.qstate || 'waiting') !== 'waiting') return toast(T('trNotWaiting'), 'e');
+    try { await Staff.load(true); } catch(_){}
+    const owner = this.ownerOf(v), cur = this.qOwner(v);
+    const ids = owner === '_' ? Own.linkedIds()
+              : [owner, ...Staff.linked('doctor', owner).map(m => m.uid)];
+    const docs = [...new Set(ids)].filter(u => u && u !== cur)
+      .map(u => Staff.active('doctor').find(m => m.uid === u)).filter(Boolean);
+    if (!docs.length) return toast(T('trNone'), 'e');
+    const to = await Own.pick(docs, T('trTitle'), T('trHint'));
+    if (!to) return;
+    /* قد يكون استُدعي من جهاز آخر أثناء الاختيار */
+    const v2 = await DB.get('visits', vid);
+    if (!v2 || (v2.qstate || 'waiting') !== 'waiting') return toast(T('trNotWaiting'), 'e');
+    v2.dr = to === owner ? null : to;
+    v2._drAt = Sync.now();          /* ختم الحقل نفسه، لا السجل كله */
+    await DB.put('visits', v2);
+    toast(`${T('trDone')} ${Staff.name(to) || T('ofDoctor')}`, 's');
+    return this.queue();
   },
 
   async queue(){
@@ -6483,7 +6536,10 @@ const Sec = {
     const ro = S.role === 'doctor' && qf !== 'me' && qf !== 'all';
     /* «الكل» عند السكرتير: يُكتب اسم الطبيب بجانب كل مراجع */
     const tagDoc = qf === 'all' && this.qOn(qDocs);
-    const docName = k => (qDocs.find(d => d.uid === k) || {}).name || '';
+    const docName = k => (qDocs.find(d => d.uid === k) || {}).name || Staff.name(k) || '';
+    /* التحويل: للسكرتير، لمراجع لم يُستدعَ بعد، في عيادة بأكثر من طبيب */
+    const canTr = S.role === 'secretary' && qDocs.length >= 2;
+    const me = S.user?.uid;
 
     const q = this.qq.trim().toLowerCase();
     const qd = q.replace(/\D/g,'');
@@ -6517,6 +6573,8 @@ const Sec = {
             ${live?'<span class="dotlive"></span>':''}
             <div class="h3 ell">${esc(nm(p))}</div>
             ${tagDoc && docName(this.qOwner(vi)) ? `<span class="qd-tag">${esc(docName(this.qOwner(vi)))}</span>` : ''}
+            ${S.role === 'doctor' && vi.dr && vi.dr === me && this.ownerOf(vi) !== me && docName(this.ownerOf(vi))
+              ? `<span class="qd-tag">⇄ ${T('trFrom')} ${esc(docName(this.ownerOf(vi)))}</span>` : ''}
             ${vi.needAppt?`<span class="pill w">${T('needAppt')}</span>`:''}
           </div>
           <div class="mono tiny">${T('file')} ${esc(p.mrn)} · ${T('total')} ${N(tt.total)}
@@ -6530,6 +6588,8 @@ const Sec = {
             ? `<button class="btn xs ${vi.qstate==='chair'?'ok':''}"
                  onclick="event.stopPropagation();Sec.setQ('${vi.id}','${nextOf[vi.qstate||'waiting']}')">
                  ${lblOf[vi.qstate||'waiting']}</button>` : ''}
+          ${canTr && !cx && (vi.qstate || 'waiting') === 'waiting'
+            ? `<button class="btn xs gh" onclick="event.stopPropagation();Sec.transfer('${vi.id}')">⇄ ${T('trBtn')}</button>` : ''}
         </div>
       </div>`;}).join('') : `<div class="emp">${T('noQueue')}</div>`;
 
@@ -6788,6 +6848,7 @@ const Sec = {
         <div class="sbar"><input id="sc-q" placeholder="${T('search')}" value="${esc(q||'')}"></div>
         ${Del.ptAllowed(true)?`<div class="tiny ctr" style="margin-top:7px;color:var(--ink3)">
           ${T('holdHint')}</div>`:''}
+        <div id="sc-tabs"></div>
         <div id="sc-list" class="col mt2"></div>`;
       const i = $('#sc-q'); let tm;
       i.oninput = ()=>{ clearTimeout(tm); tm=setTimeout(()=>Sec.list(i.value),220); };
@@ -6795,14 +6856,46 @@ const Sec = {
     this.list(q||'');
   },
 
+  /*──── ملفات الطبيب: «مراجعيني» و«مراجعو زملائي عالجتهم» ────
+    الثاني: ملف يملكه زميل (ويراه هذا الطبيب) وفيه جلسة حُوِّلت إليه
+    أو عمل سجّله هو. يظهر فقط لطبيب يشاركه زميل واحد على الأقل. */
+  fd:'mine',
+  async fSplit(){
+    const me = S.user?.uid;
+    if (S.role !== 'doctor' || !me) return null;
+    const docs = this.qDocList();
+    if (!docs.length) return null;
+    const others = new Set(docs.map(d => d.uid));
+    const treated = new Set();
+    for (const v of await DB.all('visits')) if (v.dr === me) treated.add(v.pid);
+    for (const w of await DB.all('works'))  if (w.du === me) treated.add(w.pid);
+    const mine = p => this.isMineK(this.ownerOf(p), others);
+    return { mine, treated: p => !mine(p) && treated.has(p.id) };
+  },
+  fPick(k){ this.fd = k; return this.list($('#sc-q')?.value || ''); },
+
   async list(q){
     const box = $('#sc-list'); if (!box) return;
-    const ps = await Ops.patients(q);
+    let ps = await Ops.patients(q);
+    const split = await this.fSplit();
+    const tabs = $('#sc-tabs');
+    let ro = false;
+    if (split){
+      const f = this.fd === 'treated' ? 'treated' : 'mine';
+      const nMine = ps.filter(split.mine).length, nTr = ps.filter(split.treated).length;
+      if (tabs) tabs.innerHTML = `<div class="pf-tabs qd-tabs">
+          <button class="${f === 'mine' ? 'on' : ''}" onclick="Sec.fPick('mine')">${T('fMine')}<span class="n">${nMine}</span></button>
+          <button class="${f === 'treated' ? 'on' : ''}" onclick="Sec.fPick('treated')">${T('fTreated')}<span class="n">${nTr}</span></button>
+        </div>`;
+      ps = ps.filter(split[f]);
+      ro = f === 'treated';           /* ملف زميل: لا حذف بالضغط المطوّل */
+    } else if (tabs) tabs.innerHTML = '';
+    if (!$('#sc-list')) return;
     const rows = [];
     for (const p of ps.slice(0,60)){
       const t = await Ops.patientTotals(p.id);
       rows.push(`<div class="it" onclick="Sec.file('${p.id}')"
-        ${Del.ptAllowed(true)?`data-hold="delPatient" data-hold-arg="${p.id}"`:''}>
+        ${Del.ptAllowed(true) && !ro?`data-hold="delPatient" data-hold-arg="${p.id}"`:''}>
         <div class="av">${esc(nm(p).charAt(0))}</div>
         <div class="gr">
           <div class="h3 ell">${esc(nm(p))}</div>
@@ -7234,6 +7327,7 @@ const Sec = {
     const w = { id:uid(), vid, pid:v.pid, proc, fdi,
                 course: fdi ? await Ops.course(v.pid, fdi) : null,
                 by: S.role,   /* الطبيب يعرف من سجّل العمل */
+                ...Sec.du(),
                 price:Number($('#w-a').value)||0, note:$('#w-n').value.trim(), at:Date.now() };
     await DB.put('works', w);
     await SG.learn('worknote', w.note);
@@ -8049,7 +8143,7 @@ const Doc = {
       const c = await Ops.course(S.patient.id, fdi);
       await DB.put('works', {
         id:uid(), vid:S.visit.id, pid:S.patient.id, proc, dx, fdi,
-        course:c, sessionNos:picked, by:S.role,
+        course:c, sessionNos:picked, by:S.role, ...Sec.du(),
         price: price * picked.length, note, at:Date.now(),
       });
       const st = P(proc).st;
@@ -8115,7 +8209,7 @@ const Doc = {
 
     await DB.put('works', {
       id:uid(), vid:S.visit.id, pid:S.patient.id, proc:plan.proc, fdi,
-      course:c, sessionNos:picked, by:S.role,
+      course:c, sessionNos:picked, by:S.role, ...Sec.du(),
       price: price * picked.length, note, at:Date.now(),
     });
     await SG.learn('worknote', note);
