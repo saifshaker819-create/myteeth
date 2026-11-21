@@ -746,6 +746,15 @@ a.pf-chip:hover{background:rgba(255,255,255,.16)}
 .pf-tabs button{flex:1;height:42px;border-radius:10px;font-family:var(--fd);font-weight:500;color:var(--ink2);transition:background-color .15s,color .15s}
 .pf-tabs button.on{background:var(--surface);color:var(--br);font-weight:600;box-shadow:0 1px 2px rgba(15,30,36,.1),0 4px 10px -6px rgba(15,30,36,.25),0 0 0 1px var(--line)}
 .pf-tabs .n{font-family:var(--fd);font-size:11px;padding:1px 7px;border-radius:99px;background:var(--brL);color:var(--br);margin-inline-start:5px}
+/* تصفية قسم اليوم حسب الطبيب */
+.qd-tabs{margin-top:10px}
+.qd-chips{display:flex;gap:6px;overflow-x:auto;padding:9px 1px 2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.qd-chips::-webkit-scrollbar{display:none}
+.qd-chips button{flex:none;display:inline-flex;align-items:center;height:34px;padding:0 13px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--ink2);font-family:var(--fd);font-size:13px;font-weight:500;white-space:nowrap;transition:background-color .15s,color .15s}
+.qd-chips button.on{background:var(--br);border-color:var(--br);color:#fff;font-weight:600}
+.qd-chips .n{font-size:11px;padding:1px 7px;border-radius:99px;background:var(--brL);color:var(--br);margin-inline-start:6px}
+.qd-chips button.on .n{background:rgba(255,255,255,.22);color:#fff}
+.qd-tag{flex:none;font-size:10.5px;padding:2px 7px;border-radius:99px;background:var(--brL);color:var(--br);white-space:nowrap}
 .pf-more{position:relative}
 .pf-menu{position:fixed;z-index:200;min-width:230px;padding:6px;border-radius:14px;
   background:var(--surface);border:1px solid var(--line2);box-shadow:0 24px 50px -16px rgba(0,0,0,.35);animation:up .16s}
@@ -1714,6 +1723,7 @@ ar:{
  removed:'تمت الإزالة', holdHint:'اضغط مطوّلاً على الاسم لخيارات الحذف',
  ptOptions:'خيارات المراجع', docOnly:'هذا الإجراء متاح للطبيب وحده',
  docSecOnly:'هذا الإجراء متاح للطبيب والسكرتير',
+ qMine:'مراجعيني', qOthers:'مراجعو أطباء العيادة', qAll:'الكل',
  waPt:'مراسلة عبر واتساب', waNoPhone:'لا يوجد رقم هاتف صالح لهذا المراجع',
  sealedEarly:'أُنهيت قبل اكتمال الجلسات', notDone:'لم تُنفَّذ',
  planSummary:'ملخص خطة السن', whatDoctorWrote:'ما كتبه الطبيب لهذه الجلسة',
@@ -2044,6 +2054,7 @@ en:{
  removed:'Removed', holdHint:'Press and hold a name for delete options',
  ptOptions:'Patient options', docOnly:'This action is for the doctor only',
  docSecOnly:'This action is for the doctor and secretary only',
+ qMine:'My patients', qOthers:'Clinic doctors’ patients', qAll:'All',
  waPt:'Message on WhatsApp', waNoPhone:'This patient has no valid phone number',
  sealedEarly:'Closed before all sessions were done', notDone:'Not done',
  planSummary:'Tooth plan summary', whatDoctorWrote:'What the doctor wrote for this session',
@@ -6322,6 +6333,7 @@ const Sec = {
         </div>
         ${S.role==='doctor'?`<div class="tiny ctr" style="margin-top:7px;color:var(--ink3)">
           ${T('holdHint')}</div>`:''}
+        <div id="q-docs"></div>
         <div id="q-list" class="col mt2"></div>`;
       const inp = $('#q-today');
       let tm;
@@ -6334,15 +6346,103 @@ const Sec = {
     return this.queue();
   },
 
+  /*──── تصفية قسم اليوم حسب الطبيب ────
+    كل سجل يحمل طبيبه (_k من مسار المزامنة، أو _own عند إنشائه هنا).
+    · الطبيب: «مراجعيني» أو «مراجعو أطباء العيادة» — والأطباء هنا هم من
+      فعّلوا ظهور مراجعيهم عنده فقط (قائمة الرؤية vis التي يقرّرها السيرفر).
+    · السكرتير: «الكل» أو طبيب بعينه من الأطباء الذين ربطوه.
+    لا شيء يُكتب ولا يُسحب زيادة: التصفية على ما في الجهاز أصلاً.
+    بلا أطباء آخرين لا يظهر شريط ولا يتغيّر شيء عمّا كان. */
+  qd:null,                                   /* 'me' | 'all' | معرّف طبيب */
+  qOwner(r){ return (r && (r._k || r._own)) || '_'; },
+
+  qDocList(){
+    const me = S.user?.uid;
+    const ids = [...new Set(Own.linkedIds())]
+      .filter(k => k && k !== '_' && !(S.role === 'doctor' && k === me));
+    if (!ids.length) return [];
+    /* الأسماء من قائمة الطاقم؛ إن لم تصل بعد تُجلب مرة ويُعاد الرسم */
+    if (!Staff.data && !Staff.cache() && Sync.on() && !this._qStaff){
+      this._qStaff = true;
+      Staff.load().then(() => { if (S.tab === 'today' && $('#q-list')) this.queue(); }).catch(() => {});
+    }
+    return ids.map(uid => ({ uid, name: Staff.name(uid) || T('ofDoctor') }));
+  },
+
+  qOn(docs){
+    if (S.role === 'doctor')    return docs.length >= 1;
+    if (S.role === 'secretary') return docs.length >= 2;
+    return false;
+  },
+
+  qSel(docs){
+    docs = docs || this.qDocList();
+    if (!this.qOn(docs)) return 'all';
+    let f = this.qd;
+    if (f && f !== 'me' && f !== 'all' && !docs.some(d => d.uid === f)) f = null;
+    if (S.role === 'doctor'    && (!f || f === 'all')) f = 'me';
+    if (S.role === 'secretary' && (!f || f === 'me'))  f = 'all';
+    return f;
+  },
+
+  /* دالة تقول: هل يظهر هذا السجل (زيارة أو موعد) في التصفية الحالية؟ */
+  qFilter(docs){
+    docs = docs || this.qDocList();
+    const f = this.qSel(docs);
+    if (f === 'all') return () => true;
+    const others = new Set(docs.map(d => d.uid));
+    if (f === 'me') return r => !others.has(this.qOwner(r));
+    return r => this.qOwner(r) === f;
+  },
+
+  qPick(k){
+    if (k === 'others'){
+      const d = this.qDocList();
+      k = (this.qd && d.some(x => x.uid === this.qd)) ? this.qd : (d[0]?.uid || 'me');
+    }
+    this.qd = k;
+    return this.queue();
+  },
+
+  qBar(vs, docs, f){
+    const box = $('#q-docs'); if (!box) return;
+    if (!this.qOn(docs)){ box.innerHTML = ''; return; }
+    const others = new Set(docs.map(d => d.uid));
+    const cnt = k => vs.filter(v => this.qOwner(v) === k).length;
+    const chip = (key, label, n) => `<button class="${f === key ? 'on' : ''}"
+        onclick="Sec.qPick('${esc(key)}')">${esc(label)}<span class="n">${n}</span></button>`;
+    const chips = docs.map(d => chip(d.uid, d.name, cnt(d.uid))).join('');
+    if (S.role === 'doctor'){
+      const mine = vs.filter(v => !others.has(this.qOwner(v))).length;
+      box.innerHTML = `<div class="pf-tabs qd-tabs">
+          <button class="${f === 'me' ? 'on' : ''}" onclick="Sec.qPick('me')">${T('qMine')}<span class="n">${mine}</span></button>
+          <button class="${f !== 'me' ? 'on' : ''}" onclick="Sec.qPick('others')">${T('qOthers')}<span class="n">${vs.length - mine}</span></button>
+        </div>
+        ${f !== 'me' ? `<div class="qd-chips">${chips}</div>` : ''}`;
+      return;
+    }
+    box.innerHTML = `<div class="qd-chips">${chip('all', T('qAll'), vs.length)}${chips}</div>`;
+  },
+
   async queue(){
     const box = $('#q-list'); if (!box) return;
     try { await Ops.bookedToday(); } catch(_){}
 
     /* الترقيم بترتيب الوصول، والعرض من الأحدث للأقدم */
-    const vs = (await DB.all('visits')).filter(x=>x.date===today())
+    const all = (await DB.all('visits')).filter(x=>x.date===today())
                 .sort((a,b)=>(a.at||0)-(b.at||0));
-    vs.forEach((x,i)=> x._no = i+1);
-    vs.reverse();
+    all.forEach((x,i)=> x._no = i+1);
+    all.reverse();
+
+    /* تصفية الطبيب: الشريط يُرسم بأعداد الكل، والقائمة بالمختار وحده */
+    const qDocs = this.qDocList(), qf = this.qSel(qDocs), qShow = this.qFilter(qDocs);
+    this.qBar(all, qDocs, qf);
+    const vs = all.filter(qShow);
+    /* مراجعو زميل: عرض للحالة فقط — لا يُحرّك الطبيب دور غيره ولا يحذفه */
+    const ro = S.role === 'doctor' && qf !== 'me' && qf !== 'all';
+    /* «الكل» عند السكرتير: يُكتب اسم الطبيب بجانب كل مراجع */
+    const tagDoc = qf === 'all' && this.qOn(qDocs);
+    const docName = k => (qDocs.find(d => d.uid === k) || {}).name || '';
 
     const q = this.qq.trim().toLowerCase();
     const qd = q.replace(/\D/g,'');
@@ -6369,12 +6469,13 @@ const Sec = {
       return `
       <div class="it ${live?'live':''}" style="${cx?'opacity:.62':''}"
         onclick="Nav.session('${vi.id}')"
-        ${S.role==='doctor'?`data-hold="delTodayRow" data-hold-arg="${vi.id}|${p.id}"`:''}>
+        ${S.role==='doctor' && !ro?`data-hold="delTodayRow" data-hold-arg="${vi.id}|${p.id}"`:''}>
         <div class="av ${vi.qstate==='done'?'g':vi.qstate==='chair'?'':'w'}">${vi._no}</div>
         <div class="gr">
           <div class="row" style="gap:6px">
             ${live?'<span class="dotlive"></span>':''}
             <div class="h3 ell">${esc(nm(p))}</div>
+            ${tagDoc && docName(this.qOwner(vi)) ? `<span class="qd-tag">${esc(docName(this.qOwner(vi)))}</span>` : ''}
             ${vi.needAppt?`<span class="pill w">${T('needAppt')}</span>`:''}
           </div>
           <div class="mono tiny">${T('file')} ${esc(p.mrn)} · ${T('total')} ${N(tt.total)}
@@ -6384,7 +6485,7 @@ const Sec = {
           <span class="pill ${cls[vi.qstate]||'n'}">${
             vi.qstate==='cancelled' ? T('ptCancelled')
             : T(vi.qstate==='chair'?'inChair':vi.qstate||'waiting')}</span>
-          ${!cx && nextOf[vi.qstate||'waiting'] && S.role!=='pharmacy'
+          ${!cx && !ro && nextOf[vi.qstate||'waiting'] && S.role!=='pharmacy'
             ? `<button class="btn xs ${vi.qstate==='chair'?'ok':''}"
                  onclick="event.stopPropagation();Sec.setQ('${vi.id}','${nextOf[vi.qstate||'waiting']}')">
                  ${lblOf[vi.qstate||'waiting']}</button>` : ''}
@@ -6395,7 +6496,7 @@ const Sec = {
     if (q) return;
     const t = today();
     const up = [];
-    for (const a of (await DB.all('appts')).filter(a => a.bk && a.st === 'open' && a.day > t)
+    for (const a of (await DB.all('appts')).filter(a => a.bk && a.st === 'open' && a.day > t && qShow(a))
                       .sort((a,b) => String(a.day + (a.time||'')).localeCompare(String(b.day + (b.time||''))))){
       const p = await DB.get('patients', a.pid); if (p) up.push({ a, p });
     }
@@ -12845,12 +12946,15 @@ const Kpi = {
     const t = today();
     const [visits, pays, works, appts, bks] = await Promise.all([
       DB.all('visits'), DB.all('payments'), DB.all('works'), DB.all('appts'), DB.all('bookings')]);
-    const vs = visits.filter(v => v.date === t && v.qstate !== 'cancelled');
+    /* أرقام المراجعين تتبع تصفية الطبيب المختارة في قسم اليوم */
+    let qShow = () => true;
+    try { if (typeof Sec !== 'undefined' && Sec.qFilter) qShow = Sec.qFilter(); } catch(_){}
+    const vs = visits.filter(v => v.date === t && v.qstate !== 'cancelled' && qShow(v));
     const by = k => vs.filter(v => (v.qstate || 'waiting') === k).length;
     const collected = pays.filter(p => p.at && today(p.at) === t).reduce((s, p) => s + Number(p.amt || 0), 0);
     const billed = works.reduce((s, w) => s + Number(w.price || 0), 0);
     const paid = pays.reduce((s, p) => s + Number(p.amt || 0), 0);
-    const dayAppts = appts.filter(a => a.st === 'open' && a.day === t).length;
+    const dayAppts = appts.filter(a => a.st === 'open' && a.day === t && qShow(a)).length;
     return {
       total: vs.length, waiting: by('waiting') + by('called'), chair: by('chair'), done: by('done'),
       collected, due: Math.max(0, billed - paid),
