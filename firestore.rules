@@ -22,7 +22,12 @@ service cloud.firestore {
         c.paid_until == null || request.time < c.paid_until ||
         (c.grace_until != null && request.time < c.grace_until));
     }
-    function inClinic(cid) { return isMember() && me().cid == cid && me().active == true; }
+    function verifiedOk() {
+      return request.auth.token.email_verified == true
+        || me().get('created_at', null) == null
+        || me().created_at < timestamp.date(2026, 11, 22);
+    }
+    function inClinic(cid) { return isMember() && me().cid == cid && me().active == true && verifiedOk(); }
     function activeIn(cid) { return inClinic(cid) && clinicOk(cid); }
     function role()        { return me().role; }
     function isOwnerOf(cid){ return inClinic(cid) && role() == 'owner'; }
