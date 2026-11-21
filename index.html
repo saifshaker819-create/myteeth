@@ -1397,12 +1397,47 @@ const FBC = {
   /*──── إنشاء حساب لشخص آخر ────
     تطبيق ثانوٍ مؤقّت بجلسة في الذاكرة: يُنشأ الحساب فيه ثم يُغلق،
     فيبقى المستثمر أو المدير داخلاً بحسابه هو. */
+  /*──── تأكيد البريد ────
+    الحسابات المنشأة بعد هذا التاريخ لا تدخل البرنامج حتى يُفتح رابط
+    التأكيد المرسل إلى بريدها — فلا يعمل حساب ببريد وهمي.
+    والحسابات الأقدم معفاة: أُنشئت قبل وجود الشرط وتعمل منذ زمن،
+    وقفلها فجأة يوقف عيادات قائمة. ومدير المنصّة معفى دائماً. */
+  VERIFY_FROM: Date.UTC(2026, 10, 21, 19, 30),
+  lang(auth){ try { auth.languageCode = (typeof isAr === 'function' && !isAr()) ? 'en' : 'ar'; } catch(_){} },
+
+  /* هل الحساب الداخل الآن ممنوع حتى يؤكّد بريده؟ يسأل السيرفر عن آخر حالة */
+  async unverified(){
+    const u = this.user(); if (!u || u.emailVerified) return false;
+    if (String(u.email || '').toLowerCase() === String(this.ADMIN_EMAIL).toLowerCase()) return false;
+    const born = Date.parse(u.metadata?.creationTime || '');
+    if (!born || born < this.VERIFY_FROM) return false;
+    try { await FBSDK.reload(u); } catch(_){}
+    return !this.user()?.emailVerified;
+  },
+
+  /* رابط تأكيد جديد: دخول مؤقّت في تطبيق ثانوي بالبريد وكلمة المرور،
+     إرسال الرابط، ثم خروج — فلا تُفتح جلسة في البرنامج قبل التأكيد. */
+  async sendVerify(email, password){
+    const F = FBSDK;
+    const sec = F.initializeApp(this.cfg, 'vf-' + Date.now() + '-' + this.rid(5));
+    try {
+      const a = F.initializeAuth(sec, { persistence:[F.inMemoryPersistence] });
+      this.lang(a);
+      const cr = await F.signInWithEmailAndPassword(a, String(email).trim().toLowerCase(), password);
+      if (!cr.user.emailVerified) await F.sendEmailVerification(cr.user);
+      try { await F.signOut(a); } catch(_){}
+      return !cr.user.emailVerified;
+    } catch(e){ throw this.err(e); }
+    finally { try { await F.deleteApp(sec); } catch(_){} }
+  },
+
   async createUser(email, password, opts){
     const F = FBSDK;
     const sec = F.initializeApp(this.cfg, 'mk-' + Date.now() + '-' + this.rid(5));
     let user = null;
     try {
       const a = F.initializeAuth(sec, { persistence:[F.inMemoryPersistence] });
+      this.lang(a);
       const cr = await F.createUserWithEmailAndPassword(a, String(email).trim().toLowerCase(), password);
       user = cr.user;
       /* ما يُكتب بعد الإنشاء (العضوية، العيادة…). إن رُفض يُحذف الحساب
@@ -1624,8 +1659,8 @@ ar:{
  noOffline:'لا يمكن الدخول بلا إنترنت قبل أول دخول ناجح على هذا الجهاز',
  offlineOld:'مضت مدة طويلة بلا اتصال — لا بدّ من دخول متصل مرة واحدة',
  forgot:'نسيت كلمة المرور؟', resetTitle:'استعادة كلمة المرور',
- resetStep1:'اكتب بريدك ليصلك رمز تأكيد',
- resetSend:'إرسال الرمز', resetSent:'أُرسل الرمز — افحص بريدك',
+ resetStep1:'اكتب بريد الحساب ليصلك رابط تغيير كلمة المرور',
+ resetSend:'إرسال الرابط', resetSent:'أُرسل الرمز — افحص بريدك',
  resetCode:'رمز التأكيد', resetNew:'كلمة المرور الجديدة',
  resetGo:'تغيير كلمة المرور', resetDone:'تغيّرت كلمة المرور — سجّل الدخول',
  resetBad:'الرمز غير صحيح أو انتهت صلاحيته — اطلب رمزاً جديداً واستعمل آخر رسالة وصلتك', resetNoMail:'اكتب بريدك أولاً',
@@ -1764,7 +1799,10 @@ ar:{
  pharmName:'اسم الصيدلية', secName:'اسم السكرتير',
  accEmail:'البريد الإلكتروني', accPass:'رمز الدخول', accPass2:'إعادة رمز الدخول',
  passMatch:'رمزا الدخول غير متطابقين',
- accAdded:'أُنشئ الحساب — أُرسل رمز التأكيد إلى البريد',
+ accAdded:'أُنشئ الحساب — أُرسل رابط تأكيد إلى بريده، ولا يدخل حتى يفتح الرابط',
+ verifyNeed:'هذا الحساب لم يُفعَّل بعد. أرسلنا رابط تأكيد إلى هذا البريد — افتحه، ثم ارجع واضغط «أكّدت بريدي».',
+ verifyDone:'أكّدت بريدي — دخول', verifyResend:'إرسال رابط تأكيد جديد',
+ verifySent:'أُرسل رابط تأكيد جديد — افحص بريدك ومجلد الرسائل المزعجة', verifyWait:'طلبات كثيرة — انتظر بضع دقائق ثم أعد المحاولة',
  accPending:'بانتظار تأكيد البريد', accOk:'مؤكَّد',
  accConfirm:'تأكيد البريد', accRemove:'حذف من القائمة',
  accRemoveHint:'الحذف يُخرجها من قائمة التحويل في هذا البرنامج، ولا يلغي الحساب على السيرفر.',
@@ -1955,8 +1993,8 @@ en:{
  noOffline:'Offline sign-in needs one successful online sign-in on this device first',
  offlineOld:'Too long without a connection — one online sign-in is required',
  forgot:'Forgot your password?', resetTitle:'Reset password',
- resetStep1:'Enter your email to receive a confirmation code',
- resetSend:'Send code', resetSent:'Code sent — check your email',
+ resetStep1:'Enter the account email to receive a password reset link',
+ resetSend:'Send link', resetSent:'Code sent — check your email',
  resetCode:'Confirmation code', resetNew:'New password',
  resetGo:'Change password', resetDone:'Password changed — sign in',
  resetBad:'Wrong or expired code — request a new one and use the latest message', resetNoMail:'Enter your email first',
@@ -2095,7 +2133,10 @@ en:{
  pharmName:'Pharmacy name', secName:'Secretary name',
  accEmail:'Email', accPass:'Password', accPass2:'Repeat password',
  passMatch:'Passwords do not match',
- accAdded:'Account created — a confirmation code was sent to the email',
+ accAdded:'Account created — a confirmation link was sent to its email; it cannot sign in until the link is opened',
+ verifyNeed:'This account is not activated yet. We sent a confirmation link to this email — open it, then come back and tap “I confirmed”.',
+ verifyDone:'I confirmed my email — sign in', verifyResend:'Send a new confirmation link',
+ verifySent:'A new confirmation link was sent — check your inbox and spam folder', verifyWait:'Too many requests — wait a few minutes and try again',
  accPending:'Awaiting email confirmation', accOk:'Confirmed',
  accConfirm:'Confirm email', accRemove:'Remove from list',
  accRemoveHint:'Removing takes it out of the routing list in this program; it does not delete the server account.',
@@ -2115,7 +2156,7 @@ Object.assign(D.ar, {
  regOwnerHint:'يُنشأ حساب واحد للمستثمر باسم العيادة. حسابات الأطباء والسكرتارية والصيدليات تُنشأ لاحقاً من الإعدادات.',
  accOwner:'حساب المستثمر', clinicLogo:'شعار العيادة', pickLogo:'اختر صورة الشعار',
  logoHint:'يُصغَّر تلقائياً — يظهر في الدخول والقائمة وأيقونة التطبيق',
- regDoneOwner:'سُجّلت العيادة بتجربة مجانية ١٤ يوماً. ادخل الآن ببريد المستثمر وكلمة المرور، ثم أنشئ حسابات الطاقم من الإعدادات.', resetLinkSent:'أرسلنا رابطاً إلى بريدك — افتحه واختر كلمة مرور جديدة، ثم ادخل بها هنا.',
+ regDoneOwner:'سُجّلت العيادة بتجربة مجانية ١٤ يوماً. أرسلنا رابط تأكيد إلى بريد المستثمر — افتحه أولاً، ثم ادخل بالبريد وكلمة المرور وأنشئ حسابات الطاقم من الإعدادات.', resetLinkSent:'إن كان هذا البريد مسجّلاً في البرنامج فقد أرسلنا إليه رابطاً — افتحه واختر كلمة مرور جديدة، ثم ادخل بها هنا. الرسالة من noreply@asnany-4311e.firebaseapp.com — افحص مجلد الرسائل المزعجة (Spam) إن لم تجدها خلال دقائق.',
  secBrand:'هوية التطبيق', appName:'اسم التطبيق', appNameHint:'يظهر لطاقم هذه العيادة ومراجعيها وحدهم — لا يتغيّر في العيادات الأخرى',
  brandSaved:'حُفظت هوية العيادة', rmLogo:'إزالة الشعار', logoBig:'الصورة كبيرة جداً — اختر صورة أصغر',
  secCode:'باركود العيادة', codeHint:'يمسحه المراجع بكاميرا هاتفه أو عدسة كوكل فيفتح له تطبيق المراجع، وبعد التسجيل تُفتح عيادتك مباشرة. اطبعه وضعه في الاستقبال.',
@@ -2162,7 +2203,7 @@ Object.assign(D.en, {
  regOwnerHint:'One owner account is created under the clinic name. Doctor, secretary and pharmacy accounts are created later from Settings.',
  accOwner:'Owner account', clinicLogo:'Clinic logo', pickLogo:'Choose logo image',
  logoHint:'Resized automatically — shown on sign-in, sidebar and app icon',
- regDoneOwner:'Clinic registered with a 14-day free trial. Sign in now with the owner email and password, then create staff accounts from Settings.', resetLinkSent:'We sent a link to your email — open it, choose a new password, then sign in here.',
+ regDoneOwner:'Clinic registered with a 14-day free trial. We sent a confirmation link to the owner email — open it first, then sign in and create staff accounts from Settings.', resetLinkSent:'If this email is registered, we sent it a link — open it, choose a new password, then sign in here. The message comes from noreply@asnany-4311e.firebaseapp.com — check your spam folder if it does not arrive within minutes.',
  secBrand:'App identity', appName:'App name', appNameHint:'Seen only by this clinic’s staff and patients — other clinics are unaffected',
  brandSaved:'Clinic identity saved', rmLogo:'Remove logo', logoBig:'Image too large — choose a smaller one',
  secCode:'Clinic barcode', codeHint:'Patients scan it with their phone camera or Google Lens to open the patient app; after sign-up your clinic opens directly. Print it for reception.',
@@ -4224,6 +4265,11 @@ const Cloud = {
       this.session = { email:cr.user.email, uid:cr.user.uid, exp:Infinity };
     } catch(e){ throw FBC.err(e); }
     const me = await this.whoami();
+    /* حساب عيادة لم يؤكّد بريده: لا جلسة — يُوجَّه إلى شاشة التأكيد */
+    if (me && me.role !== 'none' && me.role !== 'patient' && await FBC.unverified()){
+      await this.signOut();
+      throw new Error('Email not confirmed');
+    }
     if (me && me.role !== 'none' && me.role !== 'patient'){
       try { await FBSDK.updateDoc(FBC.d('members', me.uid), { last_login:FBSDK.serverTimestamp(), seen:FBSDK.serverTimestamp() }); } catch(_){}
     }
@@ -4361,7 +4407,7 @@ const Cloud = {
         const c = (await F.getDoc(clinicRef)).data();
         if ((c.cnt?.[role] || 0) >= (c.max?.[role] || 0)) throw new Error(T('quotaFull'));
         const email = String(body.email || '').trim().toLowerCase();
-        const uid = await FBC.createUser(email, body.password, { after: async (sec, nuid) => {
+        const uid = await FBC.createUser(email, body.password, { verify:true, after: async (sec, nuid) => {
           const b = F.writeBatch(FBC.db);
           b.set(FBC.d('members', nuid), { cid, role, name:body.name || '', email, active:true,
             vis: role === 'doctor' ? [nuid] : [], created_at:F.serverTimestamp(), created_by:this.me.uid });
@@ -4390,6 +4436,7 @@ const Cloud = {
       if (body.action === 'resend'){
         const ms = await F.getDoc(FBC.d('members', body.user_id));
         if (!ms.exists()) throw new Error('not_found');
+        FBC.lang(FBC.auth);
         await FBSDK.sendPasswordResetEmail(FBC.auth, ms.data().email);
         return { ok:true };
       }
@@ -4465,6 +4512,7 @@ const Cloud = {
   },
 
   async resetMail(email){
+    FBC.lang(FBC.auth);
     try { await FBSDK.sendPasswordResetEmail(FBC.auth, String(email).trim().toLowerCase()); }
     catch(e){ throw FBC.err(e); }
   },
@@ -5069,50 +5117,41 @@ const Login = {
         <button class="ib" onclick="UI.close()">✕</button>
       </div>
       <div class="card">
-        <label class="lb">${T('confirmCode')}</label>
-        <input id="vc-code" inputmode="numeric" dir="ltr" maxlength="8"
-          autocomplete="one-time-code" placeholder="——————"
-          oninput="this.value=this.value.replace(/\\D/g,'')"
-          style="letter-spacing:.32em;text-align:center;font-size:20px;font-weight:800">
-        <div class="tiny mt">${T('confirmHint')}</div>
+        <div class="al w"><span>!</span><span>${T('verifyNeed')}</span></div>
+        <div class="tiny mt">${T('spamHint')}</div>
         <div id="vc-err" class="al r mt hide"></div>
         <button class="btn w mt2" id="vc-go"
-          onclick="Login.confirmGo('${esc(email)}')">${T('confirmGo')}</button>
-        <button class="btn w gh mt" onclick="Login.resend('${esc(email)}')">
-          ${T('resendCode')}</button>
+          onclick="Login.confirmGo('${esc(email)}')">${T('verifyDone')}</button>
+        <button class="btn w gh mt" id="vc-re" onclick="Login.resend('${esc(email)}')">
+          ${T('verifyResend')}</button>
       </div>`);
-    setTimeout(()=>$('#vc-code')?.focus(), 140);
   },
 
+  /* «أكّدت بريدي»: يُعاد الدخول بكلمة المرور المكتوبة في شاشة الدخول */
   async confirmGo(email){
-    const err = $('#vc-err');
-    const show = m => { err.textContent = m; err.classList.remove('hide'); };
-    err.classList.add('hide');
-    const code = ($('#vc-code').value || '').trim();
-    if (!/^\d{6}$|^\d{8}$/.test(code)) return show(T('code6'));
+    UI.close();
+    const m = $('#cl-email'); if (m && email) m.value = email;
+    if (!($('#cl-pass')?.value)) return $('#cl-pass')?.focus();
+    return this.cloudSubmit();
+  },
 
-    const b = $('#vc-go'); b.disabled = true; b.textContent = T('cloudBusy');
+  /* رابط تأكيد جديد — يحتاج كلمة المرور المكتوبة في شاشة الدخول */
+  async resend(email){
+    const pass = $('#cl-pass')?.value || '';
+    const err = $('#vc-err');
+    const show = (m, ok) => { if (!err) return toast(m, ok ? 's' : 'e');
+      err.textContent = m; err.className = 'al ' + (ok ? 'g' : 'r') + ' mt'; };
+    if (!pass) return show(T('fillAll'));
+    const b = $('#vc-re'); if (b){ b.disabled = true; b.textContent = T('cloudBusy'); }
     try {
-      /* Firebase يؤكّد البريد برابط لا برمز — الحسابات تعمل دون انتظاره */
-      void code;
-      /* لا تُبقى الجلسة: يدخل بكلمة مروره كالمعتاد */
-      UI.close();
-      toast(T('confirmDone'), 's');
-      $('#cl-email').value = email;
-      $('#cl-pass').value = '';
-      $('#cl-pass').focus();
+      const sent = await FBC.sendVerify(email, pass);
+      show(sent ? T('verifySent') : T('confirmDone'), true);
     } catch (e) {
       const m = String(e.message || e);
-      show(/token|expired|invalid/i.test(m) ? T('confirmBad') : m);
-    } finally { b.disabled = false; b.textContent = T('confirmGo'); }
-  },
-
-  /* إعادة إرسال رمز التأكيد */
-  async resend(email){
-    try {
-      await Cloud.resetMail(email);
-      toast(T('mailSent'), 's');
-    } catch (e) { toast(String(e.message || e), 'e'); }
+      show(/too_many_requests/.test(m) ? T('verifyWait')
+         : /invalid|credential/.test(m) ? T('badCloudLogin')
+         : e?.net ? T('cloudFail') : m);
+    } finally { if (b){ b.disabled = false; b.textContent = T('verifyResend'); } }
   },
 
   async resetSend(){
@@ -12819,6 +12858,9 @@ window.addEventListener('unhandledrejection', e =>
           if (me) Cloud.me = me;
           if (me) toast(T('offlineResume'), 'w');
         }
+        /* جلسة محفوظة لحساب لم يؤكّد بريده: تُغلق وتُعرض شاشة الدخول */
+        if (me && me.role && me.role !== 'none' && me.role !== 'patient'
+            && await FBC.unverified().catch(() => false)) me = null;
         if (me && me.role && me.role !== 'none' && me.role !== 'patient'){
           S.role = me.role;
           S.clinicName = me.clinic_name || null;
