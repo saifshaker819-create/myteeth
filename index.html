@@ -754,6 +754,10 @@ a.pf-chip:hover{background:rgba(255,255,255,.16)}
 .qd-chips button.on{background:var(--br);border-color:var(--br);color:#fff;font-weight:600}
 .qd-chips .n{font-size:11px;padding:1px 7px;border-radius:99px;background:var(--brL);color:var(--br);margin-inline-start:6px}
 .qd-chips button.on .n{background:rgba(255,255,255,.22);color:#fff}
+.ptdoc{margin-top:14px}
+.ptdoc .qd-chips{flex-wrap:wrap;overflow:visible;padding-top:4px}
+.ptdoc .qd-chips button{height:40px;font-size:14px}
+.ptdoc.err .qd-chips button{border-color:var(--bd)}
 .qd-tag{flex:none;font-size:10.5px;padding:2px 7px;border-radius:99px;background:var(--brL);color:var(--br);white-space:nowrap}
 .pf-more{position:relative}
 .pf-menu{position:fixed;z-index:200;min-width:230px;padding:6px;border-radius:14px;
@@ -1125,6 +1129,19 @@ img,svg,video,canvas{max-width:100%}
   .segs button{font-size:12.5px;padding:0 4px}
   .pf-acts{gap:7px} .pf-act{padding:12px 4px;font-size:12.5px}
 }
+/* الهواتف (الآيفون خاصة): سفاري يكبّر الصفحة تلقائياً عند لمس أي حقل
+   خطّه أصغر من 16px، ثم تبقى الصفحة مقرّبة فتختفي أزرار عن الحافة حتى
+   يُصغّرها المستخدم بإصبعين. بخطّ 16px لا يحدث التكبير أصلاً. */
+@media (hover:none) and (pointer:coarse){
+  input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]),
+  select,textarea{font-size:16px !important}
+  .cmdk-in input{font-size:17px !important}
+}
+/* ضغطتان سريعتان على زر (استدعاء ثم إجلاس مثلاً) كانتا تُقرّبان الصفحة
+   في سفاري. هذا يمنع تقريب الضغطتين ويُبقي التكبير بإصبعين متاحاً. */
+html{touch-action:manipulation}
+/* لا يتجاوز شيء عرض الشاشة — فلا تصير الصفحة أعرض من الهاتف */
+@supports (overflow:clip){ html,body{overflow-x:clip} }
 /* نوافذ الحاسبة القصيرة (تطبيق مثبّت بنافذة صغيرة) */
 @media (min-width:900px) and (max-height:640px){
   .side .brand{padding-bottom:12px;margin-bottom:6px}
@@ -2182,6 +2199,9 @@ Object.assign(D.ar, {
  teamSaved:'حُفظ الفريق', noneOfKind:'لا يوجد حسابات من هذا النوع في العيادة',
  secProfile:'ملفي الشخصي', profName:'الاسم على الوصفة', profTitle:'اللقب العلمي',
  pickDoctor:'لأي طبيب هذا المراجع؟', pickDoctorHint:'يظهر ملفه لهذا الطبيب ولمن يسمح لهم',
+ ptDocLbl:'طبيب المراجع', ptDocNeed:'اختر طبيب هذا المراجع', ptDocMe:'أنا',
+ rmNotNow:'لا تُزال إلا جلسة لم يدخل صاحبها إلى الطبيب بعد (منتظر أو مُستدعى)',
+ rmHasData:'سُجّل في هذه الجلسة عمل أو دفعة أو صورة — لا يزيلها إلا الطبيب',
  noDoctorLinked:'لم يربطك أي طبيب بعد — اطلب من طبيبك اختيارك من «فريقي» في إعداداته',
  wsSummary:'ملخص الجلسة', legacyGone:'نُظِّف الجهاز من {n} سجلاً قديماً من النسخة السابقة لم تكن على السيرفر', upcomingBk:'حجوزات مقبولة لأيام قادمة', upcomingBkH:'تدخل قائمة اليوم وحدها يوم موعدها', otherClinicData:'على هذا الجهاز بيانات من عيادة أخرى لم تُرفع بعد.\nالمتابعة تمحوها نهائياً. للحفاظ عليها: ألغِ وادخل بحساب تلك العيادة حتى تُرفع.\n\nمتابعة ومحو؟', stuckN:'سجل رفضه السيرفر — تأكد أن الطبيب ربطك من «فريقي»', giveRx:'إعطاء علاج', bkFuture:'قُبل الحجز — يظهر في قائمة اليوم يوم موعده', phLinked:'رُبطت الصيدلية بك — تصلها وصفاتك',
  ownerData:'أنت المستثمر: ترى الحسابات والإحصائيات، وتدير هوية العيادة وطاقمها.',
@@ -2229,6 +2249,9 @@ Object.assign(D.en, {
  teamSaved:'Team saved', noneOfKind:'No accounts of this type in the clinic',
  secProfile:'My profile', profName:'Name on prescriptions', profTitle:'Title',
  pickDoctor:'Which doctor is this patient for?', pickDoctorHint:'The file is visible to this doctor and whoever they allow',
+ ptDocLbl:'Patient’s doctor', ptDocNeed:'Pick this patient’s doctor', ptDocMe:'Me',
+ rmNotNow:'Only a session whose patient has not gone in to the doctor yet (waiting or called) can be removed',
+ rmHasData:'This session already has work, a payment or an image — only the doctor can remove it',
  noDoctorLinked:'No doctor has linked you yet — ask your doctor to pick you under “My team”',
  wsSummary:'Session summary', legacyGone:'Removed {n} old records left from the previous version that were never on the server', upcomingBk:'Accepted bookings for upcoming days', upcomingBkH:'They enter Today automatically on their day', otherClinicData:'This device holds unsent data from another clinic.\nContinuing erases it permanently. To keep it: cancel and sign in to that clinic so it uploads.\n\nContinue and erase?', stuckN:'records rejected by the server — make sure your doctor linked you under “My team”', giveRx:'Give treatment', bkFuture:'Booking accepted — it appears in Today on its day', phLinked:'Pharmacy linked to you — your prescriptions reach it',
  ownerData:'You are the owner: you see accounts and statistics, and manage the clinic identity and staff.',
@@ -4705,6 +4728,28 @@ const Own = {
     return this.pick(docs);
   },
 
+  /* الأطباء الذين يجوز تسجيل مراجع جديد باسمهم من هذا الحساب —
+     لاختيار الطبيب داخل نموذج التسجيل نفسه:
+     · الطبيب: نفسه أولاً، ثم الزملاء الذين شاركوه مراجعيهم.
+     · السكرتير: الأطباء الذين ربطوه.
+     وحدهم من يقبل السيرفر الكتابة في سجلاتهم (قائمة الرؤية vis).
+     قائمة فارغة أو بطبيب واحد = لا حاجة للاختيار. */
+  async choices(){
+    if (S.role !== 'doctor' && S.role !== 'secretary') return [];
+    if (!Sync.on()) return [];
+    if (S.role === 'secretary' && !this.linkedIds().length){
+      try { await Scope.recheck(true); } catch(_){}
+    }
+    try { await Staff.load(); } catch(_){}
+    const me = S.role === 'doctor' ? (S.user?.uid || '') : '';
+    const ids = new Set(this.linkedIds());
+    if (me) ids.add(me);
+    const docs = Staff.active('doctor').filter(d => ids.has(d.uid));
+    if (me && !docs.some(d => d.uid === me))
+      docs.unshift({ uid:me, name:Prof.cachedName() || S.user?.name || T('ofDoctor') });
+    return docs.sort((a,b) => (b.uid === me) - (a.uid === me));
+  },
+
   pick(docs, title, hint){
     return new Promise(res => {
       const ov = el(`<div class="pickov"><div class="pickbox">
@@ -5745,6 +5790,8 @@ const Form = {
     const box = $('#f-mh');
     if (box) box.innerHTML = MH.render(p.mh, p.gender || this.gender, true);
     this._prevId = p.id;
+    /* ملف موجود يُحدَّث — طبيبه معروف، فلا يُسأل عنه */
+    if ($('#f-doc')) Sec.ptDocDraw();
     toast(T('fillFromPrev'), 's');
   },
 
@@ -5875,7 +5922,8 @@ const Ops = {
     return `${y}-${String(n).padStart(4,'0')}`;
   },
 
-  async savePatient(data, id){
+  /* pick: الطبيب المختار في نموذج التسجيل (إن وُجد) — يُغني عن السؤال */
+  async savePatient(data, id, pick){
     const now = Date.now();
     let p;
     if (id){
@@ -5883,7 +5931,7 @@ const Ops = {
       p = { ...p, ...data, up:now };
     } else {
       /* مراجع جديد: لأي طبيب؟ — يُلغى الحفظ إن لم يُحسم */
-      const own = await Own.choose();
+      const own = (pick && Own.valid(pick) !== false) ? pick : await Own.choose();
       if (own === null) return null;
       p = { id:uid(), mrn: await this.nextMrn(), bc: await this.nextBarcode(),
             cid: CFG.data.cid, ...data, at:now, up:now };
@@ -6380,7 +6428,7 @@ const Sec = {
           <input id="q-today" placeholder="${T('searchQ')}" value="${esc(this.qq)}">
           <span class="pill b" id="q-count">0</span>
         </div>
-        ${S.role==='doctor'?`<div class="tiny ctr" style="margin-top:7px;color:var(--ink3)">
+        ${S.role==='doctor' || S.role==='secretary'?`<div class="tiny ctr" style="margin-top:7px;color:var(--ink3)">
           ${T('holdHint')}</div>`:''}
         <div id="q-docs"></div>
         <div id="q-list" class="col mt2"></div>`;
@@ -6566,7 +6614,7 @@ const Sec = {
       return `
       <div class="it ${live?'live':''}" style="${cx?'opacity:.62':''}"
         onclick="Nav.session('${vi.id}')"
-        ${S.role==='doctor' && !ro?`data-hold="delTodayRow" data-hold-arg="${vi.id}|${p.id}"`:''}>
+        ${(S.role==='doctor' && !ro) || S.role==='secretary'?`data-hold="delTodayRow" data-hold-arg="${vi.id}|${p.id}"`:''}>
         <div class="av ${vi.qstate==='done'?'g':vi.qstate==='chair'?'':'w'}">${vi._no}</div>
         <div class="gr">
           <div class="row" style="gap:6px">
@@ -6909,8 +6957,12 @@ const Sec = {
 
   /*──── تسجيل مراجع جديد مباشر (بلا حجز) ────*/
   newPt(edit){
+    /* مراجع جديد في عيادة بأكثر من طبيب: يُحدَّد طبيبه في النموذج نفسه */
+    this._ptDoc = null; this._ptDocs = [];
+    this._ptDocsP = edit ? null : this.ptDocs();
     const sh = UI.sheet(`
       <div class="h1">${edit ? T('edit') : T('addPatient')}</div>
+      ${edit ? '' : '<div id="f-doc" class="ptdoc hide"></div>'}
       <div class="mt2">${Form.html(edit)}</div>
       <div id="f-err" class="al r mt2 hide"></div>
       <div class="row mt2" style="gap:9px">
@@ -6921,14 +6973,51 @@ const Sec = {
     sh.scrollTop = 0;
   },
 
+  /* قائمة الأطباء لنموذج التسجيل — تظهر فقط إن كان هناك أكثر من طبيب */
+  async ptDocs(){
+    let docs = [];
+    try { docs = await Own.choices(); } catch(_){}
+    this._ptDocs = docs.length > 1 ? docs : [];
+    if (this._ptDocs.length && S.role === 'doctor') this._ptDoc = S.user?.uid || null;
+    this.ptDocDraw();
+    return this._ptDocs;
+  },
+
+  ptDocDraw(){
+    const box = $('#f-doc'); if (!box) return;
+    const docs = this._ptDocs || [];
+    if (docs.length < 2 || Form._prevId){ box.classList.add('hide'); box.innerHTML = ''; return; }
+    const me = S.role === 'doctor' ? S.user?.uid : null;
+    box.classList.remove('hide');
+    box.innerHTML = `<label class="lb">${T('ptDocLbl')} <span class="req">*</span></label>
+      <div class="qd-chips">${docs.map(d => `<button type="button" class="${this._ptDoc === d.uid ? 'on' : ''}"
+          onclick="Sec.ptDocSet('${esc(d.uid)}')">🦷 ${esc(d.uid === me ? T('ptDocMe') + ' — ' + (d.name || '') : (d.name || T('ofDoctor')))}</button>`).join('')}</div>
+      <div class="tiny mt">${T('pickDoctorHint')}</div>`;
+  },
+
+  ptDocSet(k){
+    if (!(this._ptDocs || []).some(d => d.uid === k)) return;
+    this._ptDoc = k;
+    $('#f-doc')?.classList.remove('err');
+    this.ptDocDraw();
+  },
+
   async savePt(id){
-    if (!Form.validate()){
-      const e = $('#f-err'); e.textContent = T('fillAll'); e.classList.remove('hide');
+    /* القائمة قد تكون ما زالت تُحمَّل: تُنتظر قبل التحقق */
+    if (!id && this._ptDocsP){ try { await this._ptDocsP; } catch(_){} }
+    const needDoc = !id && !Form._prevId && (this._ptDocs || []).length > 1;
+    const noDoc = needDoc && !this._ptDoc;
+    if (needDoc) $('#f-doc')?.classList.toggle('err', noDoc);
+    const okForm = Form.validate();
+    if (!okForm || noDoc){
+      const e = $('#f-err');
+      e.textContent = okForm ? T('ptDocNeed') : T('fillAll');
+      e.classList.remove('hide');
       $('.sh').scrollTo({top:0,behavior:'smooth'}); return;
     }
     /* إن اختير مراجع سابق من الاقتراح، نحدّث ملفه بدل إنشاء ملف مكرّر */
     const target = id || Form._prevId || null;
-    const p = await Ops.savePatient(Form.read(), target);
+    const p = await Ops.savePatient(Form.read(), target, needDoc ? this._ptDoc : null);
     if (!p) return;
     UI.close(); toast(T('saved'),'s');
     /* الملف يحلّ محلّ نموذج التسجيل — الرجوع منه لا يعيد فتح النموذج */
@@ -9451,9 +9540,33 @@ const Del = {
     return false;
   },
 
+  /* السكرتير يزيل من قائمة اليوم جلسة لم يدخل صاحبها إلى الطبيب بعد:
+     منتظر أو مُستدعى (أو ملغى). ومن جلس على الكرسي أو انتهى لا يُزال —
+     فيه عمل الطبيب. والطبيب يزيل أي جلسة كما كان. */
+  secRmOk(v){ return !!v && ['waiting', 'called', 'cancelled'].includes(v.qstate || 'waiting'); },
+
+  /* جلسة فيها عمل أو دفعة أو صورة أو وصفة: إزالتها تمحو ذلك كله —
+     فلا يزيلها السكرتير */
+  async visitHasData(vid){
+    return (await DB.by('works','vid',vid)).length > 0
+        || (await DB.by('rx','vid',vid)).length > 0
+        || (await DB.by('files','vid',vid)).length > 0
+        || (await DB.all('payments')).some(x => x.vid === vid);
+  },
+
+  async todayAllowed(vid){
+    if (S.role === 'doctor') return true;
+    if (S.role !== 'secretary'){ toast(T('docSecOnly'), 'e'); return false; }
+    const v = await DB.get('visits', vid);
+    if (!v) return false;
+    if (!this.secRmOk(v)){ toast(T('rmNotNow'), 'e'); return false; }
+    if (await this.visitHasData(vid)){ toast(T('rmHasData'), 'e'); return false; }
+    return true;
+  },
+
   /* قائمة خيارات عند الضغط المطوّل في قسم اليوم */
   async todayRow(vid, pid){
-    if (!this.allowed()) return;
+    if (!(await this.todayAllowed(vid))) return;
     const p = await DB.get('patients', pid); if (!p) return;
     UI.sheet(`
       <div class="shhead">
@@ -9471,8 +9584,10 @@ const Del = {
   },
 
   async visit(vid){
-    if (!this.allowed()) return;
+    if (!(await this.todayAllowed(vid))) return;
     if (!ask(T('removeTodayQ'))) return;
+    /* قد يكون استُدعي إلى الكرسي من جهاز آخر أثناء التأكيد */
+    if (!(await this.todayAllowed(vid))) return;
     await Ops.deleteVisit(vid);
     toast(T('removed'), 's');
     Nav.home();
