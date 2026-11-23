@@ -2190,7 +2190,7 @@ Object.assign(D.ar, {
  addDoctor:'＋ طبيب', addSec:'＋ سكرتير', addPharm:'＋ صيدلية',
  newDoctorAcc:'حساب طبيب جديد', docAccName:'اسم الطبيب',
  used:'المستعمل', ofMax:'من', quotaFull:'وصلت الحدّ المسموح لهذا النوع — راجع لوحة التحكم لزيادته',
- staffOff:'معطّل', enableAcc:'تفعيل', disableAcc:'تعطيل', disableQ:'تعطيل هذا الحساب؟ لن يستطيع الدخول.',
+ staffOff:'موقوف', enableAcc:'تفعيل', disableAcc:'إيقاف الحساب', disableQ:'إيقاف هذا الحساب؟ يُخرَج من البرنامج فوراً ولن يستطيع الدخول حتى تعيد تفعيله.',
  resendCode2:'إرسال رابط تعيين كلمة المرور', staffLoadFail:'تعذّر تحميل الطاقم — تحقّق من الاتصال',
  noStaffYet:'لا حسابات بعد',
  secTeam:'فريقي', teamHint:'اختر من يعمل معك. التغيير يصل إلى زملائك عند دخولهم التالي.',
@@ -2240,7 +2240,7 @@ Object.assign(D.en, {
  addDoctor:'＋ Doctor', addSec:'＋ Secretary', addPharm:'＋ Pharmacy',
  newDoctorAcc:'New doctor account', docAccName:'Doctor name',
  used:'Used', ofMax:'of', quotaFull:'Limit reached for this type — ask the control panel to raise it',
- staffOff:'Disabled', enableAcc:'Enable', disableAcc:'Disable', disableQ:'Disable this account? It will not be able to sign in.',
+ staffOff:'Suspended', enableAcc:'Enable', disableAcc:'Suspend', disableQ:'Suspend this account? It is signed out right away and cannot sign in until you enable it again.',
  resendCode2:'Send password reset link', staffLoadFail:'Could not load staff — check the connection',
  noStaffYet:'No accounts yet',
  secTeam:'My team', teamHint:'Choose who works with you. Colleagues see the change at their next sign-in.',
@@ -2275,6 +2275,40 @@ Object.assign(D.en, {
  subSupport:'Support', subCall:'Call', subWa:'WhatsApp', subCheck:'Check renewal',
  subBack:'Subscription renewed — welcome back', subStill:'The subscription is still expired',
  subDataSafe:'All your data is safe and returns as soon as you renew.',
+});
+
+/*──── صلاحيات الرؤية بيد المستثمر، إيقاف الحسابات، كل مرضى العيادة، أسنان الجلسة ────*/
+Object.assign(D.ar, {
+ secVis:'رؤية مراجعي الأطباء',
+ visHint:'أنت تقرّر أي طبيب يرى مراجعي أي طبيب آخر. قرارك هو الأعلى دائماً: لا يرى طبيبٌ مراجعي زميله إلا إذا فعّلته هنا، حتى لو فعّله صاحب المراجعين من حسابه.',
+ visSees:'يرى مراجعي:', visWants:'طلب الطبيب', visNoDocs:'تحتاج طبيبين مفعّلين على الأقل',
+ visSaved:'حُفظت صلاحيات الرؤية — تصل إلى الأطباء فوراً', visOffNote:'المعطّلون لا يظهرون هنا، وتبقى صلاحياتهم كما هي',
+ viewersOwner:'اختيارك هنا طلبٌ يصل إلى المستثمر — لا يرى الزميل مرضاك إلا إذا فعّله المستثمر من حسابه، وقراره هو الأعلى.',
+ visNowSees:'يرى مرضاي الآن بموافقة المستثمر:',
+ accSuspended:'تم إيقاف حسابك من إدارة العيادة — تواصل مع المستثمر',
+ qClinic:'كل مرضى العيادة', qClinicHint:'عرض فقط: اسم المراجع وطبيبه — لا يُفتح ملف مراجع ليس من مراجعيك',
+ qClinicEmpty:'لا يوجد مراجعون اليوم في العيادة', qClinicOff:'تحتاج اتصالاً بالإنترنت لعرض كل مرضى العيادة',
+ qClinicDoc:'طبيبه', toDoctor:'محوّل إلى', qClinicRo:'لا يمكن فتح ملف مراجع ليس من مراجعيك',
+ stTeeth:'أسنان هذه الجلسة', stTeethHint:'اضغط أي سن في المخطط لإضافته — لكل سن خطته وسعره وحسابه المستقل',
+ stSessTotal:'مجموع الجلسة', stLeft:'المتبقي', stPerSess:'سعر الجلسة', stOpen:'فتح', stNoPlan:'بلا خطة',
+ paySplit:'توزيع على الأسنان', paySplitHint:'يُوزَّع المبلغ على الأسنان بحسب المتبقي على كل سن، وما زاد يُسجَّل دفعة عامة',
+ payLeft:'متبقٍ', paySplitDone:'وُزّعت الدفعة — عدد الأسنان:',
+});
+Object.assign(D.en, {
+ secVis:'Doctors’ patient visibility',
+ visHint:'You decide which doctor sees which colleague’s patients. Your decision always wins: a doctor sees a colleague’s patients only if you enable it here, even if the colleague enabled it from their account.',
+ visSees:'Sees the patients of:', visWants:'Doctor’s request', visNoDocs:'You need at least two active doctors',
+ visSaved:'Visibility saved — doctors get it right away', visOffNote:'Disabled accounts are hidden here and keep their settings',
+ viewersOwner:'Your choice here is a request to the owner — a colleague sees your patients only if the owner enables it; the owner’s decision wins.',
+ visNowSees:'Currently see my patients (approved by the owner):',
+ accSuspended:'Your account was suspended by the clinic management — contact the owner',
+ qClinic:'All clinic patients', qClinicHint:'View only: patient name and doctor — files of other doctors’ patients do not open',
+ qClinicEmpty:'No patients in the clinic today', qClinicOff:'You need an internet connection to see all clinic patients',
+ qClinicDoc:'Doctor', toDoctor:'Transferred to', qClinicRo:'You cannot open a patient who is not yours',
+ stTeeth:'Teeth in this session', stTeethHint:'Tap any tooth on the chart to add it — each tooth has its own plan, price and account',
+ stSessTotal:'Session total', stLeft:'Remaining', stPerSess:'Per session', stOpen:'Open', stNoPlan:'No plan',
+ paySplit:'Split across teeth', paySplitHint:'The amount is split across the teeth by what each still owes; any extra is saved as a general payment',
+ payLeft:'left', paySplitDone:'Payment split — teeth:',
 });
 
 let LG = localStorage.getItem('d_lang') || 'ar';
@@ -3076,7 +3110,8 @@ const Chart = {
       const st = map[t.f] || 'sound';
       const col = TS(st).col;
       const gone = st==='extracted'||st==='missing';
-      const on = sel===t.f;
+      /* سن واحد، أو كل أسنان الجلسة معاً */
+      const on = Array.isArray(sel) ? sel.includes(t.f) : sel===t.f;
       return `<g onclick="Chart.tap(this,${t.f})" data-x="${t.x.toFixed(1)}" data-y="${t.y.toFixed(1)}">
         <g transform="translate(${t.x.toFixed(1)} ${t.y.toFixed(1)}) rotate(${t.rot.toFixed(1)})">
           <rect x="${(-t.w/2).toFixed(1)}" y="${(-t.h/2).toFixed(1)}" width="${t.w}" height="${t.h}"
@@ -4320,7 +4355,9 @@ const Cloud = {
     if (!ms.exists() || ms.data().active !== true){
       let isPt = false;
       try { isPt = (await F.getDoc(FBC.d('patients', u.uid))).exists(); } catch(_){}
-      this.me = isPt ? { role:'patient' } : { role:'none' };
+      /* عضوية موجودة لكنها معطّلة: أوقف المستثمر هذا الحساب */
+      const off = ms.exists() && ms.data().active === false;
+      this.me = isPt ? { role:'patient' } : { role:'none', suspended:off };
       return this.me;
     }
     let m = ms.data();
@@ -4355,6 +4392,8 @@ const Cloud = {
       doctor_name:c.doctor_name || null, full_name:m.name || null,
       app_name:c.app_name || null, logo:c.logo || null, code:c.code || null,
       can_manage: m.role === 'owner' && c.active === true && ok,
+      /* للعيادة مستثمر: رؤية الأطباء لمراجعي بعضهم بيده وحده */
+      has_owner: !!c.owner_uid,
       vis,
       /* النطاق: تغيّره يعني أن ما يجوز لهذا الجهاز رؤيته تغيّر */
       scope: m.role === 'owner' ? 'owner' : vis.join(','),
@@ -4500,7 +4539,8 @@ const Cloud = {
       F.getDoc(FBC.d('clinics', cid)),
     ]);
     const members = ms.docs.map(d => { const x = d.data();
-      return { uid:d.id, role:x.role, name:x.name || '', email:x.email || '', active:x.active !== false, confirmed:true }; });
+      return { uid:d.id, role:x.role, name:x.name || '', email:x.email || '', active:x.active !== false, confirmed:true,
+               vis:Array.isArray(x.vis) ? x.vis : null }; });
     const links = [];
     ls.docs.forEach(d => { const x = d.data();
       for (const kind of ['secretary', 'pharmacy', 'doctor'])
@@ -4518,9 +4558,34 @@ const Cloud = {
     const now = new Set(ids);
     const b = F.writeBatch(FBC.db);
     b.set(ref, { [kind]:[...now] }, { merge:true });
-    for (const m of now) if (!old.has(m) && m !== me) b.update(FBC.d('members', m), { vis:F.arrayUnion(me) });
-    for (const m of old) if (!now.has(m) && m !== me) b.update(FBC.d('members', m), { vis:F.arrayRemove(me) });
+    /* عيادة لها مستثمر: رؤية طبيب لمراجعي طبيب آخر يقرّرها المستثمر وحده.
+       اختيار الطبيب يُحفظ طلباً يراه المستثمر، ولا يغيّر الرؤية الفعلية. */
+    const viaOwner = kind === 'doctor' && this.me?.has_owner;
+    if (!viaOwner){
+      for (const m of now) if (!old.has(m) && m !== me) b.update(FBC.d('members', m), { vis:F.arrayUnion(me) });
+      for (const m of old) if (!now.has(m) && m !== me) b.update(FBC.d('members', m), { vis:F.arrayRemove(me) });
+    }
     try { await b.commit(); } catch(e){ throw FBC.err(e); }
+  },
+
+  /* المستثمر يضبط من يرى مراجعي من: لكل طبيب قائمة رؤيته كاملة.
+     map: { معرّف الطبيب: [معرّفات الأطباء الذين يرى مراجعيهم] } */
+  async visSet(map){
+    const F = FBSDK, cid = this.me?.clinic_id;
+    if (!cid || !this.me?.can_manage) throw new Error(T('docOnly'));
+    const ids = Object.keys(map || {});
+    if (!ids.length) return;
+    try {
+      for (let i = 0; i < ids.length; i += 200){
+        const b = F.writeBatch(FBC.db);
+        for (const d of ids.slice(i, i + 200)){
+          /* الطبيب يرى مراجعيه دائماً */
+          const vis = [...new Set([d, ...(map[d] || [])])].filter(Boolean).sort();
+          b.update(FBC.d('members', d), { vis });
+        }
+        await b.commit();
+      }
+    } catch(e){ throw FBC.err(e); }
   },
 
   /* هوية العيادة وبياناتها — والبطاقة العامة التي يقرؤها المراجع */
@@ -4660,6 +4725,65 @@ const Staff = {
   soleDoctor(){
     const d = this.active('doctor');
     return d.length === 1 ? d[0].uid : null;
+  },
+};
+
+/*═══════════════ لوحة اليوم المشتركة ═══════════════
+  لزر «كل مرضى العيادة»: كل جهاز طبيب أو سكرتير يكتب لمراجعي اليوم
+  الذين يراهم سطراً خفيفاً — الاسم، طبيب الملف، المحوَّل إليه، حالة
+  الدور. لا شيء سريري. فيرى الطبيب كل مراجعي العيادة اليوم ولأي طبيب
+  كانوا، دون أن يُفتح له ملف ليس من مراجعيه. يُكتب السطر فقط حين
+  يتغيّر، فلا كتابة مع كل رسم.
+═══════════════════════════════════════════════*/
+const Board = {
+  _sig:null, _rows:null, _at:0,
+  key(){ return 'd_board_' + (Cloud.me?.clinic_id || 'x'); },
+  ok(){ return Sync.on() && navigator.onLine && (S.role === 'doctor' || S.role === 'secretary'); },
+  sigs(){
+    if (!this._sig){ try { this._sig = JSON.parse(localStorage.getItem(this.key())) || {}; } catch(_){ this._sig = {}; } }
+    if (this._sig._d !== today()) this._sig = { _d:today() };
+    return this._sig;
+  },
+  ref(vid){ return FBC.d('clinics', Cloud.me.clinic_id, 'board', vid); },
+
+  /* زيارات اليوم التي يراها هذا الجهاز */
+  async push(visits){
+    if (!this.ok() || this._busy) return;
+    this._busy = true;
+    try {
+      const sg = this.sigs();
+      for (const v of visits || []){
+        if (!v || !v.id || v.date !== today()) continue;
+        const p = await DB.get('patients', v.pid); if (!p) continue;
+        const d = { d:v.date, n:String(nm(p) || '').slice(0, 200), k:Sec.ownerOf(v),
+                    dr:v.dr || null, q:v.qstate || 'waiting', at:Number(v.at || 0) };
+        const s = JSON.stringify(d);
+        if (sg[v.id] === s) continue;
+        try {
+          await FBSDK.setDoc(this.ref(v.id), { ...d, u:FBSDK.serverTimestamp(), by:Cloud.me.uid });
+          sg[v.id] = s;
+        } catch(_){ break; }                    /* بلا صلاحية أو بلا شبكة: يُعاد لاحقاً */
+      }
+      try { localStorage.setItem(this.key(), JSON.stringify(sg)); } catch(_){}
+    } finally { this._busy = false; }
+  },
+
+  async del(vid){
+    if (!this.ok() || !vid) return;
+    try { await FBSDK.deleteDoc(this.ref(vid)); } catch(_){}
+    const sg = this.sigs(); delete sg[vid];
+    try { localStorage.setItem(this.key(), JSON.stringify(sg)); } catch(_){}
+  },
+
+  async load(force){
+    if (!Sync.on() || !navigator.onLine) return null;
+    if (!force && this._rows && this._rows.d === today() && Date.now() - this._at < 15000) return this._rows.list;
+    const F = FBSDK;
+    const q = F.query(FBC.c('clinics', Cloud.me.clinic_id, 'board'), F.where('d', '==', today()));
+    const snap = await F.getDocs(q);
+    const list = snap.docs.map(x => ({ id:x.id, ...x.data() }));
+    this._rows = { d:today(), list }; this._at = Date.now();
+    return list;
   },
 };
 
@@ -4914,6 +5038,17 @@ const Scope = {
     try { localStorage.setItem(this.key(), me.scope); } catch(_){}
   },
 
+  suspended(){
+    if (this._off) return; this._off = true;
+    try { Guard.forget(); } catch(_){}
+    try { localStorage.removeItem('d_me'); } catch(_){}
+    try { Auth.out(); } catch(_){}
+    const box = $('#cl-err');
+    if (box){ box.textContent = T('accSuspended'); box.classList.remove('hide'); }
+    toast(T('accSuspended'), 'e');
+    setTimeout(() => { this._off = false; }, 3000);
+  },
+
   /* يُسأل السيرفر عن النطاق عند العودة للتطبيق، لا مع كل مزامنة */
   _at:0,
   /* force: سؤال قريب (لا يتكرّر أكثر من مرة كل ٥ ثوانٍ).
@@ -4924,6 +5059,9 @@ const Scope = {
     this._at = Date.now();
     try {
       const me = await Cloud.whoami();
+      /* أوقف المستثمر هذا الحساب وهو داخل: يُخرَج فوراً، ولا يبقى له
+         دخول بلا إنترنت على هذا الجهاز */
+      if (me && me.suspended && S.role && S.role !== 'owner') return this.suspended();
       if (me && me.role === S.role){
         Brand.save(me); Sub.save(me); Sub.tick();
         if (Sub.expired()) return;
@@ -5280,7 +5418,7 @@ const Login = {
       const me = await Cloud.signIn(email, pass);
       if (!me || me.role === 'none' || me.role === 'patient'){
         await Cloud.signOut();
-        return show(T('noMembership'));
+        return show(T(me?.suspended ? 'accSuspended' : 'noMembership'));
       }
       /* عيادة غير عيادة هذا الجهاز: يُنظَّف قبل أن يُكتب فيه أي شيء */
       await Scope.tenant(me);
@@ -6227,6 +6365,7 @@ const Ops = {
        للاسترجاع بعد أن يظنّ الطبيب أنه محا الملف. */
     for (const f of await DB.by('files','pid',pid)) await Img.del(f);
 
+    for (const v of await DB.by('visits', 'pid', pid)) if (v.date === today()) Board.del(v.id);
     for (const st of ['visits','works','payments','files','rx','tooth','appts']){
       for (const row of await DB.by(st, 'pid', pid)) await DB.del(st, row.id);
     }
@@ -6246,6 +6385,7 @@ const Ops = {
     for (const x of (await DB.all('payments')).filter(p=>p.vid===vid))
       await DB.del('payments', x.id);
     await DB.del('visits', vid);
+    Board.del(vid);
   },
 
   async findByCode(code){
@@ -6482,8 +6622,19 @@ const Sec = {
     return ids.map(uid => ({ uid, name: Staff.name(uid) || T('ofDoctor') }));
   },
 
+  /* «كل مرضى العيادة»: للطبيب في عيادة بأكثر من طبيب، مع اتصال بالسيرفر */
+  clinicOn(){
+    if (S.role !== 'doctor' || !Sync.on()) return false;
+    const d = Staff.data || Staff.cache();
+    if (!d && !this._qStaff){
+      this._qStaff = true;
+      Staff.load().then(() => { if (S.tab === 'today' && $('#q-list')) this.queue(); }).catch(() => {});
+    }
+    return Staff.active('doctor').length >= 2;
+  },
+
   qOn(docs){
-    if (S.role === 'doctor')    return docs.length >= 1;
+    if (S.role === 'doctor')    return docs.length >= 1 || this.clinicOn();
     if (S.role === 'secretary') return docs.length >= 2;
     return false;
   },
@@ -6493,6 +6644,7 @@ const Sec = {
     /* طبيب لا يشاركه أحد: بلا شريط، لكن من حُوِّل منه إلى زميل لا يبقى في قائمته */
     if (!this.qOn(docs)) return S.role === 'doctor' ? 'me' : 'all';
     let f = this.qd;
+    if (f === 'clinic' && S.role === 'doctor') return this.clinicOn() ? 'clinic' : 'me';
     if (f && f !== 'me' && f !== 'all' && !docs.some(d => d.uid === f)) f = null;
     if (S.role === 'doctor'    && (!f || f === 'all')) f = 'me';
     if (S.role === 'secretary' && (!f || f === 'me'))  f = 'all';
@@ -6504,6 +6656,7 @@ const Sec = {
     docs = docs || this.qDocList();
     const f = this.qSel(docs);
     if (f === 'all') return () => true;
+    if (f === 'clinic') return () => false;          /* تُعرض من لوحة العيادة لا من الجهاز */
     const others = new Set(docs.map(d => d.uid));
     if (f === 'me') return r => this.isMineK(this.qOwner(r), others);
     return r => this.qOwner(r) === f;
@@ -6528,14 +6681,70 @@ const Sec = {
     const chips = docs.map(d => chip(d.uid, d.name, cnt(d.uid))).join('');
     if (S.role === 'doctor'){
       const mine = vs.filter(v => this.isMineK(this.qOwner(v), others)).length;
+      const cl = this.clinicOn();
+      const oth = f !== 'me' && f !== 'clinic';
       box.innerHTML = `<div class="pf-tabs qd-tabs">
           <button class="${f === 'me' ? 'on' : ''}" onclick="Sec.qPick('me')">${T('qMine')}<span class="n">${mine}</span></button>
-          <button class="${f !== 'me' ? 'on' : ''}" onclick="Sec.qPick('others')">${T('qOthers')}<span class="n">${vs.length - mine}</span></button>
+          ${docs.length ? `<button class="${oth ? 'on' : ''}" onclick="Sec.qPick('others')">${T('qOthers')}<span class="n">${vs.length - mine}</span></button>` : ''}
+          ${cl ? `<button class="${f === 'clinic' ? 'on' : ''}" onclick="Sec.qPick('clinic')">${T('qClinic')}<span class="n" id="q-cl-n">${this._clN ?? '·'}</span></button>` : ''}
         </div>
-        ${f !== 'me' ? `<div class="qd-chips">${chips}</div>` : ''}`;
+        ${oth && docs.length ? `<div class="qd-chips">${chips}</div>` : ''}`;
       return;
     }
     box.innerHTML = `<div class="qd-chips">${chip('all', T('qAll'), vs.length)}${chips}</div>`;
+  },
+
+  /*──── «كل مرضى العيادة»: عرض فقط ────
+    كل مراجعي اليوم في العيادة ولأي طبيب كانوا: الاسم، طبيب الملف،
+    ومن حُوِّل إليه. لا يُفتح منه ملف — من كان من مراجعي هذا الطبيب
+    يجده في «مراجعيني». */
+  async clinicList(box){
+    const cnt = $('#q-count');
+    if (!Sync.on() || !navigator.onLine){
+      if (cnt) cnt.textContent = 0;
+      box.innerHTML = `<div class="emp">${T('qClinicOff')}</div>`; return;
+    }
+    if (!this._clRows) box.innerHTML = UI.spin();
+    let list;
+    try { list = await Board.load(); }
+    catch(_){ box.innerHTML = `<div class="emp">${T('qClinicOff')}</div>`; return; }
+    if (!list || !$('#q-list') || this.qSel() !== 'clinic') return;
+    this._clRows = list;
+    const all = list.slice().sort((a,b) => (a.at||0) - (b.at||0));
+    all.forEach((x,i) => x._no = i + 1);
+    all.reverse();
+    this._clN = all.length;
+    const n = $('#q-cl-n'); if (n) n.textContent = all.length;
+    const q = this.qq.trim().toLowerCase();
+    const rows = q ? all.filter(x => String(x.n || '').toLowerCase().includes(q)) : all;
+    if (cnt) cnt.textContent = rows.length;
+    const cls = { waiting:'n', called:'w', chair:'b', done:'g', cancelled:'r' };
+    const dn = k => Staff.name(k) || T('ofDoctor');
+    box.innerHTML = `<div class="tiny ctr" style="color:var(--ink3);margin-bottom:6px">🔒 ${T('qClinicHint')}</div>`
+      + (rows.length ? rows.map(x => {
+        const live = x.q === 'called' || x.q === 'chair';
+        const tr = x.dr && x.dr !== x.k;
+        return `<div class="it ${live?'live':''}" style="cursor:default;${x.q==='cancelled'?'opacity:.62':''}"
+            onclick="toast(T('qClinicRo'),'w')">
+          <div class="av ${x.q==='done'?'g':x.q==='chair'?'':'w'}">${x._no}</div>
+          <div class="gr">
+            <div class="row" style="gap:6px">
+              ${live?'<span class="dotlive"></span>':''}
+              <div class="h3 ell">${esc(x.n || '—')}</div>
+            </div>
+            <div class="row wrapv" style="gap:5px;margin-top:3px">
+              ${x.k && x.k !== '_' ? `<span class="qd-tag">🦷 ${T('qClinicDoc')}: ${esc(dn(x.k))}</span>` : ''}
+              ${tr ? `<span class="qd-tag">⇄ ${T('toDoctor')}: ${esc(dn(x.dr))}</span>` : ''}
+            </div>
+          </div>
+          <span class="pill ${cls[x.q]||'n'}">${
+            x.q==='cancelled' ? T('ptCancelled') : T(x.q==='chair'?'inChair':x.q||'waiting')}</span>
+        </div>`; }).join('') : `<div class="emp">${T('qClinicEmpty')}</div>`);
+    /* تحديث هادئ ما دامت القائمة معروضة */
+    clearTimeout(this._clT);
+    this._clT = setTimeout(() => {
+      if (S.tab === 'today' && this.qd === 'clinic' && $('#q-list')){ Board._at = 0; this.queue(); }
+    }, 30000);
   },
 
   /*──── تحويل دور اليوم إلى طبيب آخر ────
@@ -6549,8 +6758,12 @@ const Sec = {
     if ((v.qstate || 'waiting') !== 'waiting') return toast(T('trNotWaiting'), 'e');
     try { await Staff.load(true); } catch(_){}
     const owner = this.ownerOf(v), cur = this.qOwner(v);
-    const ids = owner === '_' ? Own.linkedIds()
-              : [owner, ...Staff.linked('doctor', owner).map(m => m.uid)];
+    /* من يرى مراجعي صاحب الملف فعلاً (قائمة الرؤية التي يقرّرها المستثمر)،
+       ومع نسخة طاقم قديمة بلا قوائم: روابط الطبيب كما كانت */
+    const seers = Staff.members('doctor').some(m => Array.isArray(m.vis))
+      ? Staff.members('doctor').filter(m => (m.vis || []).includes(owner)).map(m => m.uid)
+      : Staff.linked('doctor', owner).map(m => m.uid);
+    const ids = owner === '_' ? Own.linkedIds() : [owner, ...seers];
     const docs = [...new Set(ids)].filter(u => u && u !== cur)
       .map(u => Staff.active('doctor').find(m => m.uid === u)).filter(Boolean);
     if (!docs.length) return toast(T('trNone'), 'e');
@@ -6578,7 +6791,9 @@ const Sec = {
 
     /* تصفية الطبيب: الشريط يُرسم بأعداد الكل، والقائمة بالمختار وحده */
     const qDocs = this.qDocList(), qf = this.qSel(qDocs), qShow = this.qFilter(qDocs);
+    Board.push(all);                     /* لوحة العيادة المشتركة: ما تغيّر فقط */
     this.qBar(all, qDocs, qf);
+    if (qf === 'clinic') return this.clinicList(box);
     const vs = all.filter(qShow);
     /* مراجعو زميل: عرض للحالة فقط — لا يُحرّك الطبيب دور غيره ولا يحذفه */
     const ro = S.role === 'doctor' && qf !== 'me' && qf !== 'all';
@@ -7355,6 +7570,8 @@ const Sec = {
             <div class="mono h3">${N(tt.total)}</div></div>
           <div class="ctr"><div class="tiny">${T('paid')}</div>
             <div class="mono h3" style="color:var(--ok)">${N(tt.paid)}</div></div>
+          <div class="ctr"><div class="tiny">${T('stLeft')}</div>
+            <div class="mono h3" style="color:${tt.total > tt.paid ? 'var(--bd)' : 'var(--ok)'}">${N(Math.max(0, tt.total - tt.paid))}</div></div>
         </div>
       </div>
 
@@ -7451,6 +7668,15 @@ const Sec = {
       const w = await DB.by('works','pid',pid);
       teeth = [...new Set(w.map(x=>Number(x.fdi)).filter(Boolean))].slice(0,12);
     }
+    /* المتبقي على كل سن (في السلسلة التي تُنسب إليها الدفعة) */
+    const dues = {};
+    for (const f of teeth){
+      const c = await Ops.payCourse(pid, f);
+      dues[f] = Math.max(0, (await Ops.courseTotals(pid, f, c)).due);
+    }
+    /* أكثر من سن عليه مبلغ: التوزيع على الأسنان هو الاختيار الأول */
+    const owing = teeth.filter(f => dues[f] > 0);
+    const split = owing.length >= 2;
 
     UI.sheet(`
       <div class="shhead"><div class="gr"><div class="h2">${T('pay')}</div></div>
@@ -7460,10 +7686,13 @@ const Sec = {
       ${teeth.length?`<div class="card">
         <label class="lb">${T('payFor')}</label>
         <div class="row wrapv" style="gap:6px" id="p-fdi">
-          <button class="btn sm on" data-v="" onclick="Sec.pickFdi(this)">${T('general')}</button>
+          ${split ? `<button class="btn sm on" data-v="split" onclick="Sec.pickFdi(this)">⚖ ${T('paySplit')}</button>` : ''}
+          <button class="btn sm ${split ? 'gh' : 'on'}" data-v="" onclick="Sec.pickFdi(this)">${T('general')}</button>
           ${teeth.map(f=>`<button class="btn sm gh mono" data-v="${f}"
-             onclick="Sec.pickFdi(this)">${Chart.lbl(f)}</button>`).join('')}
-        </div></div>`:'<div id="p-fdi" class="hide"></div>'}
+             onclick="Sec.pickFdi(this)">${Chart.lbl(f)}${dues[f] > 0
+               ? ` <span class="tiny" style="opacity:.75">· ${T('payLeft')} ${N(dues[f])}</span>` : ''}</button>`).join('')}
+        </div>
+        ${split ? `<div class="tiny mt" id="p-split-h">${T('paySplitHint')}</div>` : ''}</div>`:'<div id="p-fdi" class="hide"></div>'}
       <div class="card"><label class="lb">${T('method')}</label>
         <div class="segs mt" id="p-m">
           <button class="on" data-v="cash" onclick="Sec.pm(this)">${T('cash')}</button>
@@ -7489,6 +7718,28 @@ const Sec = {
     if (!a || a<=0){ $('#p-a').classList.add('err'); return; }
     const method = $('#p-m .on')?.dataset.v || 'cash';
     const fdiSel = $('#p-fdi .on')?.dataset.v || '';
+    /* توزيع على الأسنان: كل سن يأخذ ما بقي عليه بالترتيب، والزائد دفعة عامة.
+       كل جزء دفعة مستقلة على سنّه وسلسلته — فيبقى حساب كل سن صحيحاً. */
+    if (fdiSel === 'split'){
+      const note = $('#p-n').value.trim(), at = Date.now();
+      const teeth = [...document.querySelectorAll('#p-fdi [data-v]')]
+        .map(b => b.dataset.v).filter(x => x && x !== 'split').map(Number);
+      let left = a, n = 0;
+      for (const f of teeth){
+        if (left <= 0) break;
+        const c = await Ops.payCourse(pid, f);
+        const due = Math.max(0, (await Ops.courseTotals(pid, f, c)).due);
+        if (!due) continue;
+        const part = Math.min(left, due);
+        await DB.put('payments', { id:uid(), pid, vid:vid||null, amt:part, method, fdi:f,
+          course:c, note, at });
+        left -= part; n++;
+      }
+      if (left > 0) await DB.put('payments', { id:uid(), pid, vid:vid||null, amt:left, method,
+        fdi:null, course:null, note, at });
+      UI.close(); toast(n ? `${T('paySplitDone')} ${n}` : T('saved'), 's');
+      return vid ? this.visit(vid) : this.file(pid);
+    }
     const fdi = fdiSel ? Number(fdiSel) : null;
     await DB.put('payments', {
       id:uid(), pid, vid:vid||null, amt:a, method, fdi,
@@ -7606,8 +7857,10 @@ const Doc = {
     const files = (await DB.by('files','pid',p.id)).filter(f => f.vid === vid);
 
     /* لكل سن في هذه الجلسة: إجمالي المدفوع لسلسلته الحالية */
-    const teethIn = [...new Set(tt.works.map(w=>Number(w.fdi)).filter(Boolean))];
-    let courseRows = '';
+    /* الأسنان بترتيب إضافتها في الجلسة — الأقدم أولاً */
+    const teethIn = [...new Set(tt.works.slice().sort((a,b)=>(a.at||0)-(b.at||0))
+      .map(w=>Number(w.fdi)).filter(Boolean))];
+    let courseRows = '', teethRows = [];
     if (teethIn.length){
       const parts = [];
       for (const f of teethIn){
@@ -7620,12 +7873,49 @@ const Doc = {
           <span class="wsp-a mono">${N(cs.paid)}</span>
           <span class="wsp-c">${T('courseNo')} ${cs.course}</span>
         </button>`);
+        /* لكل سن خطته وسعره وحسابه: ما عُمل له اليوم وما بقي عليه */
+        const ws  = tt.works.filter(w => Number(w.fdi) === f);
+        const rec = await Ops.toothRec(p.id, f);
+        const plan = (rec.plans || {})[cs.course]
+                  || ((rec.archive || []).find(a => a.course === cs.course) || {}).plan || null;
+        teethRows.push({ f, ws, plan, cs,
+          today: ws.reduce((a,w)=>a+Number(w.price||0),0),
+          nos: ws.flatMap(w => w.sessionNos || []),
+          proc: plan?.proc || ws[0]?.proc || '' });
       }
       courseRows = `<div class="wsps"><span class="tiny">${T('paidTooth')}</span>${parts.join('')}</div>`;
     }
+    const teethCard = (teethRows.length || (v.st === 'open' && Perm.addWork())) ? `
+      <div class="card mt">
+        <div class="row" style="justify-content:space-between">
+          <div class="lbl">🦷 ${T('stTeeth')}</div>
+          <span class="pill b mono">${teethRows.length}</span>
+        </div>
+        ${v.st === 'open' && Perm.addWork() ? `<div class="tiny mt">${T('stTeethHint')}</div>` : ''}
+        ${teethRows.length ? `<div class="col mt">${teethRows.map(r => {
+          const c = r.proc ? P(r.proc).col : 'var(--br)';
+          const due = Math.max(0, r.cs.due);
+          return `<div class="it" onclick="Doc.tooth(${r.f})">
+            <div class="av mono" style="background:${c}22;color:${c};font-size:13px">${Chart.lbl(r.f)}</div>
+            <div class="gr">
+              <div class="h3 ell" style="color:${c}">${esc(r.proc ? pName(r.proc) : T('stNoPlan'))}</div>
+              <div class="tiny">${r.nos.length ? sessText(r.nos) : '—'}${r.plan?.sessions ? ` ${T('ofN')} ${r.plan.sessions}` : ''}${
+                r.plan ? ` · ${T('stPerSess')} <span class="mono">${N(r.plan.price || 0)}</span>` : ''}</div>
+            </div>
+            <div style="text-align:end">
+              <div class="mono" style="font-weight:700">${N(r.today)}</div>
+              <div class="tiny mono" style="color:${due > 0 ? 'var(--bd)' : 'var(--ok)'};font-weight:700">${T('stLeft')} ${N(due)}</div>
+            </div>
+          </div>`; }).join('')}</div>
+        <div class="g3 mt2">
+          <div class="ctr"><div class="tiny">${T('stSessTotal')}</div><div class="mono h3">${N(tt.total)}</div></div>
+          <div class="ctr"><div class="tiny">${T('paid')}</div><div class="mono h3" style="color:var(--ok)">${N(tt.paid)}</div></div>
+          <div class="ctr"><div class="tiny">${T('stLeft')}</div><div class="mono h3" style="color:${tt.total > tt.paid ? 'var(--bd)' : 'var(--ok)'}">${N(Math.max(0, tt.total - tt.paid))}</div></div>
+        </div>` : ''}
+      </div>` : '';
 
     /* أسنان هذه الجلسة تُبرز في المخطط */
-    const touched = tt.works.map(w=>Number(w.fdi)).filter(Boolean);
+    const touched = teethIn;
 
     /* الأزرار بترتيب ثابت يطابق سير العمل؛ الأسهم وEnter تتنقّل بينها */
     const acts = [
@@ -7650,7 +7940,7 @@ const Doc = {
           <div class="row" style="justify-content:space-between">
             <div class="lbl">${T('toothChart')}</div>${Chart.switcher()}
           </div>
-          ${Chart.svg(map, touched[0] || null)}
+          ${Chart.svg(map, touched.length ? touched : null)}
           ${touched.length ? `<div class="row wrapv" style="gap:5px;justify-content:center">
             ${touched.map(f=>`<span class="pill b mono">${Chart.lbl(f)}</span>`).join('')}</div>` : ''}
           ${courseRows || ''}
@@ -7666,6 +7956,8 @@ const Doc = {
             </button>`).join('')}
         </div>
       </div>
+
+      ${teethCard}
 
       ${Perm.writeRx()?`<div class="card mt">
         <div class="lbl">📝 ${T('wsSummary')}</div>
@@ -11598,6 +11890,7 @@ const Cfg = {
       + (doc && Sync.on() ? this.acc('tm','🤝', T('secTeam'), this.teamBox()) : '')
       + (mg ? this.acc('br','✨', T('secBrand'), this.brandBox()) : '')
       + (mg ? this.acc('st','👥', T('secStaff'), this.staffBox()) : '')
+      + (mg ? this.acc('vs','👁', T('secVis'), this.visBox()) : '')
       + (S.role !== 'pharmacy' && (Cloud.me?.code || Brand.get().code)
           ? this.acc('cc','▮▮', T('secCode'), this.codeBox()) : '')
       + this.acc('g','🏥', T('secGeneral'), general)
@@ -11622,7 +11915,7 @@ const Cfg = {
     };
     pick('s-logo','logo'); pick('s-sign','sign');
     Print.wireTpl();
-    if (mg) this.fillStaff();
+    if (mg){ this.fillStaff(); this.fillVis(); }
     if (doc && Sync.on()){ this.fillTeam(); this.fillProf(); }
 
     /* محاولة تعرّف صامتة على الطابعات عند فتح الإعدادات: إن وُجد
@@ -11803,6 +12096,65 @@ const Cfg = {
     } catch (e) { toast(String(e.message || e), 'e'); }
   },
 
+  /*════════ رؤية مراجعي الأطباء (المستثمر) ════════
+    لكل طبيب: مراجعو أي الأطباء يراهم. ما يحفظه المستثمر هو قائمة
+    الرؤية نفسها التي يفرضها السيرفر — فقراره يعلو على اختيار الطبيب.
+    «طلب الطبيب»: صاحب المراجعين اختار هذا الزميل من «فريقي». */
+  visBox(){ return `<div id="visbox">${UI.spin()}</div>`; },
+
+  async fillVis(){
+    const box = $('#visbox'); if (!box) return;
+    const d = await Staff.load(true);
+    if (!box.isConnected) return;
+    if (!d || !Array.isArray(d.members)){ box.innerHTML = `<div class="al r"><span>!</span><span>${T('staffLoadFail')}</span></div>`; return; }
+    const docs = Staff.active('doctor');
+    if (docs.length < 2){ box.innerHTML = `<div class="tiny">${T('visHint')}</div><div class="emp mt" style="padding:16px">${T('visNoDocs')}</div>`; return; }
+    const dn = m => esc(m.name || m.email || '—');
+    box.innerHTML = `<div class="tiny">${T('visHint')}</div>`
+      + docs.map(v => {
+        const on = new Set(v.vis || []);
+        return `<div class="stgrp mt2" data-viewer="${esc(v.uid)}">
+          <div class="h3">🦷 ${dn(v)}</div>
+          <div class="tiny mt">${T('visSees')}</div>
+          <div class="col mt">${docs.filter(o => o.uid !== v.uid).map(o => {
+            /* هل طلب صاحب المراجعين أن يراهم هذا الطبيب؟ */
+            const wants = Staff.linked('doctor', o.uid).some(m => m.uid === v.uid);
+            return `<div class="chk ${on.has(o.uid)?'on':''}" data-uid="${esc(o.uid)}" onclick="this.classList.toggle('on')">
+              <div class="bx">✓</div>
+              <div class="gr"><div style="font-weight:700">${dn(o)}</div>
+                <div class="tiny mono">${esc(o.email || '')}</div></div>
+              ${wants ? `<span class="pill i" style="font-size:10px">${T('visWants')}</span>` : ''}
+            </div>`; }).join('')}</div>
+        </div>`;
+      }).join('')
+      + `<div class="tiny mt">${T('visOffNote')}</div>`
+      + `<button class="btn w mt2" id="vis-go" onclick="Cfg.visSave()">${T('save')}</button>`;
+  },
+
+  async visSave(){
+    if (!Sync.on() || !navigator.onLine) return toast(T('syncOff'), 'e');
+    const b = $('#vis-go'); if (b){ b.disabled = true; b.textContent = T('cloudBusy'); }
+    try {
+      const docs = Staff.members('doctor');
+      const map = {};
+      for (const g of document.querySelectorAll('#visbox [data-viewer]')){
+        const v = g.dataset.viewer;
+        const cur = (docs.find(m => m.uid === v) || {}).vis || [];
+        const shown = new Set([...g.querySelectorAll('[data-uid]')].map(x => x.dataset.uid));
+        const picked = [...g.querySelectorAll('.chk.on')].map(x => x.dataset.uid);
+        /* ما لا يظهر هنا (طبيب معطّل أو معرّف قديم) يبقى كما هو */
+        const kept = cur.filter(k => k && k !== v && !shown.has(k));
+        const next = [...new Set([v, ...picked, ...kept])].sort();
+        if (next.join(',') !== [...new Set([v, ...cur])].sort().join(',')) map[v] = next;
+      }
+      await Cloud.visSet(map);
+      await Staff.load(true);
+      toast(T('visSaved'), 's');
+      this.fillVis();
+    } catch (e) { toast(String(e.message || e), 'e'); }
+    finally { if (b && b.isConnected){ b.disabled = false; b.textContent = T('save'); } }
+  },
+
   /*════════ فريقي (الطبيب) ════════*/
   teamBox(){ return `<div id="teambox">${UI.spin()}</div>`; },
 
@@ -11817,8 +12169,13 @@ const Cfg = {
     box.innerHTML = `<div class="tiny">${T('teamHint')}</div>` + kinds.map(([k, title, hint]) => {
       const list = Staff.members(k).filter(m => m.uid !== me && m.active !== false);
       const on = new Set(Staff.linked(k).map(m => m.uid));
+      /* عيادة لها مستثمر: الاختيار طلب، والرؤية الفعلية يقرّرها المستثمر */
+      const byOwner = k === 'doctor' && Cloud.me?.has_owner;
+      const seers = byOwner ? Staff.active('doctor').filter(m => m.uid !== me && (m.vis || []).includes(me)) : [];
       return `<div class="mt2"><div class="lbl">${title}</div>
         ${hint ? `<div class="tiny mt">${hint}</div>` : ''}
+        ${byOwner ? `<div class="al i mt"><span>ℹ</span><span>${T('viewersOwner')}</span></div>
+          ${seers.length ? `<div class="tiny mt">${T('visNowSees')} <b>${seers.map(m => esc(m.name || m.email || '—')).join('، ')}</b></div>` : ''}` : ''}
         <div class="col mt" data-kind="${k}">${list.length ? list.map(m => `
           <div class="chk ${on.has(m.uid)?'on':''}" data-uid="${m.uid}" onclick="this.classList.toggle('on')">
             <div class="bx">✓</div>
@@ -13085,8 +13442,10 @@ window.addEventListener('unhandledrejection', e =>
           return App.start();
         }
       } catch(_){ /* التذكرة لم تعد صالحة: تُعرض شاشة الدخول */ }
+      const off = !!Cloud.me?.suspended;
       try { await Cloud.signOut(); } catch(_){}
-      box?.classList.add('hide');
+      if (off && box){ try { Guard.forget(); } catch(_){} box.textContent = T('accSuspended'); }
+      else box?.classList.add('hide');
     }
     /* بيانات العيادة تُسجَّل الآن على السيرفر (تسجيل عيادة جديدة)
        وتصل مع أول دخول — فلا تُطلب محلياً قبل الدخول. */

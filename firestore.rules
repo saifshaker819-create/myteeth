@@ -75,7 +75,17 @@ service cloud.firestore {
         (mid == uid() && onlyKeys(['seen', 'last_login']) && serverNow('seen'))
         || (isOwnerOf(resource.data.cid) && resource.data.role != 'owner'
             && onlyKeys(['active', 'name']) && activeChangeOk(mid))
+        // المستثمر وحده يقرّر أي طبيب يرى مراجعي أي طبيب (قراره هو الأعلى)
+        || (isOwnerOf(resource.data.cid) && clinicOk(resource.data.cid)
+            && resource.data.role == 'doctor' && onlyKeys(['vis'])
+            && request.resource.data.vis is list
+            && request.resource.data.vis.size() <= 100
+            && mid in request.resource.data.vis)
+        // الطبيب يضيف نفسه إلى رؤية زميله أو يزيلها — فقط حيث لا مستثمر للعيادة،
+        // أو للسكرتير والصيدلية (ربط فريقه)
         || (isMember() && role() == 'doctor' && activeIn(resource.data.cid)
+            && (resource.data.role != 'doctor'
+                || clinic(resource.data.cid).get('owner_uid', null) == null)
             && resource.data.cid == me().cid && onlyKeys(['vis'])
             && request.resource.data.vis.toSet().difference(resource.data.vis.toSet()).hasOnly([uid()])
             && resource.data.vis.toSet().difference(request.resource.data.vis.toSet()).hasOnly([uid()]))
@@ -155,6 +165,19 @@ service cloud.firestore {
           || (signed() && resource.data.pu == uid() && onlyKeys(['status', 'u'])
              && request.resource.data.status == 'cancelled'));
         allow delete: if isAdmin();
+      }
+
+      // لوحة اليوم المشتركة: اسم المراجع وطبيبه وحالة دوره فقط —
+      // لزر «كل مرضى العيادة». لا تحمل أي بيانات سريرية.
+      match /board/{bid} {
+        allow read: if (activeIn(cid) && role() in ['doctor', 'secretary', 'owner']) || isAdmin();
+        allow create, update: if staffOf(cid)
+          && request.resource.data.keys().hasOnly(['d', 'n', 'k', 'dr', 'q', 'at', 'u', 'by'])
+          && request.resource.data.by == uid()
+          && request.resource.data.d is string && request.resource.data.d.size() <= 10
+          && request.resource.data.n is string && request.resource.data.n.size() <= 200
+          && serverNow('u');
+        allow delete: if staffOf(cid) || isAdmin();
       }
 
       match /links/{doc} {
