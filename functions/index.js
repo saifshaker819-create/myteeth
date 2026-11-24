@@ -153,9 +153,9 @@ exports.onBookingUpdated = fn.firestore.document('clinics/{cid}/bookings/{bid}')
       const w = when(doc.day, doc.time);
       await sendTo([b.pu], b.status === 'accepted'
         ? { title: '✅ تم قبول حجزك', body: `${cn}${w ? ' — موعدك ' + w : ''}`,
-            tag: 'bk-' + bid, url: './', kind: 'bk-ok' }
+            tag: 'bk-' + bid, url: './?go=care', kind: 'bk-ok' }
         : { title: 'تعذّر قبول حجزك', body: `${cn} — يمكنك اختيار موعد آخر من التطبيق`,
-            tag: 'bk-' + bid, url: './', kind: 'bk-no' });
+            tag: 'bk-' + bid, url: './?go=home', kind: 'bk-no' });
       return;
     }
 
@@ -220,7 +220,7 @@ exports.onCareWrite = fn.firestore.document('patients/{pu}/care/{key}')
     await sendTo([ctx.params.pu], {
       title: a ? '🔁 تغيّر موعدك' : '📅 موعد جديد لك',
       body: `${cn} — ${when(b.day, b.time)}${b.note ? '\n' + String(b.note).slice(0, 120) : ''}`,
-      tag: 'ap-' + ctx.params.key, url: './', kind: 'appt',
+      tag: 'ap-' + ctx.params.key, url: './?go=care', kind: 'appt',
     });
   });
 
