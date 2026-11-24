@@ -8,7 +8,7 @@
      الاتصال مسموح لسيرفر العيادة وحده (Firebase على googleapis.com) — أي وجهة
      أخرى مرفوضة، فلا تستطيع شيفرة مدسوسة تسريب بيانات المراجعين.
      والصور كذلك: من جهازك أو من تخزين عيادتك، لا من أي نطاق آخر. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://firebasestorage.googleapis.com https://res.cloudinary.com; media-src 'self' blob: mediastream:; manifest-src blob:; worker-src 'self'; connect-src https://*.googleapis.com https://firebasestorage.googleapis.com https://api.cloudinary.com; object-src 'none'; frame-src 'none'; child-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://firebasestorage.googleapis.com https://res.cloudinary.com; media-src 'self' blob: mediastream:; manifest-src 'self' blob:; worker-src 'self'; connect-src https://*.googleapis.com https://firebasestorage.googleapis.com https://api.cloudinary.com; object-src 'none'; frame-src 'none'; child-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <title>Dent Flow</title>
 <meta name="application-name" content="Dent Flow">
@@ -16,6 +16,12 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Dent Flow">
 <meta name="mobile-web-app-capable" content="yes">
+<!-- ملف منيفست وأيقونات ثابتة بجانب الصفحة: أندرويد يبني منها تطبيقاً حقيقياً
+     (بلا شارة كروم) ويحدّث أيقونته واسمه وحده عند تغيّرهما -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&family=Zain:wght@700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -13292,7 +13298,24 @@ const ICON = {
 const Install = {
   prompt:null, ready:false,
 
+  /* المنيفست الثابت (manifest.webmanifest) هو الأصل: منه وحده يبني أندرويد
+     تطبيقاً مثبّتاً حقيقياً ويحدّث أيقونته لاحقاً. المنيفست المولَّد كـ blob
+     لا يستطيع كروم بناء تطبيق منه، فيضع اختصاراً بشارة كروم لا يتحدّث أبداً —
+     ولذلك بقيت الأيقونة القديمة على الشاشة الرئيسية بعد تغييرها.
+     يُستعمل الـ blob فقط حين ضبطت العيادة شعارها الخاص. */
+  STATIC:{ manifest:'manifest.webmanifest', icon:'icons/icon-192.png', apple:'icons/apple-touch-icon.png' },
   async manifest(){
+    if (!APP.logo){
+      const set = (sel, rel, href) => {
+        let l = document.querySelector(sel);
+        if (!l){ l = document.createElement('link'); l.rel = rel; document.head.appendChild(l); }
+        if (l.getAttribute('href') !== href) l.setAttribute('href', href);
+      };
+      set('link[rel=manifest]', 'manifest', this.STATIC.manifest);
+      set('link[rel="apple-touch-icon"]', 'apple-touch-icon', this.STATIC.apple);
+      set('link[rel=icon][sizes="192x192"]', 'icon', this.STATIC.icon);
+      return;
+    }
     const [i192, i512, m512, a180] = await Promise.all([
       ICON.png(192,false), ICON.png(512,false), ICON.png(512,true), ICON.png(180,'full'),
     ]);
