@@ -1122,9 +1122,18 @@ body.offline #offbar{display:flex}
 .wrap{padding-bottom:calc(72px + env(safe-area-inset-bottom));
   padding-left:max(var(--gx,28px),env(safe-area-inset-left));padding-right:max(var(--gx,28px),env(safe-area-inset-right))}
 .sh{padding-top:max(14px,env(safe-area-inset-top));padding-bottom:calc(46px + env(safe-area-inset-bottom))}
+/* الهاتف: مسافة تحت آخر زر في كل صفحة/نموذج، فلا يختفي «حفظ» تحت شريط
+   الإيماءات أو الرسالة المؤقتة، ويمكن رفعه بالتمرير دائماً */
+@media (max-width:899px){ .sh{padding-bottom:calc(110px + env(safe-area-inset-bottom))} }
+/* شريطا التثبيت والإشعارات يظهران في الشاشات الرئيسية فقط — فوق صفحة
+   مفتوحة (نموذج، ملف، جلسة) كانا يغطيان أزرارها السفلية */
+body:has(#sheet .shb) #instbar,body:has(#sheet .shb) #pushbar{display:none}
+/* الرسالة المؤقتة فوق الأزرار السفلية لا عليها */
+@media (max-width:899px){ body:has(#sheet .shb) #toast{bottom:calc(96px + env(safe-area-inset-bottom))} }
 #toast{bottom:calc(26px + env(safe-area-inset-bottom))}
 #instbar{padding-bottom:calc(14px + env(safe-area-inset-bottom))}
-body:has(#instbar) .wrap,body:has(#instbar) .sh{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
+body:has(#instbar) .wrap,body:has(#pushbar) .wrap{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
+body:has(#instbar):has(#pushbar) .wrap{padding-bottom:calc(240px + env(safe-area-inset-bottom))}
 .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -1635,6 +1644,7 @@ ar:{
  plan:'خطة علاج السن', planProc:'نوع العمل المطلوب', planCount:'عدد الجلسات المطلوبة',
  planToday:'الجلسات المنفّذة اليوم', planNote:'ملاحظات الخطة', savePlan:'حفظ الخطة',
  planSaved:'حُفظت خطة السن', pickSessions:'اختر جلسة أو أكثر',
+ sessLive:'جارية — تكتمل عند «إنهاء»', sessLiveS:'جارية',
  plSynced:'وعُدّلت معها الجلسات المسجّلة من هذه الخطة:', plFewer:'عدد الجلسات أقل من المنفّذ فعلاً — المنفّذ حتى الآن:', plDoneChip:'منفّذة', plNoneToday:'لا تختر شيئاً إن كنت تعدّل الخطة فقط',
  sessionN:'الجلسة', ofN:'من', remaining:'المتبقي من الخطة', planDone:'اكتملت الجلسات',
  toothSessions:'جلسات السن', teethFiles:'ملفات الأسنان', allVisits:'كل الزيارات',
@@ -1974,6 +1984,7 @@ en:{
  plan:'Tooth treatment plan', planProc:'Required procedure', planCount:'Sessions required',
  planToday:'Sessions done today', planNote:'Plan notes', savePlan:'Save plan',
  planSaved:'Tooth plan saved', pickSessions:'Select one or more sessions',
+ sessLive:'In progress — completes on “Finish”', sessLiveS:'in progress',
  plSynced:'and the sessions already recorded from this plan were updated:', plFewer:'Fewer sessions than already done — done so far:', plDoneChip:'done', plNoneToday:'Pick nothing if you are only editing the plan',
  sessionN:'Session', ofN:'of', remaining:'Remaining', planDone:'All sessions completed',
  toothSessions:'Tooth sessions', teethFiles:'Tooth files', allVisits:'All visits',
@@ -6410,7 +6421,13 @@ const Ops = {
       .filter(w => Number(w.fdi) === Number(fdi) && (w.course||1) === c);
     const nums = new Set();
     ws.forEach(w => (w.sessionNos || []).forEach(n => nums.add(Number(n))));
-    return { nums:[...nums].sort((a,b)=>a-b), works:ws };
+    /* المكتملة = جلسات زيارة أُنهيت. جلسة سُجّلت في زيارة ما زالت مفتوحة
+       «جارية» حتى يضغط الطبيب «إنهاء». nums (الكل) يبقى لمنع التكرار. */
+    const open = new Set((await DB.by('visits','pid',pid)).filter(v => v.st === 'open').map(v => v.id));
+    const fin = new Set(), live = new Set();
+    ws.forEach(w => (w.sessionNos || []).forEach(n => (w.vid && open.has(w.vid) ? live : fin).add(Number(n))));
+    const srt = x => [...x].sort((a,b)=>a-b);
+    return { nums:srt(nums), fin:srt(fin), live:srt([...live].filter(n => !fin.has(n))), works:ws };
   },
 
   /* ختم ملف السن: تُؤرشف الخطة وتبدأ سلسلة جديدة */
@@ -6441,6 +6458,7 @@ const Ops = {
     const recs = await DB.by('tooth','pid',pid);
     const works = await DB.by('works','pid',pid);
     const pays  = await DB.by('payments','pid',pid);
+    const openV = new Set((await DB.by('visits','pid',pid)).filter(v => v.st === 'open').map(v => v.id));
     const out = [];
 
     for (const r of recs){
@@ -6451,13 +6469,17 @@ const Ops = {
         const arch = (r.archive||[]).find(a => a.course === c);
         const plan = (r.plans||{})[c] || arch?.plan || null;
         if (!ws.length && !ps.length && !plan) continue;
-        const nums = new Set();
-        ws.forEach(w => (w.sessionNos||[]).forEach(n => nums.add(Number(n))));
+        const nums = new Set(), finNums = new Set();
+        ws.forEach(w => (w.sessionNos||[]).forEach(n => {
+          nums.add(Number(n));
+          /* جلسة زيارة ما زالت مفتوحة لا تُحسب مكتملة قبل «إنهاء» */
+          if (!(w.vid && openV.has(w.vid))) finNums.add(Number(n));
+        }));
         const sealed  = c < cur;
         const planned = plan?.sessions || 0;
         /* السن المختوم مكتمل دائماً — قرار الطبيب بالإنهاء يعلو
            على عدّاد الجلسات المخطَّطة. */
-        const complete = sealed || (planned > 0 && nums.size >= planned);
+        const complete = sealed || (planned > 0 && finNums.size >= planned);
         out.push({
           fdi:r.fdi, course:c, sealed, plan, st:r.st, planned, complete,
           doneNums:[...nums].sort((a,b)=>a-b),
@@ -7769,8 +7791,9 @@ const Sec = {
 
   async setQfromVisit(vid, st){
     await this.setQ(vid, st);
+    /* «إنهاء» يفتح بنفسه نافذة الموعد القادم وختم الأسنان (أو ملف السن إن
+       نقصه رقم جلسة) — إغلاق الشاشة هنا كان يُخفيها فينتهي بلا سؤال */
     if (st !== 'done') this.visit(vid);
-    else UI.close();
   },
 
   /*──── إضافة عمل: موقع العمل + نوع العمل + المبلغ + ملاحظات ────*/
@@ -7855,6 +7878,9 @@ const Sec = {
     /* أكثر من سن عليه مبلغ: التوزيع على الأسنان هو الاختيار الأول */
     const owing = teeth.filter(f => dues[f] > 0);
     const split = owing.length >= 2;
+    /* سنّ واحد عليه مبلغ: الدفعة له افتراضياً — «عامة» كانت لا تُحسب على
+       السن، فيبقى «المدفوع لجلسات هذا السن ٠» رغم أن المراجع دفع */
+    const one = owing.length === 1 ? owing[0] : null;
 
     UI.sheet(`
       <div class="shhead"><div class="gr"><div class="h2">${T('pay')}</div></div>
@@ -7865,8 +7891,8 @@ const Sec = {
         <label class="lb">${T('payFor')}</label>
         <div class="row wrapv" style="gap:6px" id="p-fdi">
           ${split ? `<button class="btn sm on" data-v="split" onclick="Sec.pickFdi(this)">⚖ ${T('paySplit')}</button>` : ''}
-          <button class="btn sm ${split ? 'gh' : 'on'}" data-v="" onclick="Sec.pickFdi(this)">${T('general')}</button>
-          ${teeth.map(f=>`<button class="btn sm gh mono" data-v="${f}"
+          <button class="btn sm ${split || one ? 'gh' : 'on'}" data-v="" onclick="Sec.pickFdi(this)">${T('general')}</button>
+          ${teeth.map(f=>`<button class="btn sm ${f === one ? 'on' : 'gh'} mono" data-v="${f}"
              onclick="Sec.pickFdi(this)">${Chart.lbl(f)}${dues[f] > 0
                ? ` <span class="tiny" style="opacity:.75">· ${T('payLeft')} ${N(dues[f])}</span>` : ''}</button>`).join('')}
         </div>
@@ -7876,7 +7902,7 @@ const Sec = {
           <button class="on" data-v="cash" onclick="Sec.pm(this)">${T('cash')}</button>
           <button data-v="card" onclick="Sec.pm(this)">${T('card')}</button>
           <button data-v="transfer" onclick="Sec.pm(this)">${T('transfer')}</button>
-        </div></div>
+        </div>
         <div class="mt"><label class="lb">${T('notes')}</label><input id="p-n"></div>
       </div>
       <div class="row mt2" style="gap:9px">
@@ -7892,6 +7918,12 @@ const Sec = {
   },
 
   async savePay(pid, vid){
+    /* ضغطتان سريعتان على «حفظ» = دفعة واحدة لا دفعتان */
+    if (this._paying) return;
+    this._paying = true;
+    try { return await this._savePay(pid, vid); } finally { this._paying = false; }
+  },
+  async _savePay(pid, vid){
     const a = Number($('#p-a').value);
     if (!a || a<=0){ $('#p-a').classList.add('err'); return; }
     const method = $('#p-m .on')?.dataset.v || 'cash';
@@ -7915,16 +7947,23 @@ const Sec = {
       }
       if (left > 0) await DB.put('payments', { id:uid(), pid, vid:vid||null, amt:left, method,
         fdi:null, course:null, note, at });
-      UI.close(); toast(n ? `${T('paySplitDone')} ${n}` : T('saved'), 's');
-      return vid ? this.visit(vid) : this.file(pid);
+      toast(n ? `${T('paySplitDone')} ${n}` : T('saved'), 's');
+      return this.payDone();
     }
     const fdi = fdiSel ? Number(fdiSel) : null;
     await DB.put('payments', {
       id:uid(), pid, vid:vid||null, amt:a, method, fdi,
       course: fdi ? await Ops.payCourse(pid, fdi) : null,
       note:$('#p-n').value.trim(), at:Date.now() });
-    UI.close(); toast(T('saved'),'s');
-    vid ? this.visit(vid) : this.file(pid);
+    toast(T('saved'),'s');
+    return this.payDone();
+  },
+
+  /* بعد الدفعة: رجوع إلى الشاشة التي فُتحت منها (شاشة الطبيب للطبيب).
+     كان يفتح شاشة السكرتير دائماً، فيرى الطبيب زرّ «إنهاء» آخر */
+  payDone(){
+    if (Nav.stack.length > 1) return Nav.back();
+    Nav.reset(); UI.close(); App.draw();
   },
 };
 /*═══════════════ الطبيب ═══════════════*/
@@ -8307,7 +8346,7 @@ const Doc = {
       const pl0 = await Ops.plan(pid, fdi);
       if (pl0 && pl0.sessions){
         const d0 = await Ops.doneSessions(pid, fdi);
-        if (d0.nums.length >= pl0.sessions && !d0.works.some(w => w.vid === S.visit.id)){
+        if (d0.fin.length >= pl0.sessions && !d0.works.some(w => w.vid === S.visit.id)){
           await Ops.endCourse(pid, fdi);
           sealedNow = true;
         }
@@ -8350,8 +8389,11 @@ const Doc = {
     }
 
     const total = plan?.sessions || 0;
+    /* left: ما لم يُسجَّل بعد (للتسجيل). fin: المكتمل فعلاً (زيارته أُنهيت) —
+       منه وحده النسبة و«اكتملت الجلسات» */
     const left  = Math.max(0, total - done.nums.length);
-    const pct   = total ? Math.round(done.nums.length / total * 100) : 0;
+    const finN  = done.fin.length, liveN = done.live.length;
+    const pct   = total ? Math.min(100, Math.round(finN / total * 100)) : 0;
     const visNo = {}; (await DB.by('visits','pid',pid)).forEach(v => visNo[v.id] = v.no);
     /* حساب الخطط المؤرشفة حيّ لا لقطة الختم: دفعة تُستلم بعد الختم
        لسنّ أكمل علاجه تُحسب على خطته القديمة وتظهر هنا */
@@ -8372,15 +8414,16 @@ const Doc = {
         </div>
         <div class="row mt" style="gap:10px">
           <div class="av" style="background:${P(plan.proc).col}22;color:${P(plan.proc).col}">
-            ${done.nums.length}</div>
+            ${finN}</div>
           <div class="gr">
             <div class="h3" style="color:${P(plan.proc).col}">${esc(pName(plan.proc))}</div>
             ${plan.dx?`<div class="tiny" style="font-weight:700">${T('planDx')}: ${
               esc(PickProc.label(plan.dx))}</div>`:''}
-            <div class="tiny">${done.nums.length} ${T('ofN')} ${total} ${T('toothVisits')}
-              ${left?` · ${T('remaining')} ${left}`:` · ${T('planDone')}`}</div>
+            <div class="tiny">${finN} ${T('ofN')} ${total} ${T('toothVisits')}
+              ${liveN ? ` · ${liveN} ${T('sessLiveS')}` : ''}
+              ${left ? ` · ${T('remaining')} ${left}` : finN >= total ? ` · ${T('planDone')}` : ''}</div>
           </div>
-          <span class="pill ${left?'w':'g'}">${pct}%</span>
+          <span class="pill ${finN >= total && total ? 'g' : 'w'}">${pct}%</span>
         </div>
         <div style="height:9px;border-radius:99px;background:var(--glass2);
           overflow:hidden;margin-top:10px">
@@ -8388,15 +8431,17 @@ const Doc = {
             border-radius:99px;transition:width .4s"></div>
         </div>
         <div class="row wrapv mt" style="gap:6px">
-          ${Array.from({length:total},(_,i)=>i+1).map(n=>`
-            <span class="pill ${done.nums.includes(n)?'g':'n'}">
-              ${done.nums.includes(n)?'✓ ':''}${T('sessionN')} ${n}</span>`).join('')}
+          ${Array.from({length:total},(_,i)=>i+1).map(n => done.fin.includes(n)
+            ? `<span class="pill g">✓ ${T('sessionN')} ${n}</span>`
+            : done.live.includes(n)
+            ? `<span class="pill b" title="${T('sessLive')}">◔ ${T('sessionN')} ${n} · ${T('sessLiveS')}</span>`
+            : `<span class="pill n">${T('sessionN')} ${n}</span>`).join('')}
         </div>
         ${plan.note?`<div class="tiny mt">${esc(plan.note)}</div>`:''}
         ${Perm.addWork() && left && S.visit
           ? `<button class="btn w mt" onclick="Doc.doSession(${fdi})">
               ＋ ${T('planToday')}</button>` : ''}
-        ${Perm.addWork() && !left && total && S.visit && S.visit.st === 'open' && S.visit.pid === pid
+        ${Perm.addWork() && !left && total && finN >= total && S.visit && S.visit.st === 'open' && S.visit.pid === pid
             && !done.works.some(w => w.vid === S.visit.id)
           ? `<button class="btn w ok mt" onclick="Doc.newCourse(${fdi})">＋ ${T('startPlan')}</button>` : ''}
       </div>` : `<div class="card">
