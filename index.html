@@ -1635,7 +1635,7 @@ ar:{
  plan:'خطة علاج السن', planProc:'نوع العمل المطلوب', planCount:'عدد الجلسات المطلوبة',
  planToday:'الجلسات المنفّذة اليوم', planNote:'ملاحظات الخطة', savePlan:'حفظ الخطة',
  planSaved:'حُفظت خطة السن', pickSessions:'اختر جلسة أو أكثر',
- plFewer:'عدد الجلسات أقل من المنفّذ فعلاً — المنفّذ حتى الآن:', plDoneChip:'منفّذة', plNoneToday:'لا تختر شيئاً إن كنت تعدّل الخطة فقط',
+ plSynced:'وعُدّلت معها الجلسات المسجّلة من هذه الخطة:', plFewer:'عدد الجلسات أقل من المنفّذ فعلاً — المنفّذ حتى الآن:', plDoneChip:'منفّذة', plNoneToday:'لا تختر شيئاً إن كنت تعدّل الخطة فقط',
  sessionN:'الجلسة', ofN:'من', remaining:'المتبقي من الخطة', planDone:'اكتملت الجلسات',
  toothSessions:'جلسات السن', teethFiles:'ملفات الأسنان', allVisits:'كل الزيارات',
  toothSummary:'ملخص علاج السن', sealed:'مختوم', ongoing:'قيد العلاج',
@@ -1974,7 +1974,7 @@ en:{
  plan:'Tooth treatment plan', planProc:'Required procedure', planCount:'Sessions required',
  planToday:'Sessions done today', planNote:'Plan notes', savePlan:'Save plan',
  planSaved:'Tooth plan saved', pickSessions:'Select one or more sessions',
- plFewer:'Fewer sessions than already done — done so far:', plDoneChip:'done', plNoneToday:'Pick nothing if you are only editing the plan',
+ plSynced:'and the sessions already recorded from this plan were updated:', plFewer:'Fewer sessions than already done — done so far:', plDoneChip:'done', plNoneToday:'Pick nothing if you are only editing the plan',
  sessionN:'Session', ofN:'of', remaining:'Remaining', planDone:'All sessions completed',
  toothSessions:'Tooth sessions', teethFiles:'Tooth files', allVisits:'All visits',
  toothSummary:'Tooth treatment summary', sealed:'Sealed', ongoing:'In treatment',
@@ -6359,6 +6359,49 @@ const Ops = {
     return r.plans[c];
   },
 
+  /* تعديل الخطة يصل إلى ما سُجّل منها.
+     الجلسة المسجّلة تحمل نسختها من نوع العمل والتشخيص والسعر، فكان تعديل
+     الخطة يبقى في الخطة وحدها: المجموع والمتبقي وملف المراجع والحسابات
+     وتطبيق المراجع تبقى على القيم القديمة.
+     تُحدَّث فقط جلسات الخطة (لها أرقام جلسات) في السلسلة الحالية، وفقط
+     الحقل الذي ما زال مطابقاً للخطة القديمة — فسعرٌ عُدِّل يدوياً لجلسة
+     بعينها، وأعمال خارج الخطة، والسلاسل المختومة، والدفعات: لا تُمسّ. */
+  async syncPlanWorks(pid, fdi, old, nw){
+    if (!old || !nw) return 0;
+    const r = await this.toothRec(pid, fdi);
+    const c = r.course || 1;
+    const same = (a, b) => String(a || '') === String(b || '');
+    const procCh = !same(old.proc, nw.proc), dxCh = !same(old.dx, nw.dx), noteCh = !same(old.note, nw.note);
+    const op = Number(old.price || 0), np = Number(nw.price || 0), priceCh = op !== np;
+    if (!procCh && !dxCh && !noteCh && !priceCh) return 0;
+    const ws = (await DB.by('works', 'pid', pid)).filter(w => Number(w.fdi) === Number(fdi)
+      && (w.course || 1) === c && (w.sessionNos || []).length);
+    let n = 0, lastVid = null, lastAt = 0;
+    for (const w of ws){
+      const k = w.sessionNos.length;
+      let ch = false;
+      if (procCh && same(w.proc, old.proc)){ w.proc = nw.proc; ch = true; }
+      /* التشخيص: الجلسة التي حملت تشخيص الخطة القديمة (أو لا تشخيص لها وكانت
+         الخطة بلا تشخيص) تأخذ الجديد */
+      if (dxCh && same(w.dx, old.dx)){ if (nw.dx) w.dx = nw.dx; else delete w.dx; ch = true; }
+      /* السعر: فقط ما زال = سعر الجلسة القديم × عدد جلساته (أي لم يُعدَّل يدوياً) */
+      if (priceCh && Number(w.price || 0) === op * k){ w.price = np * k; ch = true; }
+      /* الملاحظة: فقط إن كانت منسوخة من ملاحظة الخطة القديمة */
+      if (noteCh && old.note && same(w.note, old.note)){ w.note = nw.note || ''; ch = true; }
+      if (!ch) continue;
+      w.upd = Date.now();
+      await DB.put('works', w);
+      n++;
+      if ((w.at || 0) >= lastAt){ lastAt = w.at || 0; lastVid = w.vid || null; }
+    }
+    /* حالة السن التي وضعها نوع العمل القديم تتبع النوع الجديد */
+    if (procCh && n){
+      const oSt = P(old.proc).st, nSt = P(nw.proc).st;
+      if (nSt && nSt !== oSt && (!r.st || r.st === oSt)) await this.setTooth(pid, fdi, nSt, r.vid || lastVid);
+    }
+    return n;
+  },
+
   /* الجلسات المنفّذة فعلياً لهذه السلسلة (من سجلّ الأعمال) */
   async doneSessions(pid, fdi){
     const r = await this.toothRec(pid, fdi);
@@ -8678,8 +8721,11 @@ const Doc = {
     const picked = [...new Set([...document.querySelectorAll('#pl-chips .on')].map(b=>Number(b.dataset.n)))]
       .filter(k => k >= 1 && k <= count && !doneNow.has(k));
 
-    await Ops.savePlan(S.patient.id, fdi, { dx, proc, sessions:count, price, note });
+    const oldPlan = await Ops.plan(S.patient.id, fdi);
+    const newPlan = await Ops.savePlan(S.patient.id, fdi, { dx, proc, sessions:count, price, note });
     await SG.learn('plannote', note);
+    /* قبل تسجيل جلسات اليوم — فهذه تُنشأ بالقيم الجديدة أصلاً */
+    const synced = await Ops.syncPlanWorks(S.patient.id, fdi, oldPlan, newPlan);
 
     /* الجلسات المختارة اليوم تُسجَّل كأعمال فوراً */
     if (picked.length && S.visit){
@@ -8693,7 +8739,7 @@ const Doc = {
       if (st) await Ops.setTooth(S.patient.id, fdi, st, S.visit.id);
     }
 
-    toast(T('planSaved'), 's');
+    toast(synced ? `${T('planSaved')} — ${T('plSynced')} ${synced}` : T('planSaved'), 's');
     Nav.stack.pop();
     this.tooth(fdi);
   },
