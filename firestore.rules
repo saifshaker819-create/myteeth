@@ -41,6 +41,27 @@ service cloud.firestore {
       allow read: if isAdmin();
       allow write: if isAdmin();
     }
+    // إشعارات الدفع: المفتاح العام لمرسل الإشعارات (يكتبه السيرفر وحده)
+    match /meta/{id} {
+      allow read: if signed();
+      allow write: if isAdmin();
+    }
+    // اشتراك كل جهاز في الإشعارات — صاحبه وحده يكتبه ويقرؤه ويحذفه،
+    // والسيرفر (Cloud Functions) يقرؤه ليرسل. لا يرى أحدٌ اشتراك غيره.
+    match /pushsubs/{owner}/d/{sid} {
+      allow read, delete: if signed() && owner == uid();
+      allow create, update: if signed() && owner == uid()
+        && request.resource.data.keys().hasOnly(['endpoint', 'keys', 'role', 'cid', 'ua', 'lang', 'at'])
+        && request.resource.data.endpoint is string
+        && request.resource.data.endpoint.matches('https://.+')
+        && request.resource.data.endpoint.size() < 2000
+        && request.resource.data['keys'] is map
+        && request.resource.data['keys'].keys().hasOnly(['p256dh', 'auth'])
+        && request.resource.data['keys'].p256dh is string && request.resource.data['keys'].p256dh.size() < 200
+        && request.resource.data['keys'].auth is string && request.resource.data['keys'].auth.size() < 100
+        && sid.size() <= 64;
+    }
+
     match /audit/{id} {
       allow read: if isAdmin();
       allow create: if isAdmin() && request.resource.data.by == uid();

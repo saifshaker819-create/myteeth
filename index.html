@@ -624,6 +624,20 @@ html[dir=ltr] .sw.on .tg::after{transform:translateX(20px)}
 .applogo.sm{width:52px;height:52px;border-radius:15px;margin:0}
 
 /*──────── بطاقة التثبيت ────────*/
+#pushbar{position:fixed;z-index:87;inset-inline:0;bottom:0;display:flex;
+  justify-content:center;padding:14px calc(14px) calc(14px + env(safe-area-inset-bottom));pointer-events:none;animation:up .35s cubic-bezier(.2,.9,.3,1)}
+#pushbar .box{pointer-events:auto;width:100%;max-width:430px;display:flex;align-items:center;
+  gap:12px;padding:12px 13px;border-radius:18px;color:#fff;
+  background:linear-gradient(160deg,var(--frame2),var(--frame));border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 24px 50px -18px rgba(0,0,0,.55)}
+#pushbar .pb-ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:20px;flex-shrink:0;background:rgba(255,255,255,.1)}
+#pushbar .nm{font-family:var(--fd);font-weight:600;font-size:15px;line-height:1.2}
+#pushbar .ds{font-size:12px;color:rgba(255,255,255,.65);font-weight:500;margin-top:2px}
+#pushbar .x{width:30px;height:30px;border-radius:9px;flex-shrink:0;color:rgba(255,255,255,.6);display:grid;place-items:center;font-size:15px}
+@media (min-width:900px){ #pushbar{inset-inline-start:auto;justify-content:flex-end;padding:24px} #pushbar .box{max-width:410px} }
+/* مع بطاقة التثبيت: شريط الإشعارات فوقها لا خلفها */
+body:has(#instbar) #pushbar{bottom:84px}
+@media (min-width:900px){ body:has(#instbar) #pushbar{bottom:104px} }
 #instbar{position:fixed;z-index:88;inset-inline:0;bottom:0;display:flex;
   justify-content:center;padding:14px;pointer-events:none;animation:up .35s cubic-bezier(.2,.9,.3,1)}
 #instbar .box{pointer-events:auto;width:100%;max-width:430px;display:flex;align-items:center;
@@ -4460,6 +4474,7 @@ const Cloud = {
 
   async signOut(){
     try { Sync.unlisten(); } catch(_){}
+    try { Push.bar(false); await Push.off(); } catch(_){}
     try { await FBSDK.signOut(FBC.auth); } catch(_){}
     this.session = null; this.me = null;
     try { localStorage.removeItem('d_me'); } catch(_){}
@@ -4794,12 +4809,18 @@ const Board = {
 
   /* زيارات اليوم التي يراها هذا الجهاز */
   async push(visits){
-    if (!this.ok() || this._busy) return;
+    if (!this.ok()) return;
+    /* كتابة جارية: ما وصل الآن يُكتب بعدها مباشرة — لا يضيع تحويل أو جلسة
+       جديدة (منها يرسل السيرفر الإشعار للطبيب) */
+    if (this._busy){ this._pend = (this._pend || []).concat(visits || []); return; }
     this._busy = true;
     try {
       const sg = this.sigs();
-      for (const v of visits || []){
-        if (!v || !v.id || v.date !== today()) continue;
+      for (const v0 of visits || []){
+        if (!v0 || !v0.id) continue;
+        /* أحدث نسخة من الجهاز — قائمة مؤجّلة قد تحمل حالة قديمة */
+        const v = await DB.get('visits', v0.id);
+        if (!v || v.date !== today()) continue;     /* حُذفت أثناء الانتظار */
         const p = await DB.get('patients', v.pid); if (!p) continue;
         const d = { d:v.date, n:String(nm(p) || '').slice(0, 200), k:Sec.ownerOf(v),
                     dr:v.dr || null, q:v.qstate || 'waiting', at:Number(v.at || 0) };
@@ -4811,7 +4832,10 @@ const Board = {
         } catch(_){ break; }                    /* بلا صلاحية أو بلا شبكة: يُعاد لاحقاً */
       }
       try { localStorage.setItem(this.key(), JSON.stringify(sg)); } catch(_){}
-    } finally { this._busy = false; }
+    } finally {
+      this._busy = false;
+      if (this._pend){ const p = this._pend; this._pend = null; setTimeout(() => this.push(p), 30); }
+    }
   },
 
   async del(vid){
@@ -6160,6 +6184,8 @@ const Ops = {
       if (p && Sec.ownerOf(p) === '_' && p.dr && Own.valid(p.dr) !== false){ v.dr = p.dr; v._drAt = Sync.now(); }
     } catch(_){}
     await DB.put('visits', v);
+    /* لوحة اليوم فوراً — منها يُرسل السيرفر إشعار «مراجع جديد في قائمتك» */
+    try { Board.push([v]); } catch(_){}
     return v;
   },
 
@@ -12003,6 +12029,8 @@ const Cfg = {
     const own = S.role === 'owner', doc = S.role === 'doctor', mg = Perm.manage() && Sync.on();
     $('#view').innerHTML =
         (own ? `<div class="al i" style="margin-bottom:6px"><span>★</span><span>${T('ownerData')}</span></div>` : '')
+      + ((S.role === 'doctor' || S.role === 'secretary') && Sync.on()
+          ? this.acc('nt','🔔', tL('الإشعارات', 'Notifications'), Push.cfgBox()) : '')
       + (doc && Sync.on() ? this.acc('pf','🪪', T('secProfile'), this.profileBox()) : '')
       + (doc && Sync.on() ? this.acc('tm','🤝', T('secTeam'), this.teamBox()) : '')
       + (mg ? this.acc('br','✨', T('secBrand'), this.brandBox()) : '')
@@ -12927,6 +12955,7 @@ const App = {
           && !Own.linkedIds().length) toast(T('noDoctorLinked'), 'w');
     }).catch(()=>{});
     if (S.role === 'doctor') Prof.mine().catch(()=>{});
+    try { Push.start(); } catch(_){}
   },
 
   setTab(t){
@@ -13295,6 +13324,196 @@ const ICON = {
   },
 };
 
+/*═══════════════ إشعارات الدفع ═══════════════
+  تصل حتى والبرنامج مغلق: السيرفر (Cloud Functions) يرسلها عند حجز جديد،
+  أو تحويل مراجع، أو تحديد طبيب له، أو إضافة السكرتير مراجعاً لقائمة الطبيب.
+
+  كل جهاز يوافق على الإشعارات يُنشئ «اشتراكاً» في المتصفح ويحفظه في
+  pushsubs/{uid}/d/{sid} — صاحبه وحده يكتبه ويقرؤه (القواعد).
+  المفتاح العام لمرسل الإشعارات يُقرأ من meta/push (يولّده السيرفر).
+
+  · آيفون: الإشعارات لا تعمل إلا للبرنامج المثبّت على الشاشة الرئيسية.
+  · الموافقة يطلبها المتصفح من المستخدم بنفسه مرة لكل جهاز — لا يمكن
+    تفعيلها دون ضغطه، فيظهر شريط «فعّل الإشعارات» حتى يوافق أو يؤجّل.
+═══════════════════════════════════════════════*/
+/* نصّ باللغة الحالية — (L في وحدة «مينا» لا يُرى من هنا) */
+const tL = (ar, en) => (isAr() ? ar : en);
+const Push = {
+  LS:'d_push', SNOOZE:3 * 86400000,
+
+  can(){
+    return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window
+      && (location.protocol === 'https:' || ['localhost','127.0.0.1'].includes(location.hostname));
+  },
+  /* آيفون/آيباد: لا اشتراك إلا من البرنامج المثبّت */
+  iosBlocked(){ return Install.isIOS() && !Install.standalone(); },
+  forMe(){ return (S.role === 'doctor' || S.role === 'secretary') && Sync.on(); },
+  perm(){ try { return Notification.permission; } catch(_){ return 'denied'; } },
+  uid(){ return FBC.user()?.uid || null; },
+
+  local(){ try { return JSON.parse(localStorage.getItem(this.LS)) || {}; } catch(_){ return {}; } },
+  saveLocal(o){ try { localStorage.setItem(this.LS, JSON.stringify(o)); } catch(_){} },
+
+  b64u(s){
+    const p = '='.repeat((4 - s.length % 4) % 4);
+    const b = atob((s + p).replace(/-/g, '+').replace(/_/g, '/'));
+    return Uint8Array.from(b, c => c.charCodeAt(0));
+  },
+  same(buf, key){
+    if (!buf) return false;
+    const a = new Uint8Array(buf), b = this.b64u(key);
+    return a.length === b.length && a.every((x, i) => x === b[i]);
+  },
+  async sid(endpoint){
+    const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(endpoint));
+    return [...new Uint8Array(h)].map(x => x.toString(16).padStart(2, '0')).join('').slice(0, 40);
+  },
+
+  async pubKey(){
+    try {
+      const s = await FBSDK.getDoc(FBC.d('meta', 'push'));
+      const k = s.exists() ? s.data().publicKey : null;
+      if (k) { const o = this.local(); if (o.k !== k){ o.k = k; this.saveLocal(o); } }
+      return k || null;
+    } catch(_){ return this.local().k || null; }
+  },
+
+  /* عامل الخدمة جاهزاً — بمهلة: إن لم يُرفع sw.js لا يتعلّق شيء */
+  async reg(){
+    return Promise.race([navigator.serviceWorker.ready,
+      new Promise(r => setTimeout(() => r(null), 8000))]);
+  },
+
+  /* الاشتراك وحفظه. يُستدعى عند كل فتح؛ لا يكتب للسيرفر إلا عند تغيّر
+     شيء، أو مرة كل أسبوع لإبقاء الاشتراك حيّاً. */
+  _busy:false,
+  async sync(force){
+    if (this._busy || !this.can() || !this.forMe() || this.perm() !== 'granted' || this.iosBlocked()) return false;
+    const me = this.uid(); if (!me || !navigator.onLine) return false;
+    this._busy = true;
+    try {
+      const key = await this.pubKey();
+      if (!key) return false;                         /* السيرفر لم يُهيَّأ بعد */
+      const reg = await this.reg(); if (!reg) return false;
+      let sub = await reg.pushManager.getSubscription();
+      const o = this.local();
+      /* مفتاح مختلف، أو اشتراك تركه حساب آخر على هذا الجهاز: اشتراك جديد،
+         فيبطل القديم عند السيرفر ولا تصل إشعارات الحساب السابق هنا */
+      if (sub && (!this.same(sub.options?.applicationServerKey, key) || (o.uid && o.uid !== me))){
+        try { await sub.unsubscribe(); } catch(_){}
+        sub = null;
+      }
+      if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey:this.b64u(key) });
+      const j = sub.toJSON();
+      if (!j.endpoint || !j.keys?.p256dh || !j.keys?.auth) return false;
+      const sid = await this.sid(j.endpoint);
+      const fresh = o.uid === me && o.sid === sid && Date.now() - (o.t || 0) < 7 * 86400000;
+      if (!force && fresh) return true;
+      await FBSDK.setDoc(FBC.d('pushsubs', me, 'd', sid), {
+        endpoint:j.endpoint, keys:{ p256dh:j.keys.p256dh, auth:j.keys.auth },
+        role:S.role, cid:Cloud.me?.clinic_id || '', ua:navigator.userAgent.slice(0, 180),
+        lang:LG, at:FBSDK.serverTimestamp() });
+      this.saveLocal({ ...this.local(), uid:me, sid, t:Date.now() });
+      this.bar(false);
+      return true;
+    } catch(_){ return false; }
+    finally { this._busy = false; }
+  },
+
+  /* زر «تفعيل»: طلب الموافقة يجب أن يأتي من ضغطة المستخدم (آيفون يشترطه) */
+  async enable(){
+    if (!this.can()) return toast(tL('هذا المتصفح لا يدعم الإشعارات', 'This browser does not support notifications'), 'e');
+    if (this.iosBlocked()) return toast(tL('على آيفون: ثبّت البرنامج على الشاشة الرئيسية أولاً ثم افتحه منها', 'On iPhone: add the app to the Home Screen first and open it from there'), 'w');
+    let p = this.perm();
+    if (p === 'default'){ try { p = await Notification.requestPermission(); } catch(_){ p = this.perm(); } }
+    if (p !== 'granted'){
+      this.bar(false);
+      toast(tL('الإشعارات محظورة — فعّلها من إعدادات المتصفح للموقع', 'Notifications are blocked — allow them in the browser site settings'), 'e');
+      return this.paintCfg();
+    }
+    const ok = await this.sync(true);
+    toast(ok ? tL('تم تفعيل الإشعارات ✓', 'Notifications enabled ✓')
+             : tL('وافقت على الإشعارات، وستُفعَّل تلقائياً حين يجهز السيرفر', 'Allowed — notifications will turn on automatically once the server is ready'), ok ? 's' : 'w');
+    this.paintCfg();
+  },
+
+  /* الخروج: يُحذف اشتراك هذا الجهاز من السيرفر قبل إنهاء الجلسة،
+     فلا تصل إشعارات هذا الحساب لمن يستعمل الجهاز بعده */
+  async off(){
+    const o = this.local(), me = this.uid();
+    if (o.sid && me && o.uid === me){
+      try { await Promise.race([FBSDK.deleteDoc(FBC.d('pushsubs', me, 'd', o.sid)),
+                                new Promise(r => setTimeout(r, 4000))]); } catch(_){}
+    }
+    this.saveLocal({ k:o.k, uid:o.uid });       /* يُعرف أن الاشتراك تركه حساب سابق */
+  },
+
+  /*──── شريط الدعوة ────*/
+  snoozed(){ return Date.now() - (this.local().x || 0) < this.SNOOZE; },
+  later(){ this.saveLocal({ ...this.local(), x:Date.now() }); this.bar(false); },
+  bar(show){
+    const old = document.getElementById('pushbar');
+    if (show === false){ old?.remove(); return; }
+    if (old || !this.can() || !this.forMe() || this.iosBlocked() || this.perm() !== 'default' || this.snoozed()) return;
+    document.body.appendChild(el(`<div id="pushbar"><div class="box">
+      <div class="pb-ic">🔔</div>
+      <div class="gr" style="min-width:0">
+        <div class="nm">${tL('فعّل الإشعارات', 'Turn on notifications')}</div>
+        <div class="ds">${tL('تصلك الحجوزات والتحويلات حتى والبرنامج مغلق', 'Get bookings and transfers even when the app is closed')}</div>
+      </div>
+      <button class="btn sm" onclick="Push.enable()">${tL('تفعيل', 'Enable')}</button>
+      <button class="x" onclick="Push.later()">✕</button>
+    </div></div>`));
+  },
+
+  /*──── قسم الإعدادات ────*/
+  cfgBox(){
+    return `<div id="push-cfg">${this.cfgInner()}</div>`;
+  },
+  cfgInner(){
+    const p = this.can() ? this.perm() : 'na';
+    const st = !this.can() ? tL('هذا المتصفح لا يدعم الإشعارات', 'Not supported by this browser')
+      : this.iosBlocked() ? tL('على آيفون تعمل فقط للبرنامج المثبّت على الشاشة الرئيسية', 'On iPhone they work only for the app added to the Home Screen')
+      : p === 'granted' ? tL('مفعّلة على هذا الجهاز ✓', 'On for this device ✓')
+      : p === 'denied' ? tL('محظورة — اسمح بها من إعدادات المتصفح لهذا الموقع ثم ارجع هنا', 'Blocked — allow them in the browser site settings, then come back')
+      : tL('غير مفعّلة', 'Off');
+    return `<div class="tiny">${tL('تصلك على هذا الجهاز حتى والبرنامج مغلق: حجز جديد، إلغاء حجز، تحويل مراجع إليك، تحديد طبيب لمراجع، ومراجع جديد في قائمتك اليوم.',
+        'Delivered to this device even when the app is closed: new booking, booking cancelled, a patient transferred to you, a doctor set for a patient, and a new patient in your list today.')}</div>
+      <div class="al ${p === 'granted' ? 'g' : p === 'denied' ? 'r' : 'w'} mt"><span>🔔</span><span>${st}</span></div>
+      ${this.can() && !this.iosBlocked() && p !== 'granted' && p !== 'denied'
+        ? `<button class="btn w mt" onclick="Push.enable()">${tL('تفعيل الإشعارات', 'Turn on notifications')}</button>` : ''}`;
+  },
+  paintCfg(){ const b = document.getElementById('push-cfg'); if (b) b.innerHTML = this.cfgInner(); },
+
+  /*──── الضغط على إشعار: يُفتح القسم المعني ────*/
+  route(url){
+    let go = '';
+    try { go = new URL(url || location.href, location.href).searchParams.get('go') || ''; } catch(_){}
+    if (!go || !S.role || !TABS[S.role]) return;
+    if (TABS[S.role].some(t => t[0] === go)) App.setTab(go);
+  },
+
+  init(){
+    if (!('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.addEventListener('message', e => {
+      const m = e.data || {};
+      if (m.type === 'push-open') this.route(m.url);
+      if (m.type === 'push-renew') this.sync(true);
+    });
+  },
+
+  /* بعد الدخول: اشتراك صامت إن سبقت الموافقة، وإلا شريط الدعوة */
+  start(){
+    if (!this.forMe()) return;
+    setTimeout(() => {
+      this.sync().then(ok => { if (!ok) this.bar(); });
+      this.route(location.href);
+      /* ?go= يُزال من العنوان بعد استعماله */
+      try { if (/[?&]go=/.test(location.search)) history.replaceState(null, '', location.pathname); } catch(_){}
+    }, 1500);
+  },
+};
+
 const Install = {
   prompt:null, ready:false,
 
@@ -13532,9 +13751,11 @@ window.addEventListener('unhandledrejection', e =>
   /* هوية العيادة المحفوظة على هذا الجهاز تظهر من أول لحظة */
   Brand.apply();
   Install.init();
+  Push.init();
   /* عند العودة للتطبيق: هل تغيّر من يجوز لهذا الحساب أن يرى؟ */
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && S.role){
+      try { Push.sync(); } catch(_){}
       if (Sub.expired()) Sub.recheck(); else Scope.recheck();
     }
   });
