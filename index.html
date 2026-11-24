@@ -10,18 +10,18 @@
      والصور كذلك: من جهازك أو من تخزين عيادتك، لا من أي نطاق آخر. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; img-src 'self' data: blob: https://firebasestorage.googleapis.com https://res.cloudinary.com; media-src 'self' blob: mediastream:; manifest-src blob:; worker-src 'self'; connect-src https://*.googleapis.com https://firebasestorage.googleapis.com https://api.cloudinary.com; object-src 'none'; frame-src 'none'; child-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<title>أسناني — My teeth</title>
-<meta name="application-name" content="أسناني">
+<title>Dent Flow</title>
+<meta name="application-name" content="Dent Flow">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="أسناني">
+<meta name="apple-mobile-web-app-title" content="Dent Flow">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&family=Zain:wght@700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
 /*═══════════════════════════════════════════════════════════════════
-  أسناني — نظام التصميم «خزف وحبر» (Porcelain & Ink) · الإصدار ٣
+  Dent Flow — نظام التصميم «خزف وحبر» (Porcelain & Ink) · الإصدار ٣
   ───────────────────────────────────────────────────────────────────
   · إطار داكن بلون الحبر (القائمة الجانبية) يحتضن مساحة عمل خزفية دافئة.
   · لون أساسي فيروزي عميق، ولمسة ذهبية دافئة للتمييز والأرقام المهمّة.
@@ -398,6 +398,10 @@ html[dir=ltr] .sbar input{background-position:left 15px center}
 .side .brand .mk svg{fill:currentColor}
 .side .brand .mk.img{background:#fff}
 .side .brand .mk img{width:100%;height:100%;object-fit:contain;border-radius:13px;padding:4px}
+.side .brand .mk img.df-mk{object-fit:cover;padding:0;border-radius:14px}
+.side .brand .mk:has(img.df-mk){background:none}
+.lg-top i.lg-mk{background:none;overflow:hidden}
+.lg-top i.lg-mk img{width:100%;height:100%;object-fit:cover;display:block}
 .side #hd-name{font-family:var(--fd);font-size:17px;line-height:1.25;font-weight:600;color:#fff;letter-spacing:-.01em}
 .side #hd-role{margin-top:3px;text-transform:none;font-size:12px;font-weight:500;color:var(--gold2);letter-spacing:0}
 .side #hd-role::before{display:none}
@@ -1171,7 +1175,7 @@ html{touch-action:manipulation}
 <!-- ═══════════ شاشة الدخول ═══════════ -->
 <div id="login">
   <aside class="lg-art" aria-hidden="true">
-    <div class="lg-top"><i><svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M12 3c-3 0-4-1.2-6 0C4 4.2 3.4 7 4 10c.5 2.6 1.3 4 1.8 6.6.4 2 .6 4.4 2 4.4 1.6 0 1.3-2.6 1.8-4.6.4-1.6.8-2.4 2.4-2.4s2 .8 2.4 2.4c.5 2 .2 4.6 1.8 4.6 1.4 0 1.6-2.4 2-4.4.5-2.6 1.3-4 1.8-6.6.6-3 0-5.8-2-7-2-1.2-3 0-6 0z"/></svg></i><span id="la-brand">أسناني</span></div>
+    <div class="lg-top"><i class="lg-mk"><img id="la-mk" alt=""></i><span id="la-brand">Dent Flow</span></div>
     <div class="lg-draw">
       <svg viewBox="0 0 320 350">
         <line class="tick" x1="46" y1="14" x2="254" y2="14"/><line class="tick" x1="46" y1="8" x2="46" y2="22"/><line class="tick" x1="254" y1="8" x2="254" y2="22"/>
@@ -1196,8 +1200,8 @@ html{touch-action:manipulation}
   <div style="width:100%;max-width:400px">
     <div class="lghero">
       <div class="lgring"><div id="applogo"></div></div>
-      <div class="h1 ctr lgname" id="lg-name">أسناني</div>
-      <div class="ctr lgsub" id="lg-sub">My teeth</div>
+      <div class="h1 ctr lgname" id="lg-name">Dent Flow</div>
+      <div class="ctr lgsub" id="lg-sub">إدارة عيادات الأسنان</div>
     </div>
     <div class="sub ctr" id="lg-tag" style="margin-bottom:22px"></div>
 
@@ -1234,7 +1238,7 @@ html{touch-action:manipulation}
     <aside class="side" id="side">
       <div class="brand">
         <div class="mk" id="hd-mk">
-          <svg width="22" height="22" viewBox="0 0 24 24"><path d="M12 3c-3 0-4-1.2-6 0C4 4.2 3.4 7 4 10c.5 2.6 1.3 4 1.8 6.6.4 2 .6 4.4 2 4.4 1.6 0 1.3-2.6 1.8-4.6.4-1.6.8-2.4 2.4-2.4s2 .8 2.4 2.4c.5 2 .2 4.6 1.8 4.6 1.4 0 1.6-2.4 2-4.4.5-2.6 1.3-4 1.8-6.6.6-3 0-5.8-2-7-2-1.2-3 0-6 0z" fill="var(--on-br)"/></svg>
+          <img alt="" class="df-mk">
         </div>
         <div class="gr" style="min-width:0">
           <div class="dsp" style="font-size:19px;line-height:1.1" id="hd-name"></div>
@@ -1535,7 +1539,7 @@ ar:{
 
  visits:'الزيارات', visit:'زيارة', newVisit:'فتح زيارة', closeVisit:'إنهاء الزيارة',
  date:'التاريخ', workSite:'موقع العمل', workType:'نوع العمل', tooth:'السن',
- amountPaid:'المبلغ المدفوع', notes:'ملاحظات', addWork:'إضافة عمل',
+ amountPaid:'سعر العمل', notes:'ملاحظات', addWork:'إضافة عمل',
  total:'الإجمالي', paid:'المدفوع', due:'المتبقي', pay:'استلام دفعة',
  amount:'المبلغ', method:'طريقة الدفع', cash:'نقد', card:'بطاقة', transfer:'تحويل',
 
@@ -1873,7 +1877,7 @@ en:{
 
  visits:'Visits', visit:'Visit', newVisit:'Open visit', closeVisit:'Close visit',
  date:'Date', workSite:'Site', workType:'Procedure', tooth:'Tooth',
- amountPaid:'Amount paid', notes:'Notes', addWork:'Add work',
+ amountPaid:'Work price', notes:'Notes', addWork:'Add work',
  total:'Total', paid:'Paid', due:'Balance', pay:'Collect payment',
  amount:'Amount', method:'Method', cash:'Cash', card:'Card', transfer:'Transfer',
 
@@ -2204,6 +2208,11 @@ Object.assign(D.ar, {
  teamSaved:'حُفظ الفريق', noneOfKind:'لا يوجد حسابات من هذا النوع في العيادة',
  secProfile:'ملفي الشخصي', profName:'الاسم على الوصفة', profTitle:'اللقب العلمي',
  pickDoctor:'لأي طبيب هذا المراجع؟', pickDoctorHint:'يظهر ملفه لهذا الطبيب ولمن يسمح لهم',
+ badFdi:'رقم السن غير صحيح — استعمل ترقيم FDI مثل 26 أو 46 (اللبني 51–85)',
+ ptDocNone:'بدون طبيب', ptDocOpt:'اختياري — يمكن تحديد الطبيب أو تغييره لاحقاً من قسم «اليوم»',
+ noDoc:'بدون طبيب', asBtn:'تحديد طبيب', asTitle:'اختر طبيب هذا المراجع',
+ asHint:'المراجع بلا طبيب: يظهر لكل أطباء العيادة، ويمكن إسناده لأي منهم', asDone:'تم تحديد الطبيب:',
+ asNone:'لا يوجد طبيب آخر فعّال في العيادة', asCleared:'أُعيد المراجع إلى «بدون طبيب»',
  ptDocLbl:'طبيب المراجع', ptDocNeed:'اختر طبيب هذا المراجع', ptDocMe:'أنا',
  rmNotNow:'لا تُزال إلا جلسة لم يدخل صاحبها إلى الطبيب بعد (منتظر أو مُستدعى)',
  rmHasData:'سُجّل في هذه الجلسة عمل أو دفعة أو صورة — لا يزيلها إلا الطبيب',
@@ -2254,6 +2263,11 @@ Object.assign(D.en, {
  teamSaved:'Team saved', noneOfKind:'No accounts of this type in the clinic',
  secProfile:'My profile', profName:'Name on prescriptions', profTitle:'Title',
  pickDoctor:'Which doctor is this patient for?', pickDoctorHint:'The file is visible to this doctor and whoever they allow',
+ badFdi:'Invalid tooth number — use FDI numbering such as 26 or 46 (primary 51–85)',
+ ptDocNone:'No doctor', ptDocOpt:'Optional — the doctor can be set or changed later from Today',
+ noDoc:'No doctor', asBtn:'Set doctor', asTitle:'Choose this patient’s doctor',
+ asHint:'A patient with no doctor is visible to every clinic doctor and can be given to any of them', asDone:'Doctor set:',
+ asNone:'There is no other active doctor in the clinic', asCleared:'Patient returned to “No doctor”',
  ptDocLbl:'Patient’s doctor', ptDocNeed:'Pick this patient’s doctor', ptDocMe:'Me',
  rmNotNow:'Only a session whose patient has not gone in to the doctor yet (waiting or called) can be removed',
  rmHasData:'This session already has work, a payment or an image — only the doctor can remove it',
@@ -2755,6 +2769,27 @@ const $$ = s => [...document.querySelectorAll(s)];
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,9);
 const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const N   = n => Number(n||0).toLocaleString('en-US');
+
+/* الأرقام العربية (٠–٩) والفارسية (۰–۹) تُحوَّل إلى لاتينية لحظة الكتابة في
+   حقول الأرقام والهاتف. لوحة المفاتيح العربية على الهاتف تكتبها، وNumber('٢٥٠٠٠')
+   = NaN — فكان سعر العمل يُحفظ صفراً بصمت، والدفعة تُرفض، والهاتف يخرج فارغاً
+   في رابط واتساب. وفي حقول المبالغ تُحذف فواصل الآلاف (25,000 = 25000). */
+const enDigits = v => String(v ?? '')
+  .replace(/[\u0660-\u0669]/g, d => String(d.charCodeAt(0) - 0x0660))
+  .replace(/[\u06F0-\u06F9]/g, d => String(d.charCodeAt(0) - 0x06F0));
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (!t || t.tagName !== 'INPUT') return;
+  const im = (t.getAttribute('inputmode') || '').toLowerCase(), ty = (t.type || '').toLowerCase();
+  const num = im === 'numeric' || im === 'decimal' || ty === 'number';
+  if (!num && im !== 'tel' && ty !== 'tel') return;
+  let v = enDigits(t.value);
+  if (num) v = v.replace(/[,\u066C\s]/g, '').replace(/\u066B/g, '.');
+  if (v === t.value) return;
+  const tail = t.value.length - (t.selectionEnd ?? t.value.length);
+  t.value = v;
+  try { const at = Math.max(0, v.length - tail); t.setSelectionRange(at, at); } catch(_){}
+}, true);
 /* مفتاح اليوم بالتوقيت المحلي لا بتوقيت غرينتش — وإلا حُسب عمل
    الساعة ١٢ ليلاً في العراق (+3) على اليوم السابق فتختلّ الفلاتر. */
 const dkey  = ts => { const d = new Date(ts);
@@ -4653,10 +4688,10 @@ const Brand = {
     b = b || this.get();
     APP.logo = b.logo || '';
     APP.title = b.name || '';
-    const nm = b.name || APP.nameAr;
-    document.title = b.name ? `${b.name}` : `${APP.nameAr} — ${APP.nameEn}`;
+    const nm = b.name || APP.name;
+    document.title = b.name ? `${b.name}` : APP.name;
     const ln = $('#lg-name'); if (ln) ln.textContent = nm;
-    const ls = $('#lg-sub');  if (ls) ls.textContent = b.name ? (b.clinic && b.clinic !== b.name ? b.clinic : APP.nameEn) : APP.nameEn;
+    const ls = $('#lg-sub');  if (ls) ls.textContent = b.name ? (b.clinic && b.clinic !== b.name ? b.clinic : APP.name) : (isAr() ? 'إدارة عيادات الأسنان' : 'Dental clinic management');
     const lg = $('#applogo') || document.querySelector('#login .applogo');
     if (lg) lg.outerHTML = ICON.el();
     const mk = $('#hd-mk');
@@ -4664,7 +4699,7 @@ const Brand = {
       mk.classList.toggle('img', !!b.logo);
       mk.innerHTML = b.logo
         ? `<img src="${esc(b.logo)}" alt="">`
-        : `<svg width="22" height="22" viewBox="0 0 24 24"><path d="${ICON.TOOTH}" fill="var(--on-br)"/></svg>`;
+        : `<img src="${ICON.IMG}" alt="" class="df-mk">`;
     }
     try { ICON.cache = {}; Install.manifest(); } catch(_){}
   },
@@ -4886,9 +4921,9 @@ const Own = {
         <div class="tiny mt">${esc(hint || T('pickDoctorHint'))}</div>
         <div class="col mt2">${docs.map((d,i)=>`
           <button class="it" data-i="${i}" style="width:100%;text-align:start">
-            <div class="av">${esc((d.name||'?').replace(/^[دdD]\.?\s*/,'').charAt(0))}</div>
+            <div class="av">${d.uid === '_' ? '∅' : esc((d.name||'?').replace(/^[دdD]\.?\s*/,'').charAt(0))}</div>
             <div class="gr"><div class="h3 ell">${esc(d.name||'—')}</div>
-              <div class="tiny">${T('ofDoctor')}</div></div>
+              ${d.uid === '_' ? '' : `<div class="tiny">${T('ofDoctor')}</div>`}</div>
           </button>`).join('')}</div>
         <button class="btn w gh mt2" data-x="1">${T('cancel')}</button>
       </div></div>`);
@@ -6073,8 +6108,10 @@ const Ops = {
       p = await DB.get('patients', id);
       p = { ...p, ...data, up:now };
     } else {
-      /* مراجع جديد: لأي طبيب؟ — يُلغى الحفظ إن لم يُحسم */
-      const own = (pick && Own.valid(pick) !== false) ? pick : await Own.choose();
+      /* مراجع جديد: لأي طبيب؟ — '_' = بدون طبيب (المسار المشترك يراه كل الطاقم).
+         بلا اختيار في النموذج (طبيب واحد) يُسأل كما كان؛ ويُلغى الحفظ إن لم يُحسم */
+      const own = pick === '_' ? '_'
+        : (pick && Own.valid(pick) !== false) ? pick : await Own.choose();
       if (own === null) return null;
       p = { id:uid(), mrn: await this.nextMrn(), bc: await this.nextBarcode(),
             cid: CFG.data.cid, ...data, at:now, up:now };
@@ -6111,6 +6148,11 @@ const Ops = {
     }
     const v = { id:id || uid(), pid, cid:CFG.data.cid, code:newCode(), date:t, at:Date.now(),
                 st:'open', qstate:'waiting', no:vs.length+1, note:note||'' };
+    /* مراجع بلا طبيب سبق أن حُدِّد له طبيب من «اليوم»: جلسته الجديدة عند الطبيب نفسه */
+    try {
+      const p = await DB.get('patients', pid);
+      if (p && Sec.ownerOf(p) === '_' && p.dr && Own.valid(p.dr) !== false){ v.dr = p.dr; v._drAt = Sync.now(); }
+    } catch(_){}
     await DB.put('visits', v);
     return v;
   },
@@ -6650,7 +6692,8 @@ const Sec = {
     if (!this.qOn(docs)) return S.role === 'doctor' ? 'me' : 'all';
     let f = this.qd;
     if (f === 'clinic' && S.role === 'doctor') return this.clinicOn() ? 'clinic' : 'me';
-    if (f && f !== 'me' && f !== 'all' && !docs.some(d => d.uid === f)) f = null;
+    if (f && f !== 'me' && f !== 'all' && !(f === '_' && S.role === 'secretary')
+        && !docs.some(d => d.uid === f)) f = null;
     if (S.role === 'doctor'    && (!f || f === 'all')) f = 'me';
     if (S.role === 'secretary' && (!f || f === 'me'))  f = 'all';
     return f;
@@ -6696,7 +6739,9 @@ const Sec = {
         ${oth && docs.length ? `<div class="qd-chips">${chips}</div>` : ''}`;
       return;
     }
-    box.innerHTML = `<div class="qd-chips">${chip('all', T('qAll'), vs.length)}${chips}</div>`;
+    const nNo = cnt('_');
+    box.innerHTML = `<div class="qd-chips">${chip('all', T('qAll'), vs.length)}${chips}${
+      nNo || f === '_' ? chip('_', T('noDoc'), nNo) : ''}</div>`;
   },
 
   /*──── «كل مرضى العيادة»: عرض فقط ────
@@ -6734,7 +6779,8 @@ const Sec = {
     box.innerHTML = `<div class="tiny ctr" style="color:var(--ink3);margin-bottom:6px">🔒 ${T('qClinicHint')}</div>`
       + (rows.length ? rows.map(x => {
         const live = x.q === 'called' || x.q === 'chair';
-        const tr = x.dr && x.dr !== x.k;
+        const tr = x.dr && x.dr !== x.k && x.k && x.k !== '_';
+        const dk = x.k && x.k !== '_' ? x.k : x.dr;
         return `<div class="it ${live?'live':''}" style="cursor:default;${x.q==='cancelled'?'opacity:.62':''}"
             onclick="toast(T('qClinicRo'),'w')">
           <div class="av ${x.q==='done'?'g':x.q==='chair'?'':'w'}">${x._no}</div>
@@ -6744,7 +6790,7 @@ const Sec = {
               <div class="h3 ell">${esc(x.n || '—')}</div>
             </div>
             <div class="row wrapv" style="gap:5px;margin-top:3px">
-              ${x.k && x.k !== '_' ? `<span class="qd-tag">🦷 ${T('qClinicDoc')}: ${esc(dn(x.k))}</span>` : ''}
+              ${dk ? `<span class="qd-tag">🦷 ${T('qClinicDoc')}: ${esc(dn(dk))}</span>` : `<span class="qd-tag">${T('noDoc')}</span>`}
               ${tr ? `<span class="qd-tag">⇄ ${T('toDoctor')}: ${esc(dn(x.dr))}</span>` : ''}
             </div>
           </div>
@@ -6758,35 +6804,64 @@ const Sec = {
     }, 30000);
   },
 
-  /*──── تحويل دور اليوم إلى طبيب آخر ────
+  /*──── تحويل دور اليوم إلى طبيب آخر، أو تحديد طبيب لمراجع بلا طبيب ────
     السجلات لا تنتقل بين مسارات الأطباء (المسار ثابت في كل سجل)، بل
     يُختم على جلسة اليوم «الطبيب المعالج» dr. فيظهر الدور عند الطبيب
     المحوَّل إليه، ويبقى الملف عند طبيبه. لذلك يُعرض فقط الأطباء الذين
-    يرون مراجعي صاحب الملف — وهم وحدهم من يقبل السيرفر أن يكتبوا فيه. */
+    يرون مراجعي صاحب الملف — وهم وحدهم من يقبل السيرفر أن يكتبوا فيه.
+    أما المراجع «بدون طبيب» فمساره مشترك يراه الجميع: يُسند لأي طبيب
+    فعّال في العيادة، ويُحفظ اختياره على ملفه لزياراته القادمة. */
+  canMove(v){
+    if (!v || (S.role !== 'secretary' && S.role !== 'doctor')) return false;
+    const st = v.qstate || 'waiting';
+    if (st === 'done' || st === 'cancelled') return false;
+    const cur = this.qOwner(v);
+    /* الطبيب يحرّك دوره هو، أو دور مراجع بلا طبيب — لا دور زميله */
+    if (S.role === 'doctor' && cur !== '_' && cur !== S.user?.uid) return false;
+    /* بلا طبيب بعد: يُحدَّد في أي مرحلة قبل الإنهاء؛ وما سواه قبل الاستدعاء فقط */
+    if (cur === '_') return true;
+    return st === 'waiting';
+  },
+
   async transfer(vid){
-    if (S.role !== 'secretary') return;
+    if (S.role !== 'secretary' && S.role !== 'doctor') return;
     const v = await DB.get('visits', vid); if (!v) return;
-    if ((v.qstate || 'waiting') !== 'waiting') return toast(T('trNotWaiting'), 'e');
+    if (!this.canMove(v)) return toast(T('trNotWaiting'), 'e');
     try { await Staff.load(true); } catch(_){}
-    const owner = this.ownerOf(v), cur = this.qOwner(v);
-    /* من يرى مراجعي صاحب الملف فعلاً (قائمة الرؤية التي يقرّرها المستثمر)،
-       ومع نسخة طاقم قديمة بلا قوائم: روابط الطبيب كما كانت */
-    const seers = Staff.members('doctor').some(m => Array.isArray(m.vis))
-      ? Staff.members('doctor').filter(m => (m.vis || []).includes(owner)).map(m => m.uid)
-      : Staff.linked('doctor', owner).map(m => m.uid);
-    const ids = owner === '_' ? Own.linkedIds() : [owner, ...seers];
+    const owner = this.ownerOf(v), cur = this.qOwner(v), free = owner === '_';
+    let ids;
+    if (free) ids = Staff.active('doctor').map(m => m.uid);
+    else {
+      /* من يرى مراجعي صاحب الملف فعلاً (قائمة الرؤية التي يقرّرها المستثمر)،
+         ومع نسخة طاقم قديمة بلا قوائم: روابط الطبيب كما كانت */
+      const seers = Staff.members('doctor').some(m => Array.isArray(m.vis))
+        ? Staff.members('doctor').filter(m => (m.vis || []).includes(owner)).map(m => m.uid)
+        : Staff.linked('doctor', owner).map(m => m.uid);
+      ids = [owner, ...seers];
+    }
     const docs = [...new Set(ids)].filter(u => u && u !== cur)
       .map(u => Staff.active('doctor').find(m => m.uid === u)).filter(Boolean);
-    if (!docs.length) return toast(T('trNone'), 'e');
-    const to = await Own.pick(docs, T('trTitle'), T('trHint'));
+    /* مراجع بلا طبيب أُسند خطأً: يُعاد إلى «بدون طبيب» */
+    if (free && cur !== '_') docs.push({ uid:'_', name:T('noDoc') });
+    if (!docs.length) return toast(free ? T('asNone') : T('trNone'), 'e');
+    const to = await Own.pick(docs, free && cur === '_' ? T('asTitle') : T('trTitle'), free ? T('asHint') : T('trHint'));
     if (!to) return;
-    /* قد يكون استُدعي من جهاز آخر أثناء الاختيار */
+    /* قد يكون استُدعي أو حُوِّل من جهاز آخر أثناء الاختيار */
     const v2 = await DB.get('visits', vid);
-    if (!v2 || (v2.qstate || 'waiting') !== 'waiting') return toast(T('trNotWaiting'), 'e');
-    v2.dr = to === owner ? null : to;
+    if (!v2 || !this.canMove(v2) || this.qOwner(v2) !== cur) return toast(T('trNotWaiting'), 'e');
+    v2.dr = (to === owner || to === '_') ? null : to;
     v2._drAt = Sync.now();          /* ختم الحقل نفسه، لا السجل كله */
     await DB.put('visits', v2);
-    toast(`${T('trDone')} ${Staff.name(to) || T('ofDoctor')}`, 's');
+    if (free){
+      /* الاختيار يُحفظ على ملف المراجع: زياراته القادمة تذهب للطبيب نفسه */
+      const p = await DB.get('patients', v2.pid);
+      if (p && this.ownerOf(p) === '_' && (p.dr || null) !== (v2.dr || null)){
+        if (v2.dr) p.dr = v2.dr; else delete p.dr;
+        await DB.put('patients', p);
+      }
+    }
+    if (to === '_') toast(T('asCleared'), 's');
+    else toast(`${free && cur === '_' ? T('asDone') : T('trDone')} ${Staff.name(to) || T('ofDoctor')}`, 's');
     return this.queue();
   },
 
@@ -6811,8 +6886,10 @@ const Sec = {
     /* «الكل» عند السكرتير: يُكتب اسم الطبيب بجانب كل مراجع */
     const tagDoc = qf === 'all' && this.qOn(qDocs);
     const docName = k => (qDocs.find(d => d.uid === k) || {}).name || Staff.name(k) || '';
-    /* التحويل: للسكرتير، لمراجع لم يُستدعَ بعد، في عيادة بأكثر من طبيب */
-    const canTr = S.role === 'secretary' && qDocs.length >= 2;
+    /* التحويل وتحديد الطبيب: في عيادة بأكثر من طبيب (canMove يحسم كل سطر) */
+    const nDocs = Sync.on() ? Staff.active('doctor').length : 0;
+    const canTr = (S.role === 'secretary' || S.role === 'doctor') && !ro
+      && (nDocs >= 2 || (S.role === 'secretary' && qDocs.length >= 2));
     const me = S.user?.uid;
 
     const q = this.qq.trim().toLowerCase();
@@ -6850,6 +6927,7 @@ const Sec = {
             ${S.role === 'doctor' && vi.dr && vi.dr === me && this.ownerOf(vi) !== me && docName(this.ownerOf(vi))
               ? `<span class="qd-tag">⇄ ${T('trFrom')} ${esc(docName(this.ownerOf(vi)))}</span>` : ''}
             ${vi.needAppt?`<span class="pill w">${T('needAppt')}</span>`:''}
+            ${nDocs >= 2 && this.qOwner(vi) === '_' ? `<span class="qd-tag">${T('noDoc')}</span>` : ''}
           </div>
           <div class="mono tiny">${T('file')} ${esc(p.mrn)} · ${T('total')} ${N(tt.total)}
             · <span style="color:var(--ok);font-weight:700">${T('paid')} ${N(tt.paid)}</span></div>
@@ -6862,8 +6940,9 @@ const Sec = {
             ? `<button class="btn xs ${vi.qstate==='chair'?'ok':''}"
                  onclick="event.stopPropagation();Sec.setQ('${vi.id}','${nextOf[vi.qstate||'waiting']}')">
                  ${lblOf[vi.qstate||'waiting']}</button>` : ''}
-          ${canTr && !cx && (vi.qstate || 'waiting') === 'waiting'
-            ? `<button class="btn xs gh" onclick="event.stopPropagation();Sec.transfer('${vi.id}')">⇄ ${T('trBtn')}</button>` : ''}
+          ${canTr && !cx && this.canMove(vi)
+            ? `<button class="btn xs gh" onclick="event.stopPropagation();Sec.transfer('${vi.id}')">${
+                this.qOwner(vi) === '_' ? `🦷 ${T('asBtn')}` : `⇄ ${T('trBtn')}`}</button>` : ''}
         </div>
       </div>`;}).join('') : `<div class="emp">${T('noQueue')}</div>`;
 
@@ -7143,7 +7222,9 @@ const Sec = {
     const treated = new Set();
     for (const v of await DB.all('visits')) if (v.dr === me) treated.add(v.pid);
     for (const w of await DB.all('works'))  if (w.du === me) treated.add(w.pid);
-    const mine = p => this.isMineK(this.ownerOf(p), others);
+    /* مراجع «بدون طبيب» حُدِّد له طبيب من «اليوم»: يُعدّ من مراجعي ذلك الطبيب */
+    const ownK = p => (this.ownerOf(p) === '_' && p.dr) ? p.dr : this.ownerOf(p);
+    const mine = p => this.isMineK(ownK(p), others);
     return { mine, treated: p => !mine(p) && treated.has(p.id) };
   },
   fPick(k){ this.fd = k; return this.list($('#sc-q')?.value || ''); },
@@ -7215,15 +7296,18 @@ const Sec = {
     if (docs.length < 2 || Form._prevId){ box.classList.add('hide'); box.innerHTML = ''; return; }
     const me = S.role === 'doctor' ? S.user?.uid : null;
     box.classList.remove('hide');
-    box.innerHTML = `<label class="lb">${T('ptDocLbl')} <span class="req">*</span></label>
-      <div class="qd-chips">${docs.map(d => `<button type="button" class="${this._ptDoc === d.uid ? 'on' : ''}"
+    /* الطبيب اختياري: «بدون طبيب» يحفظ المراجع في المسار المشترك،
+       ويُحدَّد طبيبه لاحقاً من قسم «اليوم» */
+    box.innerHTML = `<label class="lb">${T('ptDocLbl')}</label>
+      <div class="qd-chips"><button type="button" class="${!this._ptDoc ? 'on' : ''}"
+          onclick="Sec.ptDocSet('_')">${T('ptDocNone')}</button>${docs.map(d => `<button type="button" class="${this._ptDoc === d.uid ? 'on' : ''}"
           onclick="Sec.ptDocSet('${esc(d.uid)}')">🦷 ${esc(d.uid === me ? T('ptDocMe') + ' — ' + (d.name || '') : (d.name || T('ofDoctor')))}</button>`).join('')}</div>
-      <div class="tiny mt">${T('pickDoctorHint')}</div>`;
+      <div class="tiny mt">${T('ptDocOpt')}</div>`;
   },
 
   ptDocSet(k){
-    if (!(this._ptDocs || []).some(d => d.uid === k)) return;
-    this._ptDoc = k;
+    if (k !== '_' && !(this._ptDocs || []).some(d => d.uid === k)) return;
+    this._ptDoc = k === '_' ? null : k;
     $('#f-doc')?.classList.remove('err');
     this.ptDocDraw();
   },
@@ -7231,19 +7315,18 @@ const Sec = {
   async savePt(id){
     /* القائمة قد تكون ما زالت تُحمَّل: تُنتظر قبل التحقق */
     if (!id && this._ptDocsP){ try { await this._ptDocsP; } catch(_){} }
-    const needDoc = !id && !Form._prevId && (this._ptDocs || []).length > 1;
-    const noDoc = needDoc && !this._ptDoc;
-    if (needDoc) $('#f-doc')?.classList.toggle('err', noDoc);
+    /* اختيار الطبيب ظاهر (أكثر من طبيب) لكنه ليس شرطاً: بلا اختيار = «بدون طبيب» */
+    const askDoc = !id && !Form._prevId && (this._ptDocs || []).length > 1;
     const okForm = Form.validate();
-    if (!okForm || noDoc){
+    if (!okForm){
       const e = $('#f-err');
-      e.textContent = okForm ? T('ptDocNeed') : T('fillAll');
+      e.textContent = T('fillAll');
       e.classList.remove('hide');
       $('.sh').scrollTo({top:0,behavior:'smooth'}); return;
     }
     /* إن اختير مراجع سابق من الاقتراح، نحدّث ملفه بدل إنشاء ملف مكرّر */
     const target = id || Form._prevId || null;
-    const p = await Ops.savePatient(Form.read(), target, needDoc ? this._ptDoc : null);
+    const p = await Ops.savePatient(Form.read(), target, askDoc ? (this._ptDoc || '_') : null);
     if (!p) return;
     UI.close(); toast(T('saved'),'s');
     /* الملف يحلّ محلّ نموذج التسجيل — الرجوع منه لا يعيد فتح النموذج */
@@ -7346,7 +7429,7 @@ const Sec = {
             <div class="pf-chips">
               <span class="pf-chip">${p.age||'—'} ${T('yrs')}</span>
               <span class="pf-chip">${p.gender==='female'?T('female'):T('male')}</span>
-              ${p.phone ? `<a class="pf-chip mono" href="tel:${esc(String(p.phone).replace(/[^\d+]/g,''))}">📞 ${esc(p.phone)}</a>` : ''}
+              ${p.phone ? `<a class="pf-chip mono" href="tel:${esc(enDigits(p.phone).replace(/[^\d+]/g,''))}">📞 ${esc(p.phone)}</a>` : ''}
               <span class="pf-chip mono">${T('file')} ${esc(p.mrn||'')}</span>
               ${p.bc ? `<span class="pf-chip mono">▮▮ ${esc(p.bc)}</span>` : ''}
             </div>
@@ -7640,7 +7723,13 @@ const Sec = {
     const proc = PickProc.read('w-p');
     if (!proc){ $('#w-p-q')?.classList.add('err'); return toast(T('typeProc'),'e'); }
     if (proc.startsWith('x:')) await SG.learn('proctext', proc.slice(2));
-    const fdi  = Number($('#w-f').value)||null;
+    /* موقع العمل اختياري، لكن إن كُتب فيجب أن يكون رقم سن FDI صحيحاً
+       (دائم 11–48 أو لبني 51–85) — وإلا نُسب العمل لسن لا وجود له */
+    const fRaw = enDigits($('#w-f').value).trim();
+    const fdi  = Number(fRaw) || null;
+    if (fRaw && !(fdi && /^([1-4][1-8]|[5-8][1-5])$/.test(String(fdi)))){
+      $('#w-f').classList.add('err'); return toast(T('badFdi'), 'e');
+    }
     const w = { id:uid(), vid, pid:v.pid, proc, fdi,
                 course: fdi ? await Ops.course(v.pid, fdi) : null,
                 by: S.role,   /* الطبيب يعرف من سجّل العمل */
@@ -7662,7 +7751,8 @@ const Sec = {
 
   async closeVisit(vid){
     const v = await DB.get('visits', vid);
-    v.st='done'; v.qstate='done'; await DB.put('visits', v);
+    /* ختم حقل الحالة كما في setQ — وإلا قد تغلبه نسخة جهاز آخر عند الدمج */
+    v.st='done'; v.qstate='done'; v._qAt = Sync.now(); await DB.put('visits', v);
     toast(T('saved'),'s');
     Nav.reset();
     Appt.ask(v.pid, vid);
@@ -8502,7 +8592,7 @@ const Doc = {
   /* أرقام الجلسات تُبنى حسب العدد المطلوب، ويمكن اختيار أكثر من واحدة */
   rebuildChips(){
     const box = $('#pl-chips'); if (!box) return;
-    const n = Math.max(1, Math.min(20, Number($('#pl-n')?.value) || 1));
+    const n = Math.max(1, Math.min(20, Math.floor(Number($('#pl-n')?.value) || 1)));
     const picked = new Set([...box.querySelectorAll('.on')].map(b=>Number(b.dataset.n)));
     box.innerHTML = Array.from({length:n},(_,i)=>i+1).map(k=>`
       <button type="button" class="btn sm ${picked.has(k)?'':'gh'} ${picked.has(k)?'on':''}"
@@ -8522,7 +8612,8 @@ const Doc = {
     /* التشخيص اختياري: خطة قديمة بلا تشخيص تبقى صالحة كما هي */
     const dx = PickProc.read('pl-dx');
     if (dx && dx.startsWith('x:')) await SG.learn('proctext', dx.slice(2));
-    const count = Math.max(1, Number($('#pl-n').value) || 1);
+    /* بالحدّ نفسه الذي تُرسم به أزرار الجلسات (٢٠) — وإلا حُفظت خطة بجلسات لا تظهر */
+    const count = Math.max(1, Math.min(20, Math.floor(Number($('#pl-n').value) || 1)));
     const price = Number($('#pl-price').value) || 0;
     const note  = ($('#pl-note').value || '').trim();
     const picked = [...document.querySelectorAll('#pl-chips .on')].map(b=>Number(b.dataset.n));
@@ -9136,14 +9227,16 @@ const Money = {
   set(v){ this.view = v; this.draw(); },
 
   /*──────── مدى التاريخ ────────*/
+  /* بيوم العمل (حدّه الرابعة فجراً بتوقيت العيادة) كما في قسم «اليوم» —
+     وإلا ظهرت دفعة الساعة ١٢:٣٠ ليلاً في «مقبوض اليوم» هناك وفي «أمس» هنا */
   span(){
-    const now = new Date();
-    const ago = n => { const x = new Date(now); x.setDate(x.getDate()-n); return dkey(x); };
+    const now = today();
+    const ago = n => today(Date.now() - n * 86400000);
     switch (this.f.range){
-      case 'today': return { from:dkey(now), to:dkey(now) };
-      case 'yest':  return { from:ago(1),    to:ago(1) };
-      case 'week':  return { from:ago(6),    to:dkey(now) };
-      case 'month': return { from:dkey(now).slice(0,8)+'01', to:dkey(now) };
+      case 'today': return { from:now,    to:now };
+      case 'yest':  return { from:ago(1), to:ago(1) };
+      case 'week':  return { from:ago(6), to:now };
+      case 'month': return { from:now.slice(0,8)+'01', to:now };
       case 'all':   return { from:'', to:'' };
       default:      return { from:this.f.from||'', to:this.f.to||'' };
     }
@@ -9157,7 +9250,11 @@ const Money = {
   },
 
   inSpan(ts){
-    const s = this.span(), k = dkey(ts);
+    const s = this.span();
+    if (!s.from && !s.to) return true;
+    /* سجل بلا وقت لا يُنسب لأي فترة (وكان dkey يرمي خطأً فتتوقف الشاشة) */
+    if (!ts || isNaN(new Date(ts))) return false;
+    const k = today(ts);
     if (s.from && k < s.from) return false;
     if (s.to   && k > s.to)   return false;
     return true;
@@ -9206,6 +9303,8 @@ const Money = {
   custom(){ this.f.range = 'custom';
     this.f.from = $('#f-from')?.value || '';
     this.f.to   = $('#f-to')?.value   || '';
+    /* «من» بعد «إلى» كان يُخرج فترة فارغة بلا تفسير — يُقلبان */
+    if (this.f.from && this.f.to && this.f.from > this.f.to) [this.f.from, this.f.to] = [this.f.to, this.f.from];
     this.syncBar(); this.body(); },
 
   resetF(){ this.f.fdi = ''; this.f.proc = ''; this.stats(); },
@@ -9280,7 +9379,7 @@ const Money = {
     const pm  = await this.ptMap();
 
     const byDay = {};
-    d.pays.forEach(x => { const k = dkey(x.at); byDay[k] = (byDay[k]||0) + Number(x.amt||0); });
+    d.pays.forEach(x => { if (!x.at) return; const k = today(x.at); byDay[k] = (byDay[k]||0) + Number(x.amt||0); });
     const days = Object.entries(byDay).sort((a,b)=>a[0].localeCompare(b[0]));
     const dmax = Math.max(1, ...days.map(x=>x[1]));
 
@@ -9369,7 +9468,8 @@ const Money = {
 
     const sum   = ws.reduce((a,x)=>a+Number(x.price||0),0);
     const pts   = new Set(ws.map(w=>w.pid)).size;
-    const teeth = new Set(ws.map(w=>Number(w.fdi)).filter(Boolean)).size;
+    /* السن نفسه عند مراجعَين سنّان — العدّ لكل مراجع وسنّه، لا لرقم FDI وحده */
+    const teeth = new Set(ws.filter(w => Number(w.fdi)).map(w => w.pid + '-' + Number(w.fdi))).size;
 
     /* ترتيب أنواع الأعمال بعدد المرات من الأعلى للأدنى */
     const gp = {};
@@ -10498,7 +10598,7 @@ const Print = {
   },
 
   async day(){
-    const works = (await DB.all('works')).filter(w=>dkey(w.at)===today());
+    const works = (await DB.all('works')).filter(w => w.at && today(w.at) === today());
     const rows = [];
     for (const w of works){ const p = await DB.get('patients', w.pid);
       rows.push(`<tr><td>${esc(p?nm(p):'—')}</td>
@@ -13118,35 +13218,27 @@ const Auth = { out(){ S.role=null; S.user=null; S.patient=null; S.visit=null;
   الأيقونة تُولَّد داخل الملف نفسه (سن أبيض على أخضر) ثم تُحوَّل
   إلى PNG ليقبلها نظام التشغيل، فيبقى البرنامج ملفاً واحداً.
 ═══════════════════════════════════════════════════════*/
-const APP = { nameAr:'أسناني', nameEn:'My teeth', green:'#00796B', green2:'#00A88F',
+const APP = { nameAr:'Dent Flow', nameEn:'Dent Flow', name:'Dent Flow', green:'#00796B', green2:'#00A88F',
               logo:'', title:'' };   /* logo/title: هوية العيادة إن ضبطها المستثمر */
 
 const ICON = {
   cache:{},
   TOOTH:'M12 3c-3 0-4-1.2-6 0C4 4.2 3.4 7 4 10c.5 2.6 1.3 4 1.8 6.6.4 2 .6 4.4 2 4.4 1.6 0 1.3-2.6 1.8-4.6.4-1.6.8-2.4 2.4-2.4s2 .8 2.4 2.4c.5 2 .2 4.6 1.8 4.6 1.4 0 1.6-2.4 2-4.4.5-2.6 1.3-4 1.8-6.6.6-3 0-5.8-2-7-2-1.2-3 0-6 0z',
 
-  /* السن مرسوم داخل مربع 512 مع هامش أمان للأيقونات المقنّعة */
-  svg(size, maskable){
-    const pad = maskable ? 0.19 : 0;        /* منطقة آمنة 80% للأندرويد */
-    const r   = maskable ? 0 : size * 0.22; /* زوايا دائرية للأيقونة العادية */
-    const s   = size * (1 - pad * 2), o = size * pad;
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-      <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="${APP.green2}"/><stop offset="1" stop-color="${APP.green}"/>
-      </linearGradient></defs>
-      <rect width="${size}" height="${size}" rx="${r}" fill="url(#g)"/>
-      <g transform="translate(${o} ${o}) scale(${s/24})">
-        <path fill="#FFFFFF" d="M12 3c-3 0-4-1.2-6 0C4 4.2 3.4 7 4 10c.5 2.6 1.3 4 1.8 6.6.4 2 .6 4.4 2 4.4 1.6 0 1.3-2.6 1.8-4.6.4-1.6.8-2.4 2.4-2.4s2 .8 2.4 2.4c.5 2 .2 4.6 1.8 4.6 1.4 0 1.6-2.4 2-4.4.5-2.6 1.3-4 1.8-6.6.6-3 0-5.8-2-7-2-1.2-3 0-6 0z"/>
-      </g></svg>`;
-  },
+  /* شعار Dent Flow: الحرفان D وF على دائرتين (رمل وماء) — صورة مربعة 512
+     مضمّنة في الملف نفسه، فيبقى البرنامج ملفاً واحداً بلا طلبات خارجية. */
+  IMG:'data:image/jpeg;base64,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',
 
-  dataSvg(size, maskable){
-    return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(this.svg(size, maskable))));
-  },
+  /* الشعار كما يُعرض داخل البرنامج (المقاس لا يهم — الصورة 512 تُصغَّر) */
+  dataSvg(){ return this.IMG; },
 
-  /* PNG أوثق للتثبيت: أنظمة التشغيل لا تقبل SVG دائماً */
-  png(size, maskable){
-    const key = size + (maskable ? 'm' : '') + (APP.logo ? 'L' : '');
+  /* PNG للتثبيت وأيقونة التبويب. mode:
+     · false  : زوايا دائرية شفافة (أيقونة سطح المكتب وتبويب المتصفح)
+     · true   : مقنّعة للأندرويد — الشعار داخل منطقة الأمان (80%) فوق
+                نسخة مكبّرة ضبابية منه، فلا يُقصّ حرف ولا تظهر حافة فارغة
+     · 'full' : مربع كامل بلا شفافية (آيفون يملأ الشفاف بالأسود) */
+  png(size, mode){
+    const key = size + String(mode) + (APP.logo ? 'L' : '');
     if (this.cache[key]) return Promise.resolve(this.cache[key]);
     return new Promise(res => {
       const img = new Image();
@@ -13154,26 +13246,46 @@ const ICON = {
         const c = document.createElement('canvas');
         c.width = c.height = size;
         const g = c.getContext('2d');
+        g.imageSmoothingQuality = 'high';
         if (APP.logo){
           /* شعار العيادة على خلفية بيضاء، داخل منطقة الأمان */
           g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, size, size);
-          const pad = size * (maskable ? .2 : .08), box = size - pad * 2;
+          const pad = size * (mode === true ? .2 : .08), box = size - pad * 2;
           const sc = Math.min(box / img.width, box / img.height);
           const w = img.width * sc, h = img.height * sc;
           g.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
-        } else g.drawImage(img, 0, 0, size, size);
-        this.cache[key] = c.toDataURL('image/png');
+        } else if (mode === true){
+          /* الخلفية: ألوان الشعار نفسها ممدودة وضبابية — بلا حروف ظاهرة */
+          try { g.filter = 'blur(' + Math.round(size * .09) + 'px) saturate(.9)'; } catch(_){}
+          const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+          g.drawImage(img, 0, 0, iw * .06, ih, -size * .1, -size * .1, size * .7, size * 1.2);
+          g.drawImage(img, iw * .94, 0, iw * .06, ih, size * .4, -size * .1, size * .7, size * 1.2);
+          try { g.filter = 'none'; } catch(_){}
+          const pad = size * .12, box = size - pad * 2;
+          g.drawImage(img, pad, pad, box, box);
+        } else if (mode === 'full'){
+          g.drawImage(img, 0, 0, size, size);
+        } else {
+          const r = size * .22;
+          g.beginPath();
+          g.moveTo(r, 0); g.arcTo(size, 0, size, size, r); g.arcTo(size, size, 0, size, r);
+          g.arcTo(0, size, 0, 0, r); g.arcTo(0, 0, size, 0, r); g.closePath();
+          g.clip();
+          g.drawImage(img, 0, 0, size, size);
+        }
+        try { this.cache[key] = c.toDataURL('image/png'); }
+        catch(_){ this.cache[key] = this.IMG; }
         res(this.cache[key]);
       };
-      img.onerror = () => res(this.dataSvg(size, maskable));
-      img.src = APP.logo || this.dataSvg(size, maskable);
+      img.onerror = () => res(this.IMG);
+      img.src = APP.logo || this.IMG;
     });
   },
 
   /* عنصر الشعار المعروض داخل البرنامج */
   el(cls){
-    return `<img class="applogo ${cls||''} ${APP.logo?'custom':''}" alt="${esc(APP.title||APP.nameAr)}"
-      src="${APP.logo ? esc(APP.logo) : this.dataSvg(256,false)}">`;
+    return `<img class="applogo ${cls||''} ${APP.logo?'custom':''}" alt="${esc(APP.title||APP.name)}"
+      src="${APP.logo ? esc(APP.logo) : this.IMG}">`;
   },
 };
 
@@ -13181,8 +13293,8 @@ const Install = {
   prompt:null, ready:false,
 
   async manifest(){
-    const [i192, i512, m512] = await Promise.all([
-      ICON.png(192,false), ICON.png(512,false), ICON.png(512,true),
+    const [i192, i512, m512, a180] = await Promise.all([
+      ICON.png(192,false), ICON.png(512,false), ICON.png(512,true), ICON.png(180,'full'),
     ]);
     /* المنيفست يُبنى كـ blob، والعناوين النسبية داخله تُحلّ نسبةً
        إلى عنوان الـ blob لا إلى عنوان الصفحة. فـ scope:'./' كان
@@ -13192,9 +13304,9 @@ const Install = {
     const dir  = page.slice(0, page.lastIndexOf('/') + 1);
     const man = {
       id: page,
-      name: APP.title || `${APP.nameAr} — ${APP.nameEn}`,
-      short_name: APP.title || APP.nameAr,
-      description: 'نظام إدارة عيادات الأسنان',
+      name: APP.title || APP.name,
+      short_name: APP.title || APP.name,
+      description: 'Dent Flow — نظام إدارة عيادات الأسنان',
       start_url: page,
       scope: dir,
       display: 'standalone',
@@ -13217,7 +13329,7 @@ const Install = {
     /* آيفون لا يقرأ manifest — يحتاج أيقونة خاصة */
     let ap = document.querySelector('link[rel="apple-touch-icon"]');
     if (!ap){ ap = document.createElement('link'); ap.rel = 'apple-touch-icon'; document.head.appendChild(ap); }
-    ap.href = i192;
+    ap.href = a180;
 
     let ic = document.querySelector('link[rel=icon]');
     if (!ic){ ic = document.createElement('link'); ic.rel = 'icon'; document.head.appendChild(ic); }
@@ -13279,9 +13391,9 @@ const Install = {
     if (document.getElementById('instbar')) return;
 
     const box = el(`<div id="instbar"><div class="box">
-      <img class="applogo sm" src="${APP.logo ? esc(APP.logo) : ICON.dataSvg(160,false)}" alt="">
+      <img class="applogo sm" src="${APP.logo ? esc(APP.logo) : ICON.IMG}" alt="">
       <div class="gr" style="min-width:0">
-        <div class="nm">${esc(APP.title || `${APP.nameAr} — ${APP.nameEn}`)}</div>
+        <div class="nm">${esc(APP.title || APP.name)}</div>
         <div class="ds">${this.isIOS() ? T('iosInstall')
           : this.ready ? T('installHint') : T('installMenu')}</div>
       </div>
@@ -13315,7 +13427,7 @@ const Install = {
     UI.sheet(`
       <div class="shhead"><div class="gr">
         <div class="h2">${T('install')}</div>
-        <div class="sub">${esc(APP.title || `${APP.nameAr} — ${APP.nameEn}`)}</div>
+        <div class="sub">${esc(APP.title || APP.name)}</div>
       </div><button class="ib" onclick="Nav.back()">✕</button></div>
 
       <div class="ctr">${ICON.el()}</div>
@@ -13469,7 +13581,7 @@ window.addEventListener('unhandledrejection', e =>
 </script>
 <script>
 /*═══════════════════════════════════════════════════════════════════
-  أسناني — ملحقات «مينا»
+  Dent Flow — ملحقات «مينا»
   ───────────────────────────────────────────────────────────────────
   طبقة إضافية فوق البرنامج، لا تستبدل منطقه: كل ما يلي يقرأ من
   قاعدة البيانات المحلية ذاتها ويرسم فوق الشاشات القائمة، وأي خطأ
@@ -13495,7 +13607,8 @@ const canFiles = () => S.role === 'doctor' || S.role === 'secretary';
   أرقام العراق تُكتب محلياً 07xx…؛ واتساب يريدها دولية بلا صفر. */
 const Wa = {
   num(raw){
-    let d = String(raw || '').replace(/[^\d+]/g, '');
+    /* أرقام محفوظة سابقاً بأرقام عربية تبقى صالحة */
+    let d = enDigits(raw || '').replace(/[^\d+]/g, '');
     if (d.startsWith('+')) d = d.slice(1);
     else if (d.startsWith('00')) d = d.slice(2);
     else if (d.startsWith('0')) d = '964' + d.slice(1);
@@ -13574,12 +13687,14 @@ const Kpi = {
     const vs = visits.filter(v => v.date === t && v.qstate !== 'cancelled' && qShow(v));
     const by = k => vs.filter(v => (v.qstate || 'waiting') === k).length;
     const collected = pays.filter(p => p.at && today(p.at) === t).reduce((s, p) => s + Number(p.amt || 0), 0);
-    const billed = works.reduce((s, w) => s + Number(w.price || 0), 0);
-    const paid = pays.reduce((s, p) => s + Number(p.amt || 0), 0);
+    /* المتبقي = مجموع ذمم المراجعين واحداً واحداً — كما في قائمة الذمم التي
+       تفتحها البطاقة. الطرح الإجمالي كان يجعل زيادة دفعها مراجع تمحو دَين غيره */
+    let due = 0;
+    try { due = (await Debts.rows()).reduce((s, r) => s + r.due, 0); } catch(_){}
     const dayAppts = appts.filter(a => a.st === 'open' && a.day === t && qShow(a)).length;
     return {
       total: vs.length, waiting: by('waiting') + by('called'), chair: by('chair'), done: by('done'),
-      collected, due: Math.max(0, billed - paid),
+      collected, due,
       appts: dayAppts, fresh: bks.filter(b => b.st === 'new').length,
     };
   },
@@ -13971,7 +14086,8 @@ const Mina = window.Mina = { palette: () => Pal.open(), debts: () => Debts.open(
 /* لوحة الدخول الفنية بلغة الواجهة */
 function loginArt(){
   const q = id => document.getElementById(id); if (!q('la-h')) return;
-  q('la-brand').textContent = L('أسناني', 'My teeth');
+  q('la-brand').textContent = APP.name;
+  const mk = q('la-mk'); if (mk && !mk.src) mk.src = ICON.IMG;
   q('la-h').innerHTML = L('إدارة عيادة الأسنان،<br><em>بدقّة وإتقان.</em>', 'Run your dental clinic<br><em>with precision.</em>');
   q('la-p').textContent = L('الملفات ومخطط الأسنان والمواعيد والحسابات والوصفات في مكان واحد — ويعمل حتى بلا إنترنت.',
                             'Records, tooth charting, appointments, billing and prescriptions in one place — even offline.');
