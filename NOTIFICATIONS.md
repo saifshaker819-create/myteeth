@@ -23,7 +23,7 @@
 ١) فعّل خطة **Blaze** من Firebase Console ← ⚙️ Usage and billing.
    ويُنصح بوضع تنبيه ميزانية (مثلاً ١ دولار) من Google Cloud ← Billing ← Budgets.
 
-٢) على حاسبتك (تحتاج Node.js 20 أو أحدث):
+٢) على حاسبتك (تحتاج Node.js 22 أو أحدث):
 
 ```bash
 npm install -g firebase-tools
