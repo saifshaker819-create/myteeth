@@ -1635,6 +1635,7 @@ ar:{
  plan:'خطة علاج السن', planProc:'نوع العمل المطلوب', planCount:'عدد الجلسات المطلوبة',
  planToday:'الجلسات المنفّذة اليوم', planNote:'ملاحظات الخطة', savePlan:'حفظ الخطة',
  planSaved:'حُفظت خطة السن', pickSessions:'اختر جلسة أو أكثر',
+ plFewer:'عدد الجلسات أقل من المنفّذ فعلاً — المنفّذ حتى الآن:', plDoneChip:'منفّذة', plNoneToday:'لا تختر شيئاً إن كنت تعدّل الخطة فقط',
  sessionN:'الجلسة', ofN:'من', remaining:'المتبقي من الخطة', planDone:'اكتملت الجلسات',
  toothSessions:'جلسات السن', teethFiles:'ملفات الأسنان', allVisits:'كل الزيارات',
  toothSummary:'ملخص علاج السن', sealed:'مختوم', ongoing:'قيد العلاج',
@@ -1973,6 +1974,7 @@ en:{
  plan:'Tooth treatment plan', planProc:'Required procedure', planCount:'Sessions required',
  planToday:'Sessions done today', planNote:'Plan notes', savePlan:'Save plan',
  planSaved:'Tooth plan saved', pickSessions:'Select one or more sessions',
+ plFewer:'Fewer sessions than already done — done so far:', plDoneChip:'done', plNoneToday:'Pick nothing if you are only editing the plan',
  sessionN:'Session', ofN:'of', remaining:'Remaining', planDone:'All sessions completed',
  toothSessions:'Tooth sessions', teethFiles:'Tooth files', allVisits:'All visits',
  toothSummary:'Tooth treatment summary', sealed:'Sealed', ongoing:'In treatment',
@@ -8299,7 +8301,8 @@ const Doc = {
     if (!plan && (!hasHistory || sealedNow) && Perm.addWork()){
       UI.sheet(head + (sealedNow ? `<div class="al g"><span>✓</span><span>${T('tPrevDone')}</span></div>` : '')
         + this.planForm(fdi, null));
-      this.wirePlan();
+      this._plFdi = fdi;
+      await this.wirePlan(false);
       return;
     }
 
@@ -8599,7 +8602,7 @@ const Doc = {
               value="${plan?.price||''}"></div>
         </div>
         <div class="mt"><label class="lb">${T('planToday')}</label>
-          <div class="tiny" style="margin-bottom:7px">${T('pickSessions')}</div>
+          <div class="tiny" style="margin-bottom:7px">${T('pickSessions')}${plan ? ' — ' + T('plNoneToday') : ''}</div>
           <div class="row wrapv" id="pl-chips" style="gap:6px"></div></div>
         <div class="mt"><label class="lb">${T('planNote')}</label>
           <input id="pl-note" value="${esc(plan?.note||'')}"></div>
@@ -8611,7 +8614,13 @@ const Doc = {
       </div>`;
   },
 
-  wirePlan(){
+  /* edit: تعديل خطة قائمة — لا تُختار أي جلسة تلقائياً.
+     done: أرقام الجلسات المنفّذة في السلسلة الحالية — تُعرض ✓ ولا تُختار،
+     فلا يُسجَّل عمل مكرّر (كان حفظ التعديل يعيد تسجيل «الجلسة ١» بسعرها) */
+  async wirePlan(edit){
+    this._plEdit = !!edit;
+    this._plDone = new Set();
+    try { this._plDone = new Set((await Ops.doneSessions(S.patient.id, this._plFdi)).nums); } catch(_){}
     SG.attach($('#pl-note'), 'plannote');
     /* ما يُكتب يدوياً في حقل نوع العمل يتعلّم ويُقترح لاحقاً */
     SG.attach($('#pl-proc-q'), 'proctext');
@@ -8624,12 +8633,17 @@ const Doc = {
   /* أرقام الجلسات تُبنى حسب العدد المطلوب، ويمكن اختيار أكثر من واحدة */
   rebuildChips(){
     const box = $('#pl-chips'); if (!box) return;
+    const done = this._plDone || new Set();
     const n = Math.max(1, Math.min(20, Math.floor(Number($('#pl-n')?.value) || 1)));
     const picked = new Set([...box.querySelectorAll('.on')].map(b=>Number(b.dataset.n)));
-    box.innerHTML = Array.from({length:n},(_,i)=>i+1).map(k=>`
-      <button type="button" class="btn sm ${picked.has(k)?'':'gh'} ${picked.has(k)?'on':''}"
+    box.innerHTML = Array.from({length:n},(_,i)=>i+1).map(k => done.has(k)
+      ? `<button type="button" class="btn sm gh" disabled style="opacity:.55">✓ ${T('sessionN')} ${k} · ${T('plDoneChip')}</button>`
+      : `<button type="button" class="btn sm ${picked.has(k)?'':'gh'} ${picked.has(k)?'on':''}"
         data-n="${k}" onclick="Doc.toggleChip(this)">${T('sessionN')} ${k}</button>`).join('');
-    if (!picked.size){ const first = box.querySelector('button'); if (first) this.toggleChip(first); }
+    /* خطة جديدة: أول جلسة غير منفّذة تُقترح. تعديل خطة: لا شيء يُختار وحده */
+    if (!picked.size && !this._plEdit){
+      const first = box.querySelector('button[data-n]'); if (first) this.toggleChip(first);
+    }
   },
 
   toggleChip(b){
@@ -8638,6 +8652,11 @@ const Doc = {
   },
 
   async savePlan(fdi){
+    if (this._plSaving) return;              /* ضغطتان سريعتان = حفظ واحد */
+    this._plSaving = true;
+    try { return await this._savePlan(fdi); } finally { this._plSaving = false; }
+  },
+  async _savePlan(fdi){
     const proc = PickProc.read('pl-proc');
     if (!proc){ $('#pl-proc-q')?.classList.add('err'); return toast(T('typeProc'),'e'); }
     if (proc.startsWith('x:')) await SG.learn('proctext', proc.slice(2));
@@ -8648,7 +8667,16 @@ const Doc = {
     const count = Math.max(1, Math.min(20, Math.floor(Number($('#pl-n').value) || 1)));
     const price = Number($('#pl-price').value) || 0;
     const note  = ($('#pl-note').value || '').trim();
-    const picked = [...document.querySelectorAll('#pl-chips .on')].map(b=>Number(b.dataset.n));
+    /* المنفّذ يُقرأ الآن من السجل (لا من وقت فتح النموذج) — جهاز آخر قد
+       سجّل جلسة في هذه الأثناء */
+    const doneNow = new Set((await Ops.doneSessions(S.patient.id, fdi)).nums);
+    const maxDone = doneNow.size ? Math.max(...doneNow) : 0;
+    if (count < maxDone){
+      $('#pl-n')?.classList.add('err');
+      return toast(`${T('plFewer')} ${maxDone}`, 'e');
+    }
+    const picked = [...new Set([...document.querySelectorAll('#pl-chips .on')].map(b=>Number(b.dataset.n)))]
+      .filter(k => k >= 1 && k <= count && !doneNow.has(k));
 
     await Ops.savePlan(S.patient.id, fdi, { dx, proc, sessions:count, price, note });
     await SG.learn('plannote', note);
@@ -8681,7 +8709,8 @@ const Doc = {
           <div class="tiny">${T('tooth')} ${Chart.lbl(fdi)}</div></div>
         <button class="ib" onclick="Nav.back()">✕</button>
       </div>` + this.planForm(fdi, plan));
-    this.wirePlan();
+    this._plFdi = fdi;
+    await this.wirePlan(!!plan);
   },
 
   /* تنفيذ جلسة إضافية من الخطة اليوم */
@@ -8715,8 +8744,16 @@ const Doc = {
   },
 
   async saveSession(fdi){
+    if (this._dsSaving) return;
+    this._dsSaving = true;
+    try { return await this._saveSession(fdi); } finally { this._dsSaving = false; }
+  },
+  async _saveSession(fdi){
     const plan = await Ops.plan(S.patient.id, fdi);
-    const picked = [...document.querySelectorAll('#ds-chips .on')].map(b=>Number(b.dataset.n));
+    /* جلسة سُجّلت للتو (ضغطة ثانية أو جهاز آخر) لا تُسجَّل مرة أخرى */
+    const doneNow = new Set((await Ops.doneSessions(S.patient.id, fdi)).nums);
+    const picked = [...new Set([...document.querySelectorAll('#ds-chips .on')].map(b=>Number(b.dataset.n)))]
+      .filter(k => !doneNow.has(k));
     if (!picked.length) return toast(T('pickSessions'), 'e');
     const price = Number($('#ds-price').value) || 0;
     const note  = ($('#ds-note').value || '').trim();
