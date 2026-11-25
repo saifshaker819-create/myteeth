@@ -3248,13 +3248,20 @@ const Chart = {
   },
 
   svg(map, sel){
-    const W=360, RX=150, up={cy:32,ry:88}, lo={cy:226,ry:88};
+    /* في الهاتف: الأسنان أكبر قليلاً، والفكّان يتباعدان بقدرها حتى
+       يبقى الترتيب نفسه بلا تداخل (العرض محدود، والطول متاح) */
+    const ph = matchMedia('(max-width:600px)').matches;
+    const k = ph ? 1.2 : 1;
+    const W=360, RX=150, H = ph ? 318 : 262;
+    const up = ph ? {cy:36,ry:106} : {cy:32,ry:88};
+    const lo = ph ? {cy:282,ry:106} : {cy:226,ry:88};
     const pos=(list,arc,isUp)=>list.map((f,i)=>{
       const deg=180+(i/(list.length-1))*180, th=deg*Math.PI/180;
       const x=W/2+RX*Math.cos(th);
       const y=isUp? arc.cy-arc.ry*Math.sin(th) : arc.cy+arc.ry*Math.sin(th);
       const rot=isUp?(deg-270):-(deg-270), p=f%10;
-      return {f,x,y,rot, w:p>=6?22:p>=4?17:p===3?15.5:14, h:p>=6?23:p>=4?22:24};
+      const w=p>=6?22:p>=4?17:p===3?15.5:14, h=p>=6?23:p>=4?22:24;
+      return {f,x,y,rot, w:+(w*k).toFixed(1), h:+(h*k).toFixed(1)};
     });
     const gumP=(arc,isUp)=>{ let d='';
       for(let i=0;i<=44;i++){ const th=(180+(i/44)*180)*Math.PI/180;
@@ -3279,17 +3286,18 @@ const Chart = {
           ${gone?`<line x1="${-t.w/2+3}" y1="${-t.h/2+3}" x2="${t.w/2-3}" y2="${t.h/2-3}" stroke="#D94A3D" stroke-width="2"/>
                   <line x1="${t.w/2-3}" y1="${-t.h/2+3}" x2="${-t.w/2+3}" y2="${t.h/2-3}" stroke="#D94A3D" stroke-width="2"/>`:''}
         </g>
-        <text x="${t.x.toFixed(1)}" y="${(t.y+3.6).toFixed(1)}" text-anchor="middle"
-          font-family="'IBM Plex Mono',monospace" font-size="${t.w>19?9:8.2}" font-weight="600"
+        <text x="${t.x.toFixed(1)}" y="${(t.y+(ph?4:3.6)).toFixed(1)}" text-anchor="middle"
+          font-family="'IBM Plex Mono',monospace" font-size="${((t.w>19*k?9:8.2)*(ph?1.12:1)).toFixed(1)}" font-weight="600"
           fill="${gone?'#D94A3D':col?'#fff':'var(--ink2)'}"
           style="pointer-events:none;user-select:none">${this.lbl(t.f)}</text>
       </g>`;
     }).join('');
 
-    return `<svg class="chart" viewBox="0 0 360 262">
-      <path d="${gumP(up,true)}"  fill="none" stroke="var(--gum)" stroke-width="32" stroke-linecap="round"/>
-      <path d="${gumP(lo,false)}" fill="none" stroke="var(--gum)" stroke-width="32" stroke-linecap="round"/>
-      <line x1="180" y1="8" x2="180" y2="254" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="4 6"/>
+    const gw = ph ? 36 : 32;
+    return `<svg class="chart" viewBox="0 0 ${W} ${H}">
+      <path d="${gumP(up,true)}"  fill="none" stroke="var(--gum)" stroke-width="${gw}" stroke-linecap="round"/>
+      <path d="${gumP(lo,false)}" fill="none" stroke="var(--gum)" stroke-width="${gw}" stroke-linecap="round"/>
+      <line x1="180" y1="8" x2="180" y2="${H-8}" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="4 6"/>
       ${body}</svg>`;
   },
 
